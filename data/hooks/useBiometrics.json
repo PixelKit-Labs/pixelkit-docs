@@ -1,0 +1,45 @@
+{
+  "id": "useBiometrics",
+  "name": "useBiometrics",
+  "category": "radios",
+  "chipBadge": "BiometricPrompt",
+  "summary": "Fingerprint and face authentication.",
+  "plain": "Asks the user to prove who they are with their fingerprint or face. Check that hardware exists and that something is actually enrolled before you offer it, otherwise the prompt will fail.",
+  "description": "Uses the platform BiometricPrompt through expo-local-authentication, which on a Pixel is backed by the hardware security module. The two checks matter separately: a device can have the sensor but no enrolled credential, in which case authentication cannot succeed and you should fall back to a passcode path.",
+  "signature": "useBiometrics(): BiometricState & { authenticate }",
+  "params": [],
+  "returns": [
+    {
+      "name": "hasHardware",
+      "type": "boolean",
+      "desc": "Whether a biometric sensor exists."
+    },
+    {
+      "name": "isEnrolled",
+      "type": "boolean",
+      "desc": "Whether the user has registered a fingerprint or face. Without this, prompts fail."
+    },
+    {
+      "name": "supportedTypes",
+      "type": "string[]",
+      "desc": "Which modalities are available, such as fingerprint or face."
+    }
+  ],
+  "actions": [
+    {
+      "name": "authenticate(promptMessage?)",
+      "type": "(promptMessage?: string) => Promise<boolean>",
+      "desc": "Shows the system biometric prompt with a device-passcode fallback.",
+      "inputs": [
+        {
+          "name": "promptMessage",
+          "type": "string | undefined",
+          "desc": "The line shown in the system sheet. Defaults to \"Verify identity with Pixel Biometrics\"."
+        }
+      ],
+      "output": "Resolves true only on success. A cancel or a mismatch resolves false without setting error; missing hardware or no enrolment resolves false and sets error. lastResult tells the three apart."
+    }
+  ],
+  "example": "import { useBiometrics } from 'pixelkit';\n\nfunction Unlock() {\n  const { hasHardware, isEnrolled, authenticate } = useBiometrics();\n  if (!hasHardware || !isEnrolled) return <Text>Use a passcode instead</Text>;\n  return <Button title=\"Unlock\" onPress={() => authenticate('Confirm your identity')} />;\n}",
+  "agentNote": "Always provide a non-biometric path. Never treat a false result as an attack; a cancel and a failure look the same here."
+}

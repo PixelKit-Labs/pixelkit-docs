@@ -1,0 +1,114 @@
+{
+  "id": "useMediaLibrary",
+  "name": "useMediaLibrary",
+  "category": "system",
+  "chipBadge": "expo-media-library · gallery",
+  "summary": "Saving captures to the gallery, and reading what is there.",
+  "plain": "Puts a photo or video into the user's own gallery, where it survives and other apps can see it. Without this a capture sits in the app's cache and disappears when the system needs space. Also lists recent items and can delete one.",
+  "description": "Wraps expo-media-library. SDK 57 uses the class API (Asset.create, Album.create, Query) rather than the deprecated createAssetAsync helpers, which now throw at runtime. Asset fields are async accessors, so the hook flattens each into a plain SavedMedia object that a list can render directly. Permission is more subtle than a yes or no on modern Android: access is granted per media type, and the user can share only selected items, which is what hasLimitedAccess reports.",
+  "signature": "useMediaLibrary(): MediaLibraryState",
+  "params": [],
+  "returns": [
+    {
+      "name": "permissionGranted",
+      "type": "boolean",
+      "desc": "Whether library access was granted."
+    },
+    {
+      "name": "hasLimitedAccess",
+      "type": "boolean",
+      "desc": "Android 13+: the user shared only selected items, so the library is not fully visible."
+    },
+    {
+      "name": "isSaving",
+      "type": "boolean",
+      "desc": "True while a file is being written."
+    },
+    {
+      "name": "isLoading",
+      "type": "boolean",
+      "desc": "True while the library is being read."
+    },
+    {
+      "name": "recent",
+      "type": "SavedMedia[]",
+      "desc": "Newest items from the last loadRecent call, most recent first."
+    },
+    {
+      "name": "lastSaved",
+      "type": "SavedMedia | null",
+      "desc": "The item this app most recently wrote."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last operation failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "requestPermission(writeOnly?)",
+      "type": "(writeOnly?: boolean) => Promise<boolean>",
+      "desc": "Asks for media library access.",
+      "inputs": [
+        {
+          "name": "writeOnly",
+          "type": "boolean | undefined",
+          "desc": "True asks only for write access, for an app that saves but never browses. Defaults to false."
+        }
+      ],
+      "output": "Resolves true when granted. hasLimitedAccess becomes true when the user shared only selected items, so a grant is not full access."
+    },
+    {
+      "name": "save(localUri, albumName?)",
+      "type": "(localUri: string, albumName?: string) => Promise<SavedMedia | null>",
+      "desc": "Copies a capture out of the app cache into the user media store, where it survives.",
+      "inputs": [
+        {
+          "name": "localUri",
+          "type": "string",
+          "desc": "The file useCamera or useAudio returned."
+        },
+        {
+          "name": "albumName",
+          "type": "string | undefined",
+          "desc": "Album to file it under. Created when it does not exist."
+        }
+      ],
+      "output": "Resolves with { id, uri, filename, width, height, durationSeconds, creationTime }, or null when permission was denied or the write failed."
+    },
+    {
+      "name": "loadRecent(limit?)",
+      "type": "(limit?: number) => Promise<SavedMedia[]>",
+      "desc": "Reads the newest items in the library, newest first.",
+      "inputs": [
+        {
+          "name": "limit",
+          "type": "number | undefined",
+          "desc": "How many items to read. Defaults to 20."
+        }
+      ],
+      "output": "Resolves with the items, also written to recent. Empty array when permission was denied."
+    },
+    {
+      "name": "remove(media)",
+      "type": "(media: SavedMedia) => Promise<boolean>",
+      "desc": "Deletes an item from the device. The system may show its own confirmation.",
+      "inputs": [
+        {
+          "name": "media",
+          "type": "SavedMedia",
+          "desc": "An item from recent or lastSaved."
+        }
+      ],
+      "output": "Resolves true when the item was deleted, and it is dropped from recent."
+    }
+  ],
+  "example": "import { useCamera, useMediaLibrary } from 'pixelkit';\n\nfunction Keep() {\n  const cam = useCamera();\n  const library = useMediaLibrary();\n\n  const shoot = async () => {\n    const photo = await cam.takePicture();\n    if (photo) await library.save(photo.uri, 'PixelKit');\n  };\n  return <Button title=\"Capture and keep\" onPress={shoot} />;\n}",
+  "agentNote": "A capture is not kept until you call save; cache files are collected by the system. Ask with writeOnly when you only need to save, and handle hasLimitedAccess rather than assuming the whole library is readable."
+}

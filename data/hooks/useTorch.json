@@ -1,0 +1,90 @@
+{
+  "id": "useTorch",
+  "name": "useTorch",
+  "category": "sensors",
+  "chipBadge": "CameraManager torch",
+  "summary": "The rear flashlight, including variable brightness and an SOS strobe.",
+  "plain": "Turns the rear light on and off. On this phone the brightness is adjustable in steps rather than just on or off. The state follows the system, so if the user toggles the torch from Quick Settings this hook notices.",
+  "description": "Backed by CameraManager.setTorchMode, with turnOnTorchWithStrengthLevel on Android 13 and above for variable brightness. A registered torch callback means external changes are reflected rather than the hook holding a stale belief. Nothing is simulated: when the native module is absent, isAvailable is false and every action rejects instead of pretending.",
+  "signature": "useTorch(): TorchState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isAvailable",
+      "type": "boolean",
+      "desc": "Whether a rear flash unit exists and the native module is present."
+    },
+    {
+      "name": "isTorchOn",
+      "type": "boolean",
+      "desc": "Whether the light is on, according to the system callback."
+    },
+    {
+      "name": "isStrobing",
+      "type": "boolean",
+      "desc": "Whether the SOS strobe is running."
+    },
+    {
+      "name": "maxStrengthLevel",
+      "type": "number | null",
+      "desc": "Number of brightness steps, 21 on this device. Null when variable brightness is unsupported."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last action failed, for example the camera being in use."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "setTorch(on, level?)",
+      "type": "(on: boolean, strengthLevel?: number) => Promise<boolean>",
+      "desc": "Switches the rear LED, optionally at a specific brightness.",
+      "inputs": [
+        {
+          "name": "on",
+          "type": "boolean",
+          "desc": "Desired state."
+        },
+        {
+          "name": "strengthLevel",
+          "type": "number | undefined",
+          "desc": "1 to maxStrengthLevel, honoured on Android 13 and later and ignored below it. Omit for the device default."
+        }
+      ],
+      "output": "Resolves true when the call was accepted, false when the hardware is unavailable or the call threw, with the reason in error."
+    },
+    {
+      "name": "toggleTorch()",
+      "type": "() => Promise<boolean>",
+      "desc": "Flips the current state, stopping any strobe first.",
+      "output": "Resolves with the state the torch is in afterwards."
+    },
+    {
+      "name": "startStrobe(intervalMs?)",
+      "type": "(intervalMs?: number) => void",
+      "desc": "Toggles the hardware torch on a timer.",
+      "inputs": [
+        {
+          "name": "intervalMs",
+          "type": "number | undefined",
+          "desc": "Half-period in milliseconds. Defaults to 150 and is clamped to at least 120, because the camera HAL needs roughly 50 to 100 ms per switch."
+        }
+      ],
+      "output": "Returns nothing; isStrobing becomes true. Replaces any strobe already running."
+    },
+    {
+      "name": "stopStrobe()",
+      "type": "() => void",
+      "desc": "Cancels the strobe timer and switches the LED off.",
+      "output": "Returns nothing; isStrobing becomes false."
+    }
+  ],
+  "example": "import { useTorch } from 'pixelkit';\n\nfunction Flashlight() {\n  const { isTorchOn, maxStrengthLevel, setTorch, toggleTorch } = useTorch();\n  return (\n    <View>\n      <Button title={isTorchOn ? 'Off' : 'On'} onPress={toggleTorch} />\n      <Button title=\"Half\" onPress={() => setTorch(true, Math.ceil((maxStrengthLevel ?? 2) / 2))} />\n    </View>\n  );\n}",
+  "agentNote": "The torch competes with the camera; a capture session can take it away. Always surface error rather than assuming the call worked."
+}

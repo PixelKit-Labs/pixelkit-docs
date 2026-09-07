@@ -1,0 +1,76 @@
+{
+  "id": "useSecurity",
+  "name": "useSecurity",
+  "category": "radios",
+  "chipBadge": "SecureStore · Android Keystore",
+  "summary": "Encrypted storage for secrets, backed by hardware.",
+  "plain": "Where API keys and tokens belong. Values are encrypted with a key the operating system holds in secure hardware, so they are not readable from app storage. Never put a secret anywhere else.",
+  "description": "Wraps expo-secure-store, which encrypts values using a key held in the Android Keystore and, on devices that have it, StrongBox. Whether this device actually has StrongBox is verified separately by useCapabilities().hasStrongBox. Android 17 does have post-quantum key types, but SecureStore does not use them, so isPostQuantumProtected is false rather than implying protection that is not there.",
+  "signature": "useSecurity(): SecurityState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isHardwareBacked",
+      "type": "boolean",
+      "desc": "True on Android, where the encryption key lives in the Keystore."
+    },
+    {
+      "name": "securityModule",
+      "type": "string",
+      "desc": "Backend name the platform reports, \"Android Keystore\" here."
+    },
+    {
+      "name": "isPostQuantumProtected",
+      "type": "boolean",
+      "desc": "Always false. SecureStore uses classical AES; do not claim otherwise."
+    }
+  ],
+  "actions": [
+    {
+      "name": "saveSecureItem(key, value)",
+      "type": "(key: string, value: string) => Promise<boolean>",
+      "desc": "Encrypts and stores a value. This is the only sanctioned place for a secret.",
+      "inputs": [
+        {
+          "name": "key",
+          "type": "string",
+          "desc": "Storage key: alphanumerics, dot, dash and underscore."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "desc": "The secret itself. It is never written to the log."
+        }
+      ],
+      "output": "Resolves true on success, false with the reason in error on failure."
+    },
+    {
+      "name": "getSecureItem(key)",
+      "type": "(key: string) => Promise<string | null>",
+      "desc": "Decrypts and returns a stored value.",
+      "inputs": [
+        {
+          "name": "key",
+          "type": "string",
+          "desc": "The key used when saving."
+        }
+      ],
+      "output": "Resolves with the value, or null when nothing is stored under that key or the read failed."
+    },
+    {
+      "name": "deleteSecureItem(key)",
+      "type": "(key: string) => Promise<boolean>",
+      "desc": "Removes a stored value.",
+      "inputs": [
+        {
+          "name": "key",
+          "type": "string",
+          "desc": "The key to delete."
+        }
+      ],
+      "output": "Resolves true when the delete completed, false with the reason in error otherwise."
+    }
+  ],
+  "example": "import { useSecurity } from 'pixelkit';\n\nasync function storeKey(value: string, security) {\n  await security.saveSecureItem('MY_API_KEY', value);\n}",
+  "agentNote": "Never write a secret to plain storage, a log line, or source. Use this hook or saveApiKey, and do not describe the storage as post-quantum."
+}

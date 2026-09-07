@@ -1,0 +1,149 @@
+{
+  "id": "useDevice",
+  "name": "useDevice",
+  "category": "system",
+  "chipBadge": "Battery · PMIC · power telemetry",
+  "summary": "Device identity, battery level, thermistor temperature, voltage, current, and wattage.",
+  "plain": "Facts about the phone, its hardware identity, and its real physical power state: battery level, fuel gauge thermistor temperature, instantaneous cell voltage and current flow, wattage draw/charging rate, health status, and lifetime charge cycles.",
+  "description": "Identity comes from expo-device, live power state from expo-battery listeners, and deep physical battery telemetry from the native fuel gauge PMIC via PixelNative.getBatteryTelemetry(). batteryTemperatureC reads the actual lithium pack NTC thermistor in 0.1 °C units. batteryVoltageMv and batteryCurrentMa give the cell terminal voltage and live current draw (negative discharging, positive charging); batteryPowerWatts computes real-time wattage (V × I). On Android 14+, batteryCycleCount reads lifetime charge cycles from the PMIC EEPROM. Nothing is simulated: unavailable readings are null.",
+  "signature": "useDevice(): DeviceTelemetry & { batteryPercent, batteryTemperatureC, batteryVoltageMv, batteryCurrentMa, batteryCurrentAvgMa, batteryPowerWatts, batteryHealth, batteryCycleCount, batteryChargeCounterMah, batteryEnergyCounterMwh, batteryTechnology, pluggedSource, batteryTelemetry, hasRead, error, source, refresh }",
+  "params": [],
+  "returns": [
+    {
+      "name": "modelName",
+      "type": "string",
+      "desc": "Commercial model name (e.g. \"Pixel 11 Pro\")."
+    },
+    {
+      "name": "brand",
+      "type": "string",
+      "desc": "Hardware manufacturer brand (e.g. \"Google\")."
+    },
+    {
+      "name": "osVersion",
+      "type": "string",
+      "desc": "Android release string."
+    },
+    {
+      "name": "batteryPercent",
+      "type": "number | null",
+      "desc": "Charge remaining as an integer percentage, 0 to 100. Null until the first read; it is never reported as 0 to fill the gap."
+    },
+    {
+      "name": "batteryPercent",
+      "type": "number | null",
+      "desc": "Honest charge percentage, null until the platform answers."
+    },
+    {
+      "name": "isCharging",
+      "type": "boolean",
+      "desc": "Whether a charger is attached (AC, USB, wireless or dock)."
+    },
+    {
+      "name": "lowPowerMode",
+      "type": "boolean",
+      "desc": "Whether Battery Saver is active. Treat as a direct instruction to do less work."
+    },
+    {
+      "name": "networkType",
+      "type": "string",
+      "desc": "Active network connection type (e.g. \"WIFI\", \"CELLULAR\")."
+    },
+    {
+      "name": "isConnected",
+      "type": "boolean",
+      "desc": "Whether a working, reachable internet route exists."
+    },
+    {
+      "name": "totalMemoryMB",
+      "type": "number | undefined",
+      "desc": "Total system LPDDR5X RAM in MB, when the platform reports it."
+    },
+    {
+      "name": "batteryTemperatureC",
+      "type": "number | null",
+      "desc": "Real physical battery temperature in °C from the fuel gauge NTC thermistor."
+    },
+    {
+      "name": "batteryVoltageMv",
+      "type": "number | null",
+      "desc": "Instantaneous battery cell terminal voltage in millivolts (e.g. 4120 mV)."
+    },
+    {
+      "name": "batteryCurrentMa",
+      "type": "number | null",
+      "desc": "Instantaneous current flow in mA (negative discharging, positive charging)."
+    },
+    {
+      "name": "batteryCurrentAvgMa",
+      "type": "number | null",
+      "desc": "Rolling average current flow in mA from the fuel gauge."
+    },
+    {
+      "name": "batteryPowerWatts",
+      "type": "number | null",
+      "desc": "Real-time power consumption or fast-charging rate in Watts (V × |I|)."
+    },
+    {
+      "name": "batteryHealth",
+      "type": "'GOOD' | 'OVERHEAT' | 'DEAD' | 'OVER_VOLTAGE' | 'UNSPECIFIED_FAILURE' | 'COLD' | 'UNKNOWN' | null",
+      "desc": "Hardware battery health state reported by the PMIC."
+    },
+    {
+      "name": "batteryCycleCount",
+      "type": "number | null",
+      "desc": "Lifetime charge cycle count stored in the battery EEPROM (Android 14+)."
+    },
+    {
+      "name": "batteryChargeCounterMah",
+      "type": "number | null",
+      "desc": "Remaining battery charge capacity in milliampere-hours (mAh)."
+    },
+    {
+      "name": "batteryEnergyCounterMwh",
+      "type": "number | null",
+      "desc": "Remaining stored energy in milliwatt-hours (mWh)."
+    },
+    {
+      "name": "batteryTechnology",
+      "type": "string | null",
+      "desc": "Battery cell chemistry string (e.g. \"Li-ion\")."
+    },
+    {
+      "name": "pluggedSource",
+      "type": "'AC' | 'USB' | 'WIRELESS' | 'DOCK' | 'NONE' | null",
+      "desc": "Specific power supply source when charging."
+    },
+    {
+      "name": "batteryTelemetry",
+      "type": "BatteryTelemetry | null",
+      "desc": "Full native battery telemetry structure including probed thermal zones."
+    },
+    {
+      "name": "hasRead",
+      "type": "boolean",
+      "desc": "Whether any power, battery, or network value has been successfully read."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if the last telemetry read failed, null otherwise."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refresh",
+      "type": "() => Promise<void>",
+      "desc": "Re-reads device power, PMIC battery fuel gauge, and network connectivity.",
+      "inputs": [],
+      "output": "Promise<void> — Resolves once all battery, electrical, and network states are refreshed."
+    }
+  ],
+  "example": "import { useDevice } from 'pixelkit';\n\nfunction PowerHUD() {\n  const { batteryPercent, batteryTemperatureC, batteryVoltageMv, batteryPowerWatts, isCharging, refresh } = useDevice();\n  return (\n    <View>\n      <Text>Battery: {batteryPercent}% {isCharging ? '(charging)' : ''}</Text>\n      <Text>Temp: {batteryTemperatureC != null ? `${batteryTemperatureC.toFixed(1)} °C` : '—'}</Text>\n      <Text>Voltage: {batteryVoltageMv ?? '—'} mV</Text>\n      <Text>Rate: {batteryPowerWatts != null ? `${batteryPowerWatts.toFixed(2)} W` : '—'}</Text>\n    </View>\n  );\n}",
+  "agentNote": "Respect lowPowerMode: reduce sensor intervals and defer heavy work when true. Use batteryTemperatureC and batteryVoltageMv for real battery hardware metrics rather than simulating values."
+}

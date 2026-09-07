@@ -1,0 +1,263 @@
+{
+  "id": "useCamera",
+  "name": "useCamera",
+  "category": "sensors",
+  "chipBadge": "expo-camera · photo & video",
+  "summary": "Lens, zoom, flash and torch, plus taking photos and recording video.",
+  "plain": "Drives the camera and captures from it. Give it a camera view to hold on to and it can take a still or record a clip, both of which land as real files you can play back, save to the gallery or send to a model. Note that the Pixel Camera app's own colour Looks and long-range zoom are not available to other apps.",
+  "description": "The hook owns a ref to a CameraView and drives it, so a screen only renders the view and attaches cameraRef and handleCameraReady. takePicture resolves with a file, its dimensions and optionally base64 for the AI hooks; startRecording resolves when the recording ends, either because you called stopRecording or because a duration or size limit was reached. Two things the API does not make obvious: zoom is a 0 to 1 fraction of the lens range rather than an optical multiplier, so a \"5x\" figure does not map onto it; and Camera Looks, Super Res Zoom and the low-light video mode belong to the Pixel Camera app and cannot be driven from here, so selectedLook is a label for your own interface.",
+  "signature": "useCamera(): CameraState",
+  "params": [],
+  "returns": [
+    {
+      "name": "cameraRef",
+      "type": "RefObject<CameraView | null>",
+      "desc": "Attach to your CameraView. Capture fails without it."
+    },
+    {
+      "name": "viewProps",
+      "type": "{ facing, zoom, flash, enableTorch, mode }",
+      "desc": "Spread onto the view so it reflects this hook's state."
+    },
+    {
+      "name": "facing",
+      "type": "'back' | 'front'",
+      "desc": "Which camera is active."
+    },
+    {
+      "name": "zoomFactor",
+      "type": "number",
+      "desc": "Zoom as a 0 to 1 fraction of the lens range, not an optical multiplier."
+    },
+    {
+      "name": "flashMode",
+      "type": "'auto' | 'on' | 'off'",
+      "desc": "Whether the flash fires at capture."
+    },
+    {
+      "name": "isTorchOn",
+      "type": "boolean",
+      "desc": "Continuous light, as distinct from the capture-time flash."
+    },
+    {
+      "name": "mode",
+      "type": "'picture' | 'video'",
+      "desc": "View configuration. Recording requires video."
+    },
+    {
+      "name": "isReady",
+      "type": "boolean",
+      "desc": "Whether the preview is running and capture is possible."
+    },
+    {
+      "name": "hasPermission",
+      "type": "boolean",
+      "desc": "Whether camera permission was granted."
+    },
+    {
+      "name": "isCapturing",
+      "type": "boolean",
+      "desc": "True while a still is being taken."
+    },
+    {
+      "name": "lastPhoto",
+      "type": "CapturedPhoto | null",
+      "desc": "Most recent still: uri, width, height and optional base64 and exif."
+    },
+    {
+      "name": "isRecording",
+      "type": "boolean",
+      "desc": "True while video is recording."
+    },
+    {
+      "name": "recordingSeconds",
+      "type": "number",
+      "desc": "Elapsed seconds of the current recording."
+    },
+    {
+      "name": "lastVideoUri",
+      "type": "string | null",
+      "desc": "File of the most recent clip. Hand this to useVideo to play it back."
+    },
+    {
+      "name": "availableLenses",
+      "type": "string[]",
+      "desc": "Lens identifiers the device reports, once the preview is running."
+    },
+    {
+      "name": "availablePictureSizes",
+      "type": "string[]",
+      "desc": "Picture sizes the device supports."
+    },
+    {
+      "name": "selectedLook",
+      "type": "CameraLook",
+      "desc": "Label only. Looks are a Pixel Camera app feature and are not applied here."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last capture failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "handleCameraReady()",
+      "type": "() => Promise<void>",
+      "desc": "Pass to the view's onCameraReady. Lens and picture-size lists only resolve once the preview is running, so they are read here.",
+      "output": "Resolves once isReady is set and availableLenses and availablePictureSizes have been filled."
+    },
+    {
+      "name": "takePicture(options?)",
+      "type": "(options?: TakePictureOptions) => Promise<CapturedPhoto | null>",
+      "desc": "Takes a still into the app cache. Use useMediaLibrary().save() to keep it.",
+      "inputs": [
+        {
+          "name": "options.quality",
+          "type": "number | undefined",
+          "desc": "JPEG quality 0 to 1. Defaults to 0.85."
+        },
+        {
+          "name": "options.base64",
+          "type": "boolean | undefined",
+          "desc": "Also return the image as base64, which is what the AI hooks consume. Defaults to false."
+        },
+        {
+          "name": "options.exif",
+          "type": "boolean | undefined",
+          "desc": "Include EXIF metadata. Defaults to false."
+        },
+        {
+          "name": "options.shutterSound",
+          "type": "boolean | undefined",
+          "desc": "Play the shutter sound where the platform allows suppressing it. Defaults to true."
+        }
+      ],
+      "output": "Resolves with { uri, width, height, base64?, exif? }, or null when the view is not mounted or the capture failed, with the reason in error."
+    },
+    {
+      "name": "startRecording(options?)",
+      "type": "(options?: StartRecordingOptions) => Promise<string | null>",
+      "desc": "Records video, switching the view to video mode first.",
+      "inputs": [
+        {
+          "name": "options.maxDurationSeconds",
+          "type": "number | undefined",
+          "desc": "Stop automatically after this many seconds."
+        },
+        {
+          "name": "options.maxFileSizeBytes",
+          "type": "number | undefined",
+          "desc": "Stop automatically at this file size."
+        },
+        {
+          "name": "options.mirror",
+          "type": "boolean | undefined",
+          "desc": "Mirror the recording, matching what the user saw on a front-facing preview."
+        }
+      ],
+      "output": "Resolves with the video file URI when recording ends — through stopRecording() or a limit — or null on failure. recordingSeconds ticks while it runs."
+    },
+    {
+      "name": "stopRecording()",
+      "type": "() => void",
+      "desc": "Ends the recording. No-op when nothing is recording.",
+      "output": "Returns nothing; the promise from startRecording resolves with the video file."
+    },
+    {
+      "name": "toggleFacing()",
+      "type": "() => void",
+      "desc": "Switches between the front and rear camera.",
+      "output": "Returns nothing; facing flips and viewProps carries it to the view."
+    },
+    {
+      "name": "setLook(look)",
+      "type": "(look: CameraLook) => void",
+      "desc": "Records a Look label in state. It does not change the image: Camera Looks belong to the Pixel Camera app and are not reachable from a third-party app.",
+      "inputs": [
+        {
+          "name": "look",
+          "type": "CameraLook",
+          "desc": "One of Original, Natural, Shadows, Vanilla, Editorial, Velvet, Classic, Digi, Black Tie, Minimal."
+        }
+      ],
+      "output": "Returns nothing; selectedLook updates so your own interface can show it."
+    },
+    {
+      "name": "setZoom(fraction)",
+      "type": "(fraction: number) => void",
+      "desc": "Sets zoom as a fraction of the lens range, not an optical multiplier.",
+      "inputs": [
+        {
+          "name": "fraction",
+          "type": "number",
+          "desc": "0 to 1; values outside are clamped. Do not pass 5 for \"5x\"."
+        }
+      ],
+      "output": "Returns nothing; zoomFactor updates and viewProps carries it to the view."
+    },
+    {
+      "name": "setZoomStep(step, total?)",
+      "type": "(step: number, totalSteps?: number) => void",
+      "desc": "Evenly spaced zoom stops, for a control with discrete positions.",
+      "inputs": [
+        {
+          "name": "step",
+          "type": "number",
+          "desc": "Which stop to select, clamped to 0..totalSteps."
+        },
+        {
+          "name": "totalSteps",
+          "type": "number | undefined",
+          "desc": "How many stops there are. Defaults to 4."
+        }
+      ],
+      "output": "Returns nothing; sets zoomFactor to step / totalSteps."
+    },
+    {
+      "name": "setFlash(mode)",
+      "type": "(mode: 'auto' | 'on' | 'off') => void",
+      "desc": "Chooses flash behaviour for the next capture, as distinct from the continuous torch.",
+      "inputs": [
+        {
+          "name": "mode",
+          "type": "'auto' | 'on' | 'off'",
+          "desc": "auto lets the camera decide by scene brightness."
+        }
+      ],
+      "output": "Returns nothing; flashMode updates."
+    },
+    {
+      "name": "toggleTorch()",
+      "type": "() => void",
+      "desc": "Turns the continuous light on or off through the preview. For torch without a preview, use useTorch.",
+      "output": "Returns nothing; isTorchOn flips."
+    },
+    {
+      "name": "setMode(mode)",
+      "type": "(mode: 'picture' | 'video') => void",
+      "desc": "Switches the view between stills and video.",
+      "inputs": [
+        {
+          "name": "mode",
+          "type": "'picture' | 'video'",
+          "desc": "Recording requires video; startRecording switches it for you."
+        }
+      ],
+      "output": "Returns nothing; mode and viewProps update."
+    },
+    {
+      "name": "pausePreview() / resumePreview()",
+      "type": "() => Promise<void>",
+      "desc": "Freezes or restarts the preview without tearing the camera down.",
+      "output": "Resolves once applied. Silently no-ops when the view has been unmounted."
+    }
+  ],
+  "example": "import { CameraView } from 'expo-camera';\nimport { useCamera } from 'pixelkit';\n\nfunction Capture() {\n  const cam = useCamera();\n  if (!cam.hasPermission) return <Text>Camera permission needed</Text>;\n  return (\n    <View>\n      <CameraView ref={cam.cameraRef} onCameraReady={cam.handleCameraReady} {...cam.viewProps} style={{ flex: 1 }} />\n      <Button title=\"Photo\" onPress={() => cam.takePicture({ base64: true })} />\n      <Button\n        title={cam.isRecording ? `Stop (${cam.recordingSeconds}s)` : 'Record'}\n        onPress={() => cam.isRecording ? cam.stopRecording() : cam.startRecording({ maxDurationSeconds: 60 })}\n      />\n    </View>\n  );\n}",
+  "agentNote": "Attach cameraRef to a mounted CameraView before calling capture, or it fails. zoom is 0..1, not a multiplier; do not pass 5 for \"5x\". Captures land in cache, so use useMediaLibrary().save() to keep them."
+}

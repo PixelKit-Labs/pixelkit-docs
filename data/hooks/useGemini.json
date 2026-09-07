@@ -1,0 +1,138 @@
+{
+  "id": "useGemini",
+  "name": "useGemini",
+  "category": "ai",
+  "chipBadge": "gemini-3.8-flash · ai.chats",
+  "summary": "Cloud Gemini chat with real multi-turn history.",
+  "plain": "Talks to the full Gemini model over the network. Much more capable than the on-device model, but it needs an API key and a connection. Replies carry real token counts and timings from the API.",
+  "description": "Wraps ai.chats.create from @google/genai on gemini-3.8-flash with a system instruction, so history is maintained by the SDK rather than re-sent by hand. Token counts come from the response usageMetadata and latency is measured around the call. Replies stream through sendMessageStream, so partial fills in as chunks arrive and lastFirstChunkMs records time to first token. There is no simulated fallback: without a key, sendMessage appends a system-role message explaining how to configure one. The key is read from SecureStore, never from source.",
+  "signature": "useGemini(): GeminiState",
+  "params": [],
+  "returns": [
+    {
+      "name": "messages",
+      "type": "AIMessage[]",
+      "desc": "Conversation so far. Role system means a local error, not model output."
+    },
+    {
+      "name": "isLoading",
+      "type": "boolean",
+      "desc": "True while a reply is in flight."
+    },
+    {
+      "name": "hasApiKey",
+      "type": "boolean",
+      "desc": "Whether a key is configured. Check this before offering cloud features."
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "desc": "Model id in use, gemini-3.8-flash."
+    },
+    {
+      "name": "partial",
+      "type": "string",
+      "desc": "Text streamed so far for the in-flight reply. Empty between turns; render it for a live typing effect."
+    },
+    {
+      "name": "lastFirstChunkMs",
+      "type": "number | null",
+      "desc": "Time to the first streamed chunk of the last reply, in ms. Null before the first reply."
+    },
+    {
+      "name": "lastPromptTokens",
+      "type": "number | null",
+      "desc": "Token count returned by the last countTokens() call. Null until you call it."
+    },
+    {
+      "name": "lastGrounding",
+      "type": "GroundingSummary | null",
+      "desc": "What the last grounded reply searched for (queries) and which URIs it used (sources). Null when grounding was off or the model chose not to search."
+    },
+    {
+      "name": "safetyThreshold",
+      "type": "'default' | HarmBlockThreshold",
+      "desc": "Blocking threshold applied to all four harm categories. Default leaves the API defaults in place."
+    },
+    {
+      "name": "searchGrounding",
+      "type": "boolean",
+      "desc": "Whether the googleSearch tool is attached to the session."
+    }
+  ],
+  "actions": [
+    {
+      "name": "sendMessage(prompt)",
+      "type": "(prompt: string) => Promise<void>",
+      "desc": "Sends a turn and appends the reply with its latency and token count.",
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "string",
+          "desc": "The user's turn. Blank input is ignored."
+        }
+      ],
+      "output": "Resolves when the reply arrives. Without an API key it appends a system-role message explaining that instead; API errors arrive the same way rather than as a rejection."
+    },
+    {
+      "name": "setSelectedModel(model)",
+      "type": "(model: string) => void",
+      "desc": "Switches the cloud model and resets the chat session, because the model is fixed when the session is created.",
+      "inputs": [
+        {
+          "name": "model",
+          "type": "string",
+          "desc": "An id from availableModels, which the API lists for your key."
+        }
+      ],
+      "output": "Returns nothing; the next turn starts a new session on that model."
+    },
+    {
+      "name": "setTopP(n) / setTopK(n) / setTemperature(n) / setMaxOutputTokens(n)",
+      "type": "(value: number) => void",
+      "desc": "Generation parameters. They are fixed when the session is created, so changing one starts a fresh session.",
+      "inputs": [
+        {
+          "name": "value",
+          "type": "number",
+          "desc": "Top-p 0 to 1, top-k a positive integer, temperature typically 0 to 2, max output tokens the reply ceiling."
+        }
+      ],
+      "output": "Returns nothing."
+    },
+    {
+      "name": "setThinkingBudget(tokens)",
+      "type": "(tokens: number) => void",
+      "desc": "Thinking tokens requested from the model. Zero disables thinking, and only a value above zero is sent.",
+      "inputs": [
+        {
+          "name": "tokens",
+          "type": "number",
+          "desc": "Token budget for reasoning before the reply. Costs latency and tokens."
+        }
+      ],
+      "output": "Returns nothing; applied to the next session."
+    },
+    {
+      "name": "clearMessages()",
+      "type": "() => void",
+      "desc": "Clears the history and resets the chat session, so the next turn starts with no context.",
+      "output": "Returns nothing."
+    },
+    {
+      "name": "setApiKey(key)",
+      "type": "(key: string | null) => void",
+      "desc": "Swaps the key in memory and resets the chat session.",
+      "inputs": [
+        {
+          "name": "key",
+          "type": "string | null",
+          "desc": "The Gemini API key, or null to clear it. Persisting it is the job of saveApiKey()."
+        }
+      ],
+      "output": "Returns nothing. hasApiKey updates immediately and availableModels is refreshed in the background."
+    }
+  ],
+  "example": "import { useGemini } from 'pixelkit';\n\nfunction Assistant() {\n  const { messages, sendMessage, isLoading, hasApiKey } = useGemini();\n  if (!hasApiKey) return <Text>Configure a Gemini API key first</Text>;\n  return <Button title=\"Ask\" onPress={() => sendMessage('Analyse current telemetry')} disabled={isLoading} />;\n}",
+  "agentNote": "Keys come from saveApiKey and live in SecureStore. Never hardcode one, and never fabricate a reply when the key is missing."
+}

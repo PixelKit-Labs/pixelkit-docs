@@ -1,0 +1,80 @@
+{
+  "id": "useADPF",
+  "name": "useADPF",
+  "category": "silicon",
+  "chipBadge": "PowerManager · SystemHealth",
+  "summary": "How much thermal room is left before the phone slows itself down.",
+  "plain": "Warns you before the phone gets hot enough to throttle. Check thermalHeadroom before starting sustained work such as camera capture or a long inference run, and back off as it climbs toward 1.",
+  "description": "thermalHeadroom comes from PowerManager.getThermalHeadroom and is sampled every ten seconds, which is the cadence Google specifies; polling faster returns NaN. A live thermal-status listener reports the coarse state from NONE through SHUTDOWN. On Android 16 and above, SystemHealthManager can also report CPU and GPU headroom, which stays null when the device does not provide it. Frame figures pair the display mode refresh rate as a target with the Choreographer-measured rate as the actual.",
+  "signature": "useADPF(): ADPFState",
+  "params": [],
+  "returns": [
+    {
+      "name": "thermalHeadroom",
+      "type": "number | null",
+      "desc": "0 is cool, 1 means throttling is imminent. The single number to gate heavy work on."
+    },
+    {
+      "name": "thermalThresholds",
+      "type": "Record<string, number> | null",
+      "desc": "Headroom values at which this specific device enters each thermal status."
+    },
+    {
+      "name": "thermalStatus",
+      "type": "'nominal' | 'light' | 'moderate' | 'severe' | 'critical'",
+      "desc": "Coarse state, updated by a system listener rather than polling."
+    },
+    {
+      "name": "thermalStatusCode",
+      "type": "number",
+      "desc": "Raw PowerManager constant behind that label."
+    },
+    {
+      "name": "cpuHeadroom",
+      "type": "number | null",
+      "desc": "Android 16+ remaining CPU capacity. Null when the device does not report it."
+    },
+    {
+      "name": "gpuHeadroom",
+      "type": "number | null",
+      "desc": "Same for the GPU."
+    },
+    {
+      "name": "targetFps",
+      "type": "number | null",
+      "desc": "Refresh rate of the current display mode."
+    },
+    {
+      "name": "currentFps",
+      "type": "number | null",
+      "desc": "Frames actually presented, measured by Choreographer."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "reportWorkDuration(actualMs, targetMs?)",
+      "type": "(actualWorkDurationMs: number, targetDurationMs?: number) => 'WITHIN_BUDGET' | 'BOOST_REQUESTED'",
+      "desc": "Pure helper that judges a measured piece of work against the frame budget. It computes a verdict for your own scheduling; it does not call the platform performance hint system.",
+      "inputs": [
+        {
+          "name": "actualWorkDurationMs",
+          "type": "number",
+          "desc": "How long the work you just did actually took, in milliseconds."
+        },
+        {
+          "name": "targetDurationMs",
+          "type": "number | undefined",
+          "desc": "Budget to judge it against. Defaults to 1000 / targetFps, or 8.33 ms before the refresh rate has been read."
+        }
+      ],
+      "output": "'WITHIN_BUDGET' when the work fits the frame, 'BOOST_REQUESTED' when it overran and you should shed work."
+    }
+  ],
+  "example": "import { useADPF } from 'pixelkit';\n\nasync function runHeavyTask(adpf) {\n  if ((adpf.thermalHeadroom ?? 0) > 0.8) return 'deferred: device is hot';\n  // ... start the work\n}",
+  "agentNote": "Gate sustained workloads on thermalHeadroom, not on thermalStatus alone; the number moves before the label does."
+}

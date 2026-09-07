@@ -1,0 +1,81 @@
+{
+  "id": "useUWB",
+  "name": "useUWB",
+  "category": "pro",
+  "chipBadge": "Ultra-Wideband (Pro)",
+  "summary": "Ultra-wideband radio state, hardware ranging sessions, and spatial diagnostics.",
+  "plain": "Reports whether this phone has the short-range precision radio used for precision spatial tracking and car keys, and manages hardware ranging sessions via UwbManager and RangingManager.",
+  "description": "Chip presence, enabled state, chip id and ranging service readiness are queried from Android UwbManager and PackageManager through the native module, carrying source hardware. Hardware ranging sessions are initiated via startRanging(), exposing session diagnostics (session ID, protocol status, HAL direct vs declared feature) without mock placeholders.",
+  "signature": "useUWB(): UWBState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether the UWB chip exists on this device."
+    },
+    {
+      "name": "isEnabled",
+      "type": "boolean",
+      "desc": "Whether the radio is switched on in system settings."
+    },
+    {
+      "name": "chipId",
+      "type": "string | null",
+      "desc": "Chip identifier the platform reports, \"default\" on this Pixel."
+    },
+    {
+      "name": "rangingApiSupported",
+      "type": "boolean",
+      "desc": "Whether the Android 16 RangingManager feature is declared. False on this unit."
+    },
+    {
+      "name": "isRanging",
+      "type": "boolean",
+      "desc": "Whether a ranging session is actively running."
+    },
+    {
+      "name": "sessionInfo",
+      "type": "UwbRangingResult | null",
+      "desc": "Hardware session diagnostics: status, serviceName, technology, and timestamp."
+    },
+    {
+      "name": "sessionError",
+      "type": "string | null",
+      "desc": "Error message if session creation or ranging fails."
+    },
+    {
+      "name": "activeTargets",
+      "type": "UWBSpatialTarget[]",
+      "desc": "Tracked responder anchors and devices with distance and angles."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "startRanging(sessionId?)",
+      "type": "(sessionId?: number) => Promise<boolean>",
+      "desc": "Initiates a hardware UWB ranging session through UwbManager and RangingManager.",
+      "inputs": [
+        {
+          "name": "sessionId",
+          "type": "number | undefined",
+          "desc": "Identifier for the session, default 1001. Use distinct ids for concurrent sessions."
+        }
+      ],
+      "output": "Resolves true when the session opened; false with the reason in sessionError when the service is missing or the hardware refused. Diagnostics land in sessionInfo either way."
+    },
+    {
+      "name": "stopRanging()",
+      "type": "() => void",
+      "desc": "Ends the active UWB ranging session. Safe to call when nothing is running.",
+      "output": "Returns nothing; isRanging becomes false."
+    }
+  ],
+  "example": "import { useUWB } from 'pixelkit';\n\nfunction Radar() {\n  const { isSupported, isRanging, sessionInfo, startRanging, stopRanging } = useUWB();\n  if (!isSupported) return <Text>No UWB radio</Text>;\n  return (\n    <View>\n      <Text>Session: {sessionInfo?.status ?? 'Inactive'}</Text>\n      <Button\n        title={isRanging ? 'Stop session' : 'Start hardware session'}\n        onPress={() => isRanging ? stopRanging() : startRanging(1001)}\n      />\n    </View>\n  );\n}",
+  "agentNote": "UWB chip status and sessions are backed by physical hardware. Note that this preview build declares android.hardware.uwb but not android.hardware.ranging."
+}

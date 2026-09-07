@@ -1,0 +1,58 @@
+{
+  "id": "useLocation",
+  "name": "useLocation",
+  "category": "radios",
+  "chipBadge": "Multi-band GNSS",
+  "summary": "Position, altitude, heading and speed from the satellite receiver.",
+  "plain": "Where the phone is, how accurate that is, which way it is pointing and how fast it is moving. Always check accuracy before trusting a fix, and check permission before assuming you will get one at all.",
+  "description": "Streams from expo-location using the high-accuracy provider, which on a Pixel uses the dual-band receiver. The accuracy value is the radius in metres that the platform believes the position lies within; indoors it can be tens of metres and should gate any decision made from the coordinates. Heading and speed are only meaningful while actually moving.",
+  "signature": "useLocation(): LocationTelemetry & { refreshLocation }",
+  "params": [],
+  "returns": [
+    {
+      "name": "latitude",
+      "type": "number",
+      "desc": "Decimal degrees north."
+    },
+    {
+      "name": "longitude",
+      "type": "number",
+      "desc": "Decimal degrees east."
+    },
+    {
+      "name": "altitude",
+      "type": "number | null",
+      "desc": "Metres above sea level, less reliable than the horizontal position."
+    },
+    {
+      "name": "accuracy",
+      "type": "number | null",
+      "desc": "Radius in metres the fix is confident within. Check this before trusting the position."
+    },
+    {
+      "name": "heading",
+      "type": "number | null",
+      "desc": "Direction of travel in degrees, meaningful only while moving."
+    },
+    {
+      "name": "speed",
+      "type": "number | null",
+      "desc": "Ground speed in metres per second."
+    },
+    {
+      "name": "hasPermission",
+      "type": "boolean",
+      "desc": "Whether fine location permission was granted."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refreshLocation()",
+      "type": "() => Promise<boolean>",
+      "desc": "Requests permission if needed and takes a fresh highest-accuracy fix.",
+      "output": "Resolves true when a fix arrived, false when permission was denied or the fix failed, with the reason in error. Coordinates never reach the log."
+    }
+  ],
+  "example": "import { useLocation } from 'pixelkit';\n\nfunction Position() {\n  const { latitude, longitude, accuracy, hasPermission } = useLocation();\n  if (!hasPermission) return <Text>Location permission needed</Text>;\n  return <Text>{latitude.toFixed(5)}, {longitude.toFixed(5)} ±{accuracy ?? '—'} m</Text>;\n}",
+  "agentNote": "Never present coordinates without their accuracy. Request permission in response to a user action, not on mount."
+}

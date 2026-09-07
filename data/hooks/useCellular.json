@@ -1,0 +1,79 @@
+{
+  "id": "useCellular",
+  "name": "useCellular",
+  "category": "system",
+  "chipBadge": "expo-cellular · modem",
+  "summary": "Carrier, radio generation and network codes from the modem.",
+  "plain": "Tells you whether the phone is on 5G or something slower, and which carrier is serving it. useNetwork can only say the connection is cellular; this says what kind, which is what you need before deciding to stream or download something large.",
+  "description": "Wraps expo-cellular. generation reflects the current data connection, so it changes as the phone moves and reads unknown when there is no cellular data attached, including on Wi-Fi. Carrier name and the mobile country and network codes need the phone-state permission on Android; without it they stay null rather than being guessed. The country and network codes together identify a carrier globally, which is more reliable than matching on the display name.",
+  "signature": "useCellular(): CellularState",
+  "params": [],
+  "returns": [
+    {
+      "name": "generation",
+      "type": "'unknown' | '2G' | '3G' | '4G' | '5G'",
+      "desc": "Radio generation of the current data connection."
+    },
+    {
+      "name": "is5G",
+      "type": "boolean",
+      "desc": "Convenience for generation === \"5G\"."
+    },
+    {
+      "name": "carrierName",
+      "type": "string | null",
+      "desc": "Carrier display name. Null without the phone-state permission."
+    },
+    {
+      "name": "isoCountryCode",
+      "type": "string | null",
+      "desc": "ISO country of the SIM."
+    },
+    {
+      "name": "mobileCountryCode",
+      "type": "string | null",
+      "desc": "First half of the global carrier identifier."
+    },
+    {
+      "name": "mobileNetworkCode",
+      "type": "string | null",
+      "desc": "Second half. Match on this pair rather than the display name."
+    },
+    {
+      "name": "allowsVoip",
+      "type": "boolean | null",
+      "desc": "Whether the carrier permits voice over IP. Null when undetermined."
+    },
+    {
+      "name": "permissionGranted",
+      "type": "boolean",
+      "desc": "Whether the phone-state permission was granted."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last read failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refresh()",
+      "type": "() => Promise<void>",
+      "desc": "Re-reads everything the platform answers without prompting.",
+      "output": "Resolves once generation, carrier and network codes have been updated. Values that need the phone-state permission stay null without it."
+    },
+    {
+      "name": "requestPermission()",
+      "type": "() => Promise<boolean>",
+      "desc": "Asks for the phone-state permission, which unlocks carrier name and network codes on Android.",
+      "output": "Resolves true when granted, and refreshes automatically. Generation is readable without it."
+    }
+  ],
+  "example": "import { useCellular, useNetwork } from 'pixelkit';\n\nfunction ShouldStream() {\n  const net = useNetwork();\n  const cell = useCellular();\n  if (!net.isConnected) return <Text>Offline</Text>;\n  if (net.isMetered && !cell.is5G) return <Text>On {cell.generation}, ask before streaming</Text>;\n  return <Text>Fine to stream</Text>;\n}",
+  "agentNote": "Pair with useNetwork().isMetered: generation tells you how fast, metered tells you who pays. Do not request phone state unless you actually need the carrier."
+}

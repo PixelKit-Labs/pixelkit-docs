@@ -1,0 +1,155 @@
+{
+  "id": "useSpeech",
+  "name": "useSpeech",
+  "category": "ai",
+  "chipBadge": "expo-speech · text to speech",
+  "summary": "Speaking text aloud with the voices the phone has installed.",
+  "plain": "Reads text out loud. This is the output half of voice: useSpeechAI listens, this one talks back. Which voices exist depends on what the user has downloaded in system settings, so check the list rather than assuming a language is available.",
+  "description": "Wraps expo-speech, which drives the platform speech service. speak resolves when the engine finishes, so utterances can be awaited in sequence rather than overlapping. Text longer than maxInputLength is rejected rather than silently truncated, because a cut-off sentence is worse than an error. The hook stops the engine on unmount so speech does not continue after the screen is gone.",
+  "signature": "useSpeech(): SpeechState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSpeaking",
+      "type": "boolean",
+      "desc": "Whether the engine is talking."
+    },
+    {
+      "name": "isPaused",
+      "type": "boolean",
+      "desc": "Whether speech is paused rather than stopped."
+    },
+    {
+      "name": "voices",
+      "type": "Voice[]",
+      "desc": "Installed voices, each with an identifier, name, language and quality."
+    },
+    {
+      "name": "voice",
+      "type": "string | null",
+      "desc": "Selected voice identifier, or null for the system default."
+    },
+    {
+      "name": "rate",
+      "type": "number",
+      "desc": "Speaking speed; 1 is normal."
+    },
+    {
+      "name": "pitch",
+      "type": "number",
+      "desc": "Voice pitch; 1 is normal."
+    },
+    {
+      "name": "maxInputLength",
+      "type": "number",
+      "desc": "Longest string the engine accepts in one call."
+    },
+    {
+      "name": "lastSpokenText",
+      "type": "string | null",
+      "desc": "Text of the most recent utterance."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last utterance failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "speak(text, options?)",
+      "type": "(text: string, options?: SpeakOptions) => Promise<void>",
+      "desc": "Speaks the text on the platform engine. Await it to sequence utterances instead of overlapping them.",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "What to say. Trimmed first; blank resolves immediately. Longer than maxInputLength is rejected, not truncated."
+        },
+        {
+          "name": "options.language",
+          "type": "string | undefined",
+          "desc": "BCP-47 tag such as en-GB. Defaults to the system language."
+        },
+        {
+          "name": "options.voice",
+          "type": "string | undefined",
+          "desc": "Identifier from voices; overrides language when both are given."
+        },
+        {
+          "name": "options.rate",
+          "type": "number | undefined",
+          "desc": "Speaking speed; 1 is normal. Falls back to the hook rate."
+        },
+        {
+          "name": "options.pitch",
+          "type": "number | undefined",
+          "desc": "Voice pitch; 1 is normal. Falls back to the hook pitch."
+        },
+        {
+          "name": "options.volume",
+          "type": "number | undefined",
+          "desc": "0 to 1 for this utterance."
+        }
+      ],
+      "output": "Resolves when the engine finishes or is stopped. Rejects when the text is too long or the engine errors, with the message also in error."
+    },
+    {
+      "name": "stop()",
+      "type": "() => Promise<void>",
+      "desc": "Stops speaking immediately and discards the queue.",
+      "output": "Resolves once stopped; isSpeaking and isPaused become false. Any pending speak promise resolves rather than rejecting."
+    },
+    {
+      "name": "pause() / resume()",
+      "type": "() => Promise<void>",
+      "desc": "Suspends and continues an utterance. Not supported by every engine.",
+      "output": "Resolves once applied; where the engine does not support it, error explains that and isPaused is unchanged."
+    },
+    {
+      "name": "checkSpeaking()",
+      "type": "() => Promise<boolean>",
+      "desc": "Asks the engine directly rather than trusting the local flag.",
+      "output": "Resolves with the engine answer, which is also written to isSpeaking. False when the engine cannot be reached."
+    },
+    {
+      "name": "refreshVoices()",
+      "type": "() => Promise<Voice[]>",
+      "desc": "Re-reads installed voices, which changes when the user downloads one in system settings.",
+      "output": "Resolves with the list, also written to voices. Empty array on failure, with the reason in error."
+    },
+    {
+      "name": "voicesForLanguage(languageTag)",
+      "type": "(languageTag: string) => Voice[]",
+      "desc": "Filters the installed voices to one language, so you can offer a real choice.",
+      "inputs": [
+        {
+          "name": "languageTag",
+          "type": "string",
+          "desc": "A prefix such as 'en' or a full tag such as 'en-GB'. Matched case-insensitively."
+        }
+      ],
+      "output": "Returns the matching voices; empty when none are installed for that language."
+    },
+    {
+      "name": "setVoice(id) / setRate(n) / setPitch(n)",
+      "type": "(value: string | null | number) => void",
+      "desc": "Defaults applied to later calls to speak, unless that call overrides them.",
+      "inputs": [
+        {
+          "name": "value",
+          "type": "string | null | number",
+          "desc": "A voice identifier from voices, or null for the system default; for rate and pitch, 1 is normal."
+        }
+      ],
+      "output": "Returns nothing; voice, rate and pitch update."
+    }
+  ],
+  "example": "import { useSpeech, useGeminiNano } from 'pixelkit';\n\nfunction TalkBack() {\n  const speech = useSpeech();\n  const nano = useGeminiNano();\n\n  const answer = async () => {\n    const reply = await nano.generate('Describe the thermal state in one sentence.');\n    await speech.speak(reply.text, { rate: 0.95 });\n  };\n  return <Button title=\"Ask and speak\" onPress={answer} />;\n}",
+  "agentNote": "Await speak rather than firing several in a row, or they queue unpredictably. Check voices before promising a language; coverage depends on what the user installed."
+}

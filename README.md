@@ -1,40 +1,45 @@
 # pixelkit-docs
 
-The documentation site for [PixelKit](https://github.com/PixelKit-Labs/pixelkit-sdk), built with
-[Astro Starlight](https://starlight.astro.build/).
+The documentation for [PixelKit](https://github.com/PixelKit-Labs/pixelkit-sdk), and the site that
+renders it. Built with [Astro Starlight](https://starlight.astro.build/).
 
-## The markdown does not live here
+## This is the source of truth
 
-It lives in `docs/` in the SDK repository, and that is deliberate. PixelKit's rule 2 requires a hook
-change and its documentation to land in the same commit; if the prose lived in this repo that would
-be impossible, and the docs would drift from the code within a week.
+The prose in `docs/` and the structured hook definitions in `data/hooks/` are the contract, and the
+SDK is checked against them rather than the other way round. `pixelkit-sdk` runs `npm run check-docs`
+in CI, which clones this repository and fails the build if:
 
-This repo renders. `scripts/sync-docs.mjs` shallow-clones the SDK repo before every build and copies
-its `docs/` into a gitignored directory that Starlight reads. The only thing it changes is adding a
-`title` to each page's frontmatter, taken from the file's own first heading.
+- a hook it exports has no entry here,
+- an entry describes a hook it no longer exports, or
+- an entry documents a returned field that is not on the hook's declared type.
+
+So a page going stale is not a documentation problem someone notices months later. It is a red build
+on the SDK, naming the hook and the field.
+
+`data/hooks/*.json` is one file per hook: summary, description, signature, every parameter, every
+returned field with its real type, and a contract for each function it exposes — what the arguments
+do, what the call resolves to, and what failure looks like.
 
 ## Running it
 
 ```bash
 npm install
-npm run dev        # clones the SDK repo for its docs, then serves
+npm run dev
 ```
 
-Working on documentation at the same time? Point it at your local checkout instead, and it will
-pick up uncommitted changes:
+`scripts/sync-docs.mjs` copies `docs/` into `src/content/docs/`, which is gitignored and rebuilt
+every time, injecting the `title` frontmatter Starlight needs from each file's own first heading.
+Nothing else about the prose is changed.
 
-```bash
-PIXELKIT_DOCS=../pixelkit-sdk/docs npm run dev
-```
+The landing page at `src/pages/index.astro` sits outside that pipeline and is hand-written.
 
-| Variable | Effect |
-| :--- | :--- |
-| `PIXELKIT_DOCS` | Path to a local `docs/` directory. Skips cloning entirely. |
-| `PIXELKIT_SDK_REPO` | Clone a different SDK repository. Defaults to `PixelKit-Labs/pixelkit-sdk`. |
+The sidebar is derived from the directories present under `docs/`, so a new page appears without
+touching config, and a removed directory takes its section with it.
 
-## Editing the docs
+## Editing
 
-Open a pull request against [PixelKit-Labs/pixelkit-sdk](https://github.com/PixelKit-Labs/pixelkit-sdk),
-not this repository. Changes here only affect how pages are rendered — navigation, theme, layout.
+Prose lives in `docs/`. A hook's contract lives in `data/hooks/<hookName>.json`. Change either here
+and open a pull request — the SDK's next CI run will tell you if the contract no longer matches the
+code.
 
 MIT.

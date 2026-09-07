@@ -1,0 +1,73 @@
+{
+  "id": "useTPU",
+  "name": "useTPU",
+  "category": "silicon",
+  "chipBadge": "AICore · Gemini Nano host",
+  "summary": "Whether the on-device AI stack is installed and usable.",
+  "plain": "Answers one question: can this phone run AI locally? It checks that the system services which host on-device models are present, and reports their versions. It does not run inference itself.",
+  "description": "The Tensor TPU is only reachable through AICore (Gemini Nano, via ML Kit) or LiteRT, so this hook reports what is verifiably installed rather than guessing at hardware. AICore and Private Compute Services versions come from PackageManager, which needs a <queries> entry to see them at all. Inference timings deliberately stay null here; real measured latency lives in useGeminiNano. benchmarkTPU runs a genuine matrix multiplication on the JS thread and is labelled CPU fallback, because that is what it is.",
+  "signature": "useTPU(): TPUState",
+  "params": [],
+  "returns": [
+    {
+      "name": "aicoreInstalled",
+      "type": "boolean",
+      "desc": "Whether AICore, the system service that hosts Gemini Nano, is present."
+    },
+    {
+      "name": "aicoreVersion",
+      "type": "string | null",
+      "desc": "Installed AICore build. Useful when a model feature depends on a minimum version."
+    },
+    {
+      "name": "privateComputeServicesVersion",
+      "type": "string | null",
+      "desc": "Version of the service that delivers model weights privately."
+    },
+    {
+      "name": "hasNpuFeature",
+      "type": "boolean | null",
+      "desc": "Whether the device declares a neural processing unit feature. False on this Pixel, which does not declare it."
+    },
+    {
+      "name": "activeDelegate",
+      "type": "'Tensor TPU' | 'NPU' | 'GPU' | 'CPU Fallback'",
+      "desc": "What last executed work from this hook. Only ever CPU fallback, because the benchmark is JS."
+    },
+    {
+      "name": "isHardwareAccelerated",
+      "type": "boolean",
+      "desc": "Always false here. This hook runs nothing on the TPU."
+    },
+    {
+      "name": "lastInferenceLatencyMs",
+      "type": "number | null",
+      "desc": "Always null by design. Use useGeminiNano for real on-device latency."
+    },
+    {
+      "name": "cpuFallbackLatencyMs",
+      "type": "number | null",
+      "desc": "Duration of the last JS matrix multiplication, in milliseconds."
+    },
+    {
+      "name": "isBenchmarking",
+      "type": "boolean",
+      "desc": "True while the fallback benchmark runs."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "benchmarkTPU()",
+      "type": "() => Promise<TPUAcceleration>",
+      "desc": "Runs a 256x256 float matrix multiply in JavaScript and reports it explicitly as a CPU fallback. No part of it touches the TPU.",
+      "output": "Resolves with { activeDelegate: \"CPU Fallback\", isHardwareAccelerated: false, lastInferenceLatencyMs, throughputTokensPerSec: null, memoryFootprintMB: null }. Label it as a CPU number wherever you show it."
+    }
+  ],
+  "example": "import { useTPU } from 'pixelkit';\n\nfunction AIStack() {\n  const { aicoreInstalled, aicoreVersion, cpuFallbackLatencyMs, benchmarkTPU } = useTPU();\n  return (\n    <View>\n      <Text>AICore: {aicoreInstalled ? aicoreVersion : 'not installed'}</Text>\n      <Text>CPU matmul: {cpuFallbackLatencyMs ?? '—'} ms</Text>\n      <Button title=\"Run CPU fallback benchmark\" onPress={() => benchmarkTPU()} />\n    </View>\n  );\n}",
+  "agentNote": "Check aicoreInstalled before offering on-device AI. Never present cpuFallbackLatencyMs as TPU performance; it is a JavaScript number."
+}

@@ -1,0 +1,219 @@
+{
+  "id": "useVideo",
+  "name": "useVideo",
+  "category": "system",
+  "chipBadge": "expo-video · playback",
+  "summary": "Playing video back, with position, seeking and thumbnails.",
+  "plain": "Plays a video file or stream. The natural partner to the camera: record a clip, hand the file to load(), and play it. It tracks position and duration so you can draw a scrubber, and can pull out frames as images for a poster or filmstrip.",
+  "description": "Wraps expo-video, the SDK 57 replacement for the removed expo-av. The hook owns the player and a screen renders VideoView with it. Position, duration, buffered position and status are polled four times a second, which is enough for a scrubber without waking the JS thread every frame. Everything reported comes from the player rather than being tracked locally, so a seek made elsewhere still shows up.",
+  "signature": "useVideo(initialSource?: VideoSource): VideoState",
+  "params": [
+    {
+      "name": "initialSource",
+      "type": "VideoSource",
+      "desc": "Optional file URI, remote URL or bundled asset to load on mount. Defaults to null."
+    }
+  ],
+  "returns": [
+    {
+      "name": "player",
+      "type": "VideoPlayer",
+      "desc": "Pass to <VideoView player={player} />. The view renders nothing without it."
+    },
+    {
+      "name": "hasSource",
+      "type": "boolean",
+      "desc": "Whether a source has been loaded."
+    },
+    {
+      "name": "isPlaying",
+      "type": "boolean",
+      "desc": "Whether playback is running."
+    },
+    {
+      "name": "positionSeconds",
+      "type": "number",
+      "desc": "Seconds into the clip. Drives a scrubber."
+    },
+    {
+      "name": "durationSeconds",
+      "type": "number",
+      "desc": "Total length. 0 until the source reports it."
+    },
+    {
+      "name": "bufferedSeconds",
+      "type": "number",
+      "desc": "How far ahead the player has buffered, which matters for a remote source."
+    },
+    {
+      "name": "status",
+      "type": "string",
+      "desc": "Player status, for example loading, readyToPlay or error."
+    },
+    {
+      "name": "isMuted",
+      "type": "boolean",
+      "desc": "Whether audio is muted."
+    },
+    {
+      "name": "isLooping",
+      "type": "boolean",
+      "desc": "Whether the clip restarts at the end."
+    },
+    {
+      "name": "playbackRate",
+      "type": "number",
+      "desc": "Speed multiplier; 1 is normal. Pitch is preserved."
+    },
+    {
+      "name": "volume",
+      "type": "number",
+      "desc": "Player volume from 0 to 1."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last operation failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "load(source, options?)",
+      "type": "(next: VideoSource, options?: { autoplay?: boolean; loop?: boolean; muted?: boolean }) => Promise<boolean>",
+      "desc": "Swaps the player source, for example the clip useCamera just recorded.",
+      "inputs": [
+        {
+          "name": "next",
+          "type": "VideoSource",
+          "desc": "A file URI, a remote URL, a required asset, or null to clear."
+        },
+        {
+          "name": "options.autoplay",
+          "type": "boolean | undefined",
+          "desc": "Start playing as soon as the source is ready."
+        },
+        {
+          "name": "options.loop",
+          "type": "boolean | undefined",
+          "desc": "Restart from the beginning at the end."
+        },
+        {
+          "name": "options.muted",
+          "type": "boolean | undefined",
+          "desc": "Start muted."
+        }
+      ],
+      "output": "Resolves true when the source was replaced, false with the reason in error otherwise."
+    },
+    {
+      "name": "play() / pause() / togglePlay()",
+      "type": "() => void",
+      "desc": "Transport controls for the player this hook owns.",
+      "output": "Returns nothing; isPlaying updates on the next poll or immediately, and error is set when the player refused."
+    },
+    {
+      "name": "seekTo(seconds)",
+      "type": "(seconds: number) => void",
+      "desc": "Jumps to an absolute position.",
+      "inputs": [
+        {
+          "name": "seconds",
+          "type": "number",
+          "desc": "Position in seconds, clamped to 0 and the clip duration."
+        }
+      ],
+      "output": "Returns nothing; positionSeconds updates immediately."
+    },
+    {
+      "name": "seekBy(seconds)",
+      "type": "(seconds: number) => void",
+      "desc": "Moves relative to the current position.",
+      "inputs": [
+        {
+          "name": "seconds",
+          "type": "number",
+          "desc": "Offset in seconds; negative rewinds."
+        }
+      ],
+      "output": "Returns nothing; on failure error is set."
+    },
+    {
+      "name": "replay()",
+      "type": "() => void",
+      "desc": "Restarts from the beginning and plays.",
+      "output": "Returns nothing; positionSeconds returns to 0."
+    },
+    {
+      "name": "setMuted(muted) / setLoop(loop)",
+      "type": "(value: boolean) => void",
+      "desc": "Toggles mute and looping.",
+      "inputs": [
+        {
+          "name": "value",
+          "type": "boolean",
+          "desc": "True mutes, or makes the clip restart at the end."
+        }
+      ],
+      "output": "Returns nothing; isMuted and isLooping reflect it. Muting does not change volume."
+    },
+    {
+      "name": "setPlaybackRate(rate)",
+      "type": "(rate: number) => void",
+      "desc": "Sets playback speed with pitch preserved.",
+      "inputs": [
+        {
+          "name": "rate",
+          "type": "number",
+          "desc": "Clamped between 0.25 and 4; 1 is normal speed."
+        }
+      ],
+      "output": "Returns nothing; playbackRate reflects the clamped value."
+    },
+    {
+      "name": "setVolume(value)",
+      "type": "(value: number) => void",
+      "desc": "Sets player volume, independently of mute.",
+      "inputs": [
+        {
+          "name": "value",
+          "type": "number",
+          "desc": "0 to 1; values outside are clamped."
+        }
+      ],
+      "output": "Returns nothing; volume updates."
+    },
+    {
+      "name": "setKeepScreenOn(keep)",
+      "type": "(keep: boolean) => void",
+      "desc": "Stops the screen dimming mid-clip.",
+      "inputs": [
+        {
+          "name": "keep",
+          "type": "boolean",
+          "desc": "True while a video is playing; release it afterwards."
+        }
+      ],
+      "output": "Returns nothing."
+    },
+    {
+      "name": "generateThumbnails(times)",
+      "type": "(times: number | number[]) => Promise<VideoThumbnail[]>",
+      "desc": "Extracts frames as images, for a filmstrip or a poster.",
+      "inputs": [
+        {
+          "name": "times",
+          "type": "number | number[]",
+          "desc": "One position in seconds, or several."
+        }
+      ],
+      "output": "Resolves with the extracted frames, or an empty array on failure with the reason in error."
+    }
+  ],
+  "example": "import { VideoView } from 'expo-video';\nimport { useCamera, useVideo } from 'pixelkit';\n\nfunction Playback() {\n  const cam = useCamera();\n  const video = useVideo();\n\n  return (\n    <View>\n      <VideoView player={video.player} style={{ height: 220 }} />\n      <Button\n        title=\"Play last recording\"\n        disabled={!cam.lastVideoUri}\n        onPress={() => cam.lastVideoUri && video.load(cam.lastVideoUri, { autoplay: true })}\n      />\n      <Text>{video.positionSeconds} / {video.durationSeconds} s</Text>\n    </View>\n  );\n}",
+  "agentNote": "The view needs the player object; passing a URI to VideoView does nothing. Turn keepScreenOn off when playback ends or the screen stays lit."
+}

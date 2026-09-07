@@ -67,6 +67,7 @@ export default defineConfig({
       title: 'PixelKit',
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/PixelKit-Labs/pixelkit' }],
       sidebar: buildSidebar(),
+      customCss: ['./src/styles/pixelkit.css'],
     }),
   ],
 });

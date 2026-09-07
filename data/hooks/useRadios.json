@@ -1,0 +1,53 @@
+{
+  "id": "useRadios",
+  "name": "useRadios",
+  "category": "radios",
+  "chipBadge": "Unified radio telemetry",
+  "summary": "Every radio subsystem in one read.",
+  "plain": "A single snapshot of all the wireless hardware: NFC, Bluetooth, ultra-wideband, Wi-Fi precise ranging and satellite messaging. Use this for a status overview instead of calling four separate hooks.",
+  "description": "One native call gathers state from NfcAdapter, BluetoothManager, UwbManager, WifiRttManager and PackageManager, refreshed every five seconds. Everything here is read from the platform, so the whole object carries source hardware. It overlaps with useNFC, useBLE and useUWB on purpose: those add per-radio actions, this one is purely for reading state.",
+  "signature": "useRadios(): RadioTelemetry",
+  "params": [],
+  "returns": [
+    {
+      "name": "nfc",
+      "type": "{ supported, enabled, observeModeSupported, antennaState }",
+      "desc": "NFC controller state."
+    },
+    {
+      "name": "bluetooth",
+      "type": "{ supported, bleSupported, enabled, state, channelSounding, bondedDevices }",
+      "desc": "Adapter state plus paired devices and Channel Sounding support."
+    },
+    {
+      "name": "uwb",
+      "type": "{ supported, enabled, chipId, rangingApiSupported }",
+      "desc": "Ultra-wideband chip state."
+    },
+    {
+      "name": "wifiRtt",
+      "type": "{ supported, available }",
+      "desc": "Wi-Fi round-trip-time ranging, used for indoor positioning."
+    },
+    {
+      "name": "satellite",
+      "type": "{ supported }",
+      "desc": "Whether satellite messaging is available on this device."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refresh()",
+      "type": "() => void",
+      "desc": "Forces an immediate re-read instead of waiting for the next five-second poll.",
+      "output": "Returns nothing; the nfc, bluetooth, uwb, wifiRtt and satellite blocks update. Call it after sending the user to Settings."
+    }
+  ],
+  "example": "import { useRadios } from 'pixelkit';\n\nfunction RadioPanel() {\n  const radios = useRadios();\n  return <Text>NFC {radios.nfc.enabled ? 'on' : 'off'} · UWB {radios.uwb.enabled ? 'on' : 'off'}</Text>;\n}",
+  "agentNote": "Use this for a status overview and the individual hooks when you need to act. All fields here are real platform reads."
+}

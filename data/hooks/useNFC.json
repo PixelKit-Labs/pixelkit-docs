@@ -1,0 +1,103 @@
+{
+  "id": "useNFC",
+  "name": "useNFC",
+  "category": "radios",
+  "chipBadge": "NfcAdapter reader mode · NDEF",
+  "summary": "Reading and writing real NFC tags through reader mode.",
+  "plain": "Reads tags you touch to the back of the phone and can write text to them. Start the reader, hold a tag against the upper third of the phone, and the tag arrives with its identifier, capacity and decoded contents. Writing works the same way: queue the text, then present the tag.",
+  "description": "Enables NfcAdapter reader mode on the foreground Activity through the native module. Every tag entering the field raises an event carrying its identifier, supported technologies, NDEF capacity, writability and decoded records; text records have their language prefix stripped and URI records are resolved. Two platform constraints are surfaced rather than hidden: reader mode is bound to the Activity, so it stops when the app is backgrounded and must be started again on resume; and a tag is only readable while physically in the field, so a read either happens in that window or reports why it did not.",
+  "signature": "useNFC(): NFCState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether this device has an NFC radio."
+    },
+    {
+      "name": "isEnabled",
+      "type": "boolean",
+      "desc": "Whether NFC is switched on in system settings."
+    },
+    {
+      "name": "observeModeSupported",
+      "type": "boolean",
+      "desc": "Whether Android 15 Observe Mode is available, which lets an app watch reader field activity."
+    },
+    {
+      "name": "antennaState",
+      "type": "'ENABLED' | 'DISABLED' | 'UNAVAILABLE'",
+      "desc": "Current antenna state."
+    },
+    {
+      "name": "isReading",
+      "type": "boolean",
+      "desc": "Whether reader mode is running. Stops when the app leaves the foreground."
+    },
+    {
+      "name": "lastScannedTag",
+      "type": "ScannedTag | null",
+      "desc": "The last physical tag read: id, technologies, capacity, writability and decoded NDEF records."
+    },
+    {
+      "name": "tagCount",
+      "type": "number",
+      "desc": "How many tags have been read this session."
+    },
+    {
+      "name": "pendingWrite",
+      "type": "string | null",
+      "desc": "Text waiting to be written to the next tag presented."
+    },
+    {
+      "name": "lastWriteOk",
+      "type": "boolean | null",
+      "desc": "Whether the last queued write succeeded. Null before any attempt."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last operation failed, for example a read-only tag or one too small for the message."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "startReader()",
+      "type": "() => Promise<boolean>",
+      "desc": "Enables NFC reader mode on the foreground Activity.",
+      "output": "Resolves true when reader mode started; false with the reason in error when the device has no radio, NFC is switched off, or the build has no reader. Tags then arrive in lastScannedTag."
+    },
+    {
+      "name": "stopReader()",
+      "type": "() => Promise<void>",
+      "desc": "Disables reader mode and releases the Activity binding.",
+      "output": "Resolves once released; isReading becomes false and any pending write is dropped."
+    },
+    {
+      "name": "writeText(text)",
+      "type": "(text: string) => Promise<boolean>",
+      "desc": "Queues a text record for the next tag presented. The reader must already be running.",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "The NDEF text record to write."
+        }
+      ],
+      "output": "Resolves true when the write was queued, not when it completed; the outcome arrives later in lastWriteOk. False with the reason in error when it could not be queued."
+    },
+    {
+      "name": "clearTag()",
+      "type": "() => void",
+      "desc": "Clears the last read from state, for a \"scan another\" control.",
+      "output": "Returns nothing; lastScannedTag and lastWriteOk become null."
+    }
+  ],
+  "example": "import { useNFC } from 'pixelkit';\n\nfunction TagReader() {\n  const nfc = useNFC();\n  if (!nfc.isSupported) return <Text>No NFC radio</Text>;\n  if (!nfc.isEnabled) return <Text>Turn NFC on in settings</Text>;\n  return (\n    <View>\n      <Button\n        title={nfc.isReading ? 'Stop reader' : 'Start reader'}\n        onPress={() => nfc.isReading ? nfc.stopReader() : nfc.startReader()}\n      />\n      <Button title=\"Write a tag\" onPress={() => nfc.writeText('hello from PixelKit')} />\n      {nfc.lastScannedTag && (\n        <Text>\n          {nfc.lastScannedTag.id} · {nfc.lastScannedTag.records.length} records · {nfc.lastScannedTag.payload}\n        </Text>\n      )}\n    </View>\n  );\n}",
+  "agentNote": "Reader mode needs a foreground Activity, so restart it on resume rather than assuming it survived. Writing needs the reader running first, and the result arrives with the next tag event as lastWriteOk."
+}

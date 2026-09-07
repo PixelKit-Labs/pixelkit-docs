@@ -1,0 +1,48 @@
+{
+  "id": "useNetwork",
+  "name": "useNetwork",
+  "category": "system",
+  "chipBadge": "expo-network",
+  "summary": "Connection type, address and whether traffic actually goes anywhere.",
+  "plain": "Whether the phone is online, how it is connected, and whether that connection costs money. Check isConnected before any network call, and isMetered before a large download.",
+  "description": "Reads from expo-network: interface type, IP address, reachability and airplane mode. Being connected to Wi-Fi is not the same as having internet, which is why isConnected reflects a usable route rather than merely an attached interface. isMetered marks connections where the user pays per byte, typically cellular or a hotspot.",
+  "signature": "useNetwork(): NetworkTelemetry & { refreshNetwork }",
+  "params": [],
+  "returns": [
+    {
+      "name": "networkType",
+      "type": "string",
+      "desc": "WIFI, CELLULAR, NONE or UNKNOWN."
+    },
+    {
+      "name": "ipAddress",
+      "type": "string | null",
+      "desc": "Address on the current interface."
+    },
+    {
+      "name": "isConnected",
+      "type": "boolean",
+      "desc": "Whether a usable internet route exists, not merely an attached interface."
+    },
+    {
+      "name": "isMetered",
+      "type": "boolean",
+      "desc": "Whether the user pays for this traffic. Gate large transfers on it."
+    },
+    {
+      "name": "isAirplaneMode",
+      "type": "boolean",
+      "desc": "Whether airplane mode is on."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refreshNetwork()",
+      "type": "() => Promise<void>",
+      "desc": "Re-runs the connectivity check immediately, for example when the app returns to the foreground.",
+      "output": "Resolves once the read completes. Each sub-read fails independently, so one missing value does not blank the rest."
+    }
+  ],
+  "example": "import { useNetwork } from 'pixelkit';\n\nasync function upload(net) {\n  if (!net.isConnected) return 'offline';\n  if (net.isMetered) return 'ask the user before using mobile data';\n  // ... proceed\n}",
+  "agentNote": "Check isConnected before every network call and isMetered before anything large. Never assume Wi-Fi means free or fast."
+}

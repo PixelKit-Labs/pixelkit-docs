@@ -1,0 +1,76 @@
+{
+  "id": "useGPU",
+  "name": "useGPU",
+  "category": "silicon",
+  "chipBadge": "PowerVR CXTP-48-1536 · Vulkan 1.4",
+  "summary": "Which GPU this is, and whether your frames are arriving on time.",
+  "plain": "Identifies the graphics chip and measures how smoothly the interface is drawing. If animations feel rough, this tells you whether frames are actually being missed and by how much.",
+  "description": "The renderer, vendor and OpenGL version are read through a real offscreen EGL context; the Vulkan version comes from the android.hardware.vulkan.version system feature. Frame timing is measured on the UI thread with Choreographer in one-second windows: average and worst frame interval, frames presented per second, and a jank count for frames that took more than 1.5x the expected interval. Android does not expose GPU memory usage to apps, so that field is always null rather than estimated.",
+  "signature": "useGPU(): GPUState",
+  "params": [],
+  "returns": [
+    {
+      "name": "gpuRenderer",
+      "type": "string | null",
+      "desc": "GPU name from the driver. Null until the EGL context has been created."
+    },
+    {
+      "name": "gpuVendor",
+      "type": "string | null",
+      "desc": "Driver vendor string."
+    },
+    {
+      "name": "graphicsApi",
+      "type": "string | null",
+      "desc": "OpenGL ES version and, where present, the Vulkan version."
+    },
+    {
+      "name": "frameRenderTimeMs",
+      "type": "number | null",
+      "desc": "Average gap between presented frames over the last second. Compare against targetBudgetMs."
+    },
+    {
+      "name": "maxFrameMs",
+      "type": "number | null",
+      "desc": "Worst single frame in that window, which is what a user actually perceives as a stutter."
+    },
+    {
+      "name": "measuredFps",
+      "type": "number | null",
+      "desc": "Frames actually presented per second, not the display mode."
+    },
+    {
+      "name": "droppedFrameCount",
+      "type": "number",
+      "desc": "Running total of janky frames since the hook mounted."
+    },
+    {
+      "name": "jankFramesLastSecond",
+      "type": "number",
+      "desc": "Janky frames in the most recent window only."
+    },
+    {
+      "name": "targetBudgetMs",
+      "type": "number",
+      "desc": "Time available per frame at the current refresh rate: 8.33 ms at 120 Hz, 16.67 ms at 60 Hz."
+    },
+    {
+      "name": "isStuttering",
+      "type": "boolean",
+      "desc": "True when the average frame is running more than 1.5x over budget."
+    },
+    {
+      "name": "gpuMemoryUsageMB",
+      "type": "null",
+      "desc": "Always null. Android does not expose this to apps."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [],
+  "example": "import { useGPU } from 'pixelkit';\n\nfunction GPUHUD() {\n  const { measuredFps, frameRenderTimeMs, targetBudgetMs, isStuttering } = useGPU();\n  return (\n    <Text style={{ color: isStuttering ? '#F25C55' : '#46D786' }}>\n      {measuredFps ?? '—'} FPS · {frameRenderTimeMs ?? '—'} / {targetBudgetMs} ms\n    </Text>\n  );\n}",
+  "agentNote": "Check isStuttering before adding animation work. Frame timing measures the UI thread, so heavy JS shows up here even when the GPU is idle."
+}

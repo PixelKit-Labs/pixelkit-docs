@@ -1,0 +1,81 @@
+{
+  "id": "useCapabilities",
+  "name": "useCapabilities",
+  "category": "system",
+  "chipBadge": "PackageManager verified",
+  "summary": "What this particular phone actually has.",
+  "plain": "The first hook to call. It answers \"does this device have that?\" so your interface can hide features the phone does not support, instead of showing a control that will fail.",
+  "description": "Resolution starts from a model table keyed on the device name, then upgrades to real PackageManager feature checks when the native module is present, at which point verification changes from model-table to device. Fields that can only be answered by the device are null until that upgrade happens. Note two results on this Pixel that are easy to assume wrongly: it does not declare a neural processing unit feature, and it does not declare the ranging feature.",
+  "signature": "useCapabilities(): DeviceCapabilities",
+  "params": [],
+  "returns": [
+    {
+      "name": "modelName",
+      "type": "string",
+      "desc": "Marketing model name, for example \"Pixel 11 Pro\"."
+    },
+    {
+      "name": "isPixel / isProModel / isFoldable",
+      "type": "boolean",
+      "desc": "Device family flags used to gate Pro-only features."
+    },
+    {
+      "name": "pixelGeneration",
+      "type": "number | null",
+      "desc": "Generation number, 11 here. Null on non-Pixel hardware."
+    },
+    {
+      "name": "androidApiLevel",
+      "type": "number | null",
+      "desc": "API level, 37 for Android 17. Null on web."
+    },
+    {
+      "name": "verification",
+      "type": "'device' | 'model-table'",
+      "desc": "Whether flags were confirmed against the device or inferred from the model name. Prefer acting on device."
+    },
+    {
+      "name": "hasHiLight",
+      "type": "boolean",
+      "desc": "Whether the LED array is present."
+    },
+    {
+      "name": "hasUWB",
+      "type": "boolean",
+      "desc": "Whether an ultra-wideband radio is present."
+    },
+    {
+      "name": "hasNFC / hasBleChannelSounding / hasWifiRtt / hasSatelliteTelephony",
+      "type": "boolean | null",
+      "desc": "Radio features confirmed from PackageManager. Null before device verification."
+    },
+    {
+      "name": "hasStrongBox",
+      "type": "boolean | null",
+      "desc": "Whether keys can be held in the dedicated secure element."
+    },
+    {
+      "name": "hasNpuFeature",
+      "type": "boolean | null",
+      "desc": "Whether a neural processing unit feature is declared. False on this device."
+    },
+    {
+      "name": "geminiNanoTier",
+      "type": "'nano-v4' | 'nano-v3' | 'nano-v2' | 'none'",
+      "desc": "Which on-device model generation to expect."
+    },
+    {
+      "name": "aicoreVersion",
+      "type": "string | null",
+      "desc": "Installed AICore build when the native module can read it."
+    },
+    {
+      "name": "supportsRangingApi / supportsHapticEnvelopes / supportsAppFunctions / supportsAndroid17Apis",
+      "type": "boolean",
+      "desc": "Platform API availability gates."
+    }
+  ],
+  "actions": [],
+  "example": "import { useCapabilities } from 'pixelkit';\n\nfunction ProFeatures() {\n  const caps = useCapabilities();\n  return (\n    <View>\n      <Text>{caps.modelName} · API {caps.androidApiLevel} · {caps.verification}</Text>\n      {caps.hasHiLight && <HiLightCard />}\n      {caps.hasUWB && <UWBCard />}\n    </View>\n  );\n}",
+  "agentNote": "Never hardcode a device assumption; read this first. Treat null as unknown rather than false, and prefer acting once verification is device."
+}

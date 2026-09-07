@@ -1,0 +1,111 @@
+---
+/**
+ * The site's homepage.
+ *
+ * This is a "custom page" in Starlight's sense: a file under `src/pages/` rendered with the
+ * `<StarlightPage>` component, rather than a page in the `docs` content collection. Astro's
+ * file-based routing gives files in `src/pages/` priority over Starlight's own collection-driven
+ * routes, so this file owns "/" outright — `scripts/sync-docs.mjs` writes its synced copy of the
+ * SDK's README to `readme.md`, not `index.md`, specifically so the two never contend for the same
+ * route. See that script's comment on `TOP_LEVEL_FILE_ROUTES` for the full reasoning.
+ *
+ * Content below is hand-written for this site; it is not sourced from `docs/` and is not touched by
+ * the sync script.
+ */
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { CardGrid, LinkCard, Aside, Code } from '@astrojs/starlight/components';
+
+const provenanceExample = `import { useCPU } from 'pixelkit';
+
+const { cpuLoadPercent, source } = useCPU();
+
+// source: 'hardware' | 'derived' | 'unavailable' — never 'simulated'.
+// cpuLoadPercent is null when cpufreq sysfs can't be read, not a guess.
+return <Text>{cpuLoadPercent ?? '—'}%</Text>;`;
+
+const installExample = `npx expo install pixelkit @pixelkit/native
+
+# optional, separate: on-device Gemini Nano (+19 ML Kit artifacts)
+npx expo install @pixelkit/mlkit`;
+
+const importExample = `import { useCPU } from 'pixelkit';
+import { useGeminiNano } from 'pixelkit/mlkit';`;
+---
+
+<StarlightPage
+	frontmatter={{
+		title: 'PixelKit',
+		description:
+			'Typed React hooks for real Google Pixel hardware and on-device AI, each one telling you whether its value is real.',
+		template: 'splash',
+		hero: {
+			title: 'Real hardware. No pretending.',
+			tagline:
+				'32 typed React hooks for the Google Pixel: per-core CPU frequencies, battery temperature, camera, radios, biometrics, the hardware keystore, and Gemini Nano on-device.',
+			actions: [
+				{ text: 'Get started', link: '/getting-started/quickstart/', variant: 'primary', icon: 'right-arrow' },
+				{ text: 'API reference', link: '/api/hardware-api/', variant: 'secondary' },
+			],
+		},
+	}}
+>
+	<div class="sl-markdown-content">
+		<h2>Every value says where it came from</h2>
+		<p>
+			Every hook returns a <code>source</code> field typed as
+			<code>'hardware' | 'derived' | 'unavailable'</code>. There is no <code>'simulated'</code> member —
+			the type makes a fabricated reading unrepresentable. When a value can't be read, it is
+			<code>null</code>, it renders as an em dash, and <code>source</code> says
+			<code>'unavailable'</code>, so the caller can tell the difference and the UI can refuse
+			rather than show a plausible-looking number that isn't real.
+		</p>
+
+		<Code code={provenanceExample} lang="tsx" title="any component" />
+
+		<h2>Install</h2>
+		<p>
+			The core SDK and the native telemetry module install together. On-device inference is a
+			separate, opt-in package, because it adds 19 ML Kit artifacts to the built APK.
+		</p>
+
+		<Code code={installExample} lang="sh" />
+
+		<p>Two entry points, both typed:</p>
+
+		<Code code={importExample} lang="tsx" />
+
+		<Aside type="caution" title="Before you install">
+			<p>
+				PixelKit is Android only — there is no iOS build. It also cannot run inside Expo Go:
+				reading a thermal sensor or a fuel-gauge register takes native code compiled into the app,
+				so every project needs a development build (<code>npx expo run:android</code> or an EAS dev
+				client).
+			</p>
+		</Aside>
+
+		<h2>Where to go</h2>
+
+		<CardGrid>
+			<LinkCard
+				title="Quickstart"
+				description="Install the SDK, run a development build, read your first hook."
+				href="/getting-started/quickstart/"
+			/>
+			<LinkCard
+				title="API reference"
+				description="All 32 hooks: arguments, return fields, units, and failure modes."
+				href="/api/hardware-api/"
+			/>
+			<LinkCard
+				title="Guides"
+				description="On-device Gemini Nano, function calling over hardware, voice, troubleshooting."
+				href="/guides/"
+			/>
+			<LinkCard
+				title="For coding agents"
+				description="The rules an agent follows in a PixelKit project, and the hook table it needs."
+				href="/for-coding-agents/ai-primer/"
+			/>
+		</CardGrid>
+	</div>
+</StarlightPage>

@@ -1,0 +1,206 @@
+{
+  "id": "useVisionAI",
+  "name": "useVisionAI",
+  "category": "ai",
+  "chipBadge": "ML Kit Vision + Gemini multimodal",
+  "summary": "Nine on-device vision capabilities, plus cloud scene understanding.",
+  "plain": "Everything image-related in one hook. Locally it can read text, scan barcodes, find faces and poses, label objects and cut out the subject. For open-ended questions about a picture it can also send the image to Gemini.",
+  "description": "The on-device half wraps the ML Kit vision models through pixel-nano and runs without a network: barcode scanning, text recognition v2, face detection with landmarks and head angles, 468-point face mesh, image labelling, object detection with tracking, 33-point pose detection, selfie and subject segmentation, and digital ink recognition. The cloud half sends a captured or picked image to Gemini and asks for a description plus structured labels. Each on-device call reports its own latency.",
+  "signature": "useVisionAI(): VisionState",
+  "params": [],
+  "returns": [
+    {
+      "name": "selectedImageUri",
+      "type": "string | null",
+      "desc": "Image currently loaded, from the camera or the picker."
+    },
+    {
+      "name": "analysis",
+      "type": "VisionAnalysisResult | null",
+      "desc": "Cloud description and labels with latency."
+    },
+    {
+      "name": "isAnalyzing",
+      "type": "boolean",
+      "desc": "True during a cloud call."
+    },
+    {
+      "name": "isOnDeviceProcessing",
+      "type": "boolean",
+      "desc": "True during any local vision call."
+    },
+    {
+      "name": "ocrResult",
+      "type": "TextRecognitionResult | null",
+      "desc": "Recognised text with per-block bounding boxes."
+    },
+    {
+      "name": "barcodeResult",
+      "type": "BarcodeScanResult | null",
+      "desc": "Decoded barcodes with format and position."
+    },
+    {
+      "name": "facesResult",
+      "type": "FaceDetectionResult | null",
+      "desc": "Faces with head angles, smile and eye-open probabilities."
+    },
+    {
+      "name": "faceMeshResult",
+      "type": "FaceMeshResult | null",
+      "desc": "468-point mesh for close-range faces."
+    },
+    {
+      "name": "labelsResult",
+      "type": "ImageLabelResult | null",
+      "desc": "Concept labels with confidence."
+    },
+    {
+      "name": "objectsResult",
+      "type": "ObjectDetectionResult | null",
+      "desc": "Detected objects with tracking ids across frames."
+    },
+    {
+      "name": "poseResult",
+      "type": "PoseDetectionResult | null",
+      "desc": "33 skeletal landmarks with in-frame likelihood."
+    },
+    {
+      "name": "selfieResult",
+      "type": "SelfieSegmentationResult | null",
+      "desc": "Person-versus-background mask dimensions."
+    },
+    {
+      "name": "subjectResult",
+      "type": "SubjectSegmentationResult | null",
+      "desc": "Foreground subject cut-out result."
+    },
+    {
+      "name": "digitalInkResult",
+      "type": "DigitalInkResult | null",
+      "desc": "Handwriting candidates from stroke input."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last call failed."
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "desc": "Cloud model used for scene analysis."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "captureAndAnalyze(useCamera?)",
+      "type": "(useCamera?: boolean) => Promise<VisionAnalysisResult | null>",
+      "desc": "Takes or picks a photo and sends it to Gemini for a description and labels.",
+      "inputs": [
+        {
+          "name": "useCamera",
+          "type": "boolean | undefined",
+          "desc": "True opens the camera and asks for permission, false opens the library. Defaults to true."
+        }
+      ],
+      "output": "Resolves with { description, labels, latencyMs, timestamp }, or null when the user cancelled, no API key is configured, or the call failed."
+    },
+    {
+      "name": "pickImage(useCamera?)",
+      "type": "(useCamera?: boolean) => Promise<{ uri: string; base64?: string } | null>",
+      "desc": "Opens the camera or the library and loads an image without analysing it.",
+      "inputs": [
+        {
+          "name": "useCamera",
+          "type": "boolean | undefined",
+          "desc": "True for the camera, false for the library. Defaults to true."
+        }
+      ],
+      "output": "Resolves with the file URI and base64 copy, also stored in selectedImageUri and selectedImageBase64. Null when cancelled or permission was refused."
+    },
+    {
+      "name": "recognizeText(image)",
+      "type": "(imageInput: string) => Promise<TextRecognitionResult | null>",
+      "desc": "Reads text from an image, on the device.",
+      "inputs": [
+        {
+          "name": "imageInput",
+          "type": "string",
+          "desc": "A file URI or a base64 image."
+        }
+      ],
+      "output": "Resolves with { text, blocks, latencyMs, source }; blocks keep the line and bounding-box structure. Null on failure."
+    },
+    {
+      "name": "scanBarcodes(image)",
+      "type": "(imageInput: string) => Promise<BarcodeScanResult | null>",
+      "desc": "Finds and decodes 1D and 2D codes, including QR.",
+      "inputs": [
+        {
+          "name": "imageInput",
+          "type": "string",
+          "desc": "A file URI or a base64 image."
+        }
+      ],
+      "output": "Resolves with { barcodes, latencyMs, source }; each barcode carries rawValue, displayValue, format, valueType and a bounding box. Null on failure."
+    },
+    {
+      "name": "detectFaces(image)",
+      "type": "(imageInput: string) => Promise<FaceDetectionResult | null>",
+      "desc": "Locates faces and their attributes.",
+      "inputs": [
+        {
+          "name": "imageInput",
+          "type": "string",
+          "desc": "A file URI or a base64 image."
+        }
+      ],
+      "output": "Resolves with { faces, latencyMs, source }; each face carries a tracking id, head Euler angles, a bounding box, and smile and eye-open probabilities that are null when classification is off. Null on failure."
+    },
+    {
+      "name": "detectObjects(image)",
+      "type": "(imageInput: string) => Promise<ObjectDetectionResult | null>",
+      "desc": "Detects and tracks objects with labels.",
+      "inputs": [
+        {
+          "name": "imageInput",
+          "type": "string",
+          "desc": "A file URI or a base64 image."
+        }
+      ],
+      "output": "Resolves with { objects, latencyMs, source }; each object carries a tracking id, a bounding box and labels with confidences. Null on failure."
+    },
+    {
+      "name": "detectPose(image)",
+      "type": "(imageInput: string) => Promise<PoseDetectionResult | null>",
+      "desc": "Estimates body pose landmarks.",
+      "inputs": [
+        {
+          "name": "imageInput",
+          "type": "string",
+          "desc": "A file URI or a base64 image."
+        }
+      ],
+      "output": "Resolves with { landmarks, latencyMs, source } — 33 landmarks, each with a type, x, y and an in-frame likelihood. Null on failure."
+    },
+    {
+      "name": "segmentSubject(image)",
+      "type": "(imageInput: string) => Promise<SubjectSegmentationResult | null>",
+      "desc": "Separates the main subject from the background.",
+      "inputs": [
+        {
+          "name": "imageInput",
+          "type": "string",
+          "desc": "A file URI or a base64 image."
+        }
+      ],
+      "output": "Resolves with { subjectsCount, foregroundConfidence, latencyMs, source }. Null on failure."
+    }
+  ],
+  "example": "import { useVisionAI } from 'pixelkit';\n\nasync function readLabel(uri: string, vision) {\n  const ocr = await vision.recognizeText(uri);   // stays on the device\n  return ocr.text;\n}",
+  "agentNote": "Prefer the on-device calls: they are faster, work offline and never send the image anywhere. Only use captureAndAnalyze when the question is genuinely open-ended."
+}

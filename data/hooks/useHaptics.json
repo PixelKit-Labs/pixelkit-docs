@@ -1,0 +1,97 @@
+{
+  "id": "useHaptics",
+  "name": "useHaptics",
+  "category": "sensors",
+  "chipBadge": "LRA · Android 16 envelopes",
+  "summary": "Vibration, from simple taps to custom-shaped waveforms.",
+  "plain": "Makes the phone buzz. Standard patterns cover ordinary taps and confirmations. On this device you can also design your own vibration shape, rising and falling in intensity, which is how you make a distinctive feel rather than a generic buzz.",
+  "description": "Standard patterns come from expo-haptics. Beyond that, the native module reports the actual vibrator hardware: whether amplitude can be varied, its resonant frequency, and which composition primitives it supports. Android 16 envelope effects are built with BasicEnvelopeBuilder from intensity and sharpness control points and must finish at zero intensity. This Pixel supports them, which is how the thinking ramp and alert pulses are produced.",
+  "signature": "useHaptics(): HapticsState",
+  "params": [],
+  "returns": [
+    {
+      "name": "hasAmplitudeControl",
+      "type": "boolean | null",
+      "desc": "Whether vibration strength can be varied rather than just on and off."
+    },
+    {
+      "name": "envelopeSupported",
+      "type": "boolean",
+      "desc": "Whether custom envelope waveforms can be played."
+    },
+    {
+      "name": "resonantFrequencyHz",
+      "type": "number | null",
+      "desc": "The frequency at which the actuator is most efficient. Around 134 Hz here."
+    },
+    {
+      "name": "supportedPrimitives",
+      "type": "string[]",
+      "desc": "Composition building blocks the hardware provides, such as click, tick, thud and rise."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "selection()",
+      "type": "() => Promise<void>",
+      "desc": "Faint tick for moving between options: sliders, wheel pickers, tab changes.",
+      "output": "Resolves once dispatched. No-op on web; failures are logged rather than thrown."
+    },
+    {
+      "name": "light() / medium() / heavy()",
+      "type": "() => Promise<void>",
+      "desc": "Impact taps of increasing weight, for presses, reveals and destructive confirmations.",
+      "output": "Resolves once dispatched. No-op on web."
+    },
+    {
+      "name": "success() / warning() / error()",
+      "type": "() => Promise<void>",
+      "desc": "Notification patterns that carry meaning: a double pulse, a buzz, a triple pulse. Use them consistently.",
+      "output": "Resolves once dispatched. No-op on web."
+    },
+    {
+      "name": "playEnvelope(points, sharpness?)",
+      "type": "(points: EnvelopePoint[], initialSharpness?: number) => boolean",
+      "desc": "Plays a custom waveform on Android 16 and later. Check envelopeSupported first.",
+      "inputs": [
+        {
+          "name": "points",
+          "type": "{ intensity: number; sharpness: number; durationMs: number }[]",
+          "desc": "Steps of the curve; intensity and sharpness are 0 to 1. The envelope must end at intensity 0, which the module appends for you."
+        },
+        {
+          "name": "initialSharpness",
+          "type": "number | undefined",
+          "desc": "Sharpness to start from, 0 to 1."
+        }
+      ],
+      "output": "Returns true when the effect was dispatched, false when envelopes are unsupported or the call failed. It never throws."
+    },
+    {
+      "name": "playPrimitives(steps)",
+      "type": "(steps: PrimitiveStep[]) => boolean",
+      "desc": "Chains hardware primitives into a composition, Android 11 and later.",
+      "inputs": [
+        {
+          "name": "steps",
+          "type": "{ primitive: string; scale?: number; delayMs?: number }[]",
+          "desc": "primitive is one of supportedPrimitives; scale sets strength 0 to 1; delayMs is the gap before that step."
+        }
+      ],
+      "output": "Returns true when the composition was dispatched, false when the native module is absent or the call failed."
+    },
+    {
+      "name": "cancel()",
+      "type": "() => void",
+      "desc": "Stops any vibration immediately, including an envelope or composition in progress.",
+      "output": "Returns nothing."
+    }
+  ],
+  "example": "import { useHaptics, HapticEnvelopes } from 'pixelkit';\n\nfunction Confirm() {\n  const { success, playEnvelope, envelopeSupported } = useHaptics();\n  const onDone = () => envelopeSupported ? playEnvelope(HapticEnvelopes.thinkingRamp) : success();\n  return <Button title=\"Done\" onPress={onDone} />;\n}",
+  "agentNote": "Attach haptics to every touchable, preferably through HapticButton. Check envelopeSupported before using envelopes and fall back to a standard pattern."
+}

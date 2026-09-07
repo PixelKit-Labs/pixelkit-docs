@@ -1,0 +1,68 @@
+{
+  "id": "useMemory",
+  "name": "useMemory",
+  "category": "silicon",
+  "chipBadge": "ActivityManager · 12 GB LPDDR5X",
+  "summary": "System RAM, this app's heaps, and how close the system is to killing you.",
+  "plain": "Shows how much memory the phone has left and how much this app is holding. The important field is isLowMemory: when it turns true, Android is close to killing background apps and you should release caches.",
+  "description": "System totals come from ActivityManager.getMemoryInfo, polled every two seconds: total RAM, available RAM, the low-memory threshold and the kernel's own low-memory flag. App figures come from Runtime for the Java heap and Debug.getNativeHeapAllocatedSize for the native heap, which is where Hermes, decoded images and JSI allocations live. purgeCaches requests a garbage collection and re-reads; it does not claim to free system RAM, because an app cannot do that.",
+  "signature": "useMemory(): MemoryState",
+  "params": [],
+  "returns": [
+    {
+      "name": "totalRAMMB",
+      "type": "number",
+      "desc": "Physical RAM the system reports, about 11,647 MB on a 12 GB device."
+    },
+    {
+      "name": "freeRAMMB",
+      "type": "number",
+      "desc": "Memory currently available to start new work."
+    },
+    {
+      "name": "usedRAMMB",
+      "type": "number",
+      "desc": "Total minus available. Includes reclaimable caches, so it reads higher than you might expect."
+    },
+    {
+      "name": "isLowMemory",
+      "type": "boolean",
+      "desc": "Kernel low-memory flag. When true, free buffers now."
+    },
+    {
+      "name": "lowMemoryThresholdMB",
+      "type": "number",
+      "desc": "The level at which the system starts killing background processes."
+    },
+    {
+      "name": "appJavaHeapMB",
+      "type": "number",
+      "desc": "This app's Java heap in use."
+    },
+    {
+      "name": "appJavaHeapMaxMB",
+      "type": "number",
+      "desc": "Ceiling for that heap. Crossing it throws OutOfMemoryError."
+    },
+    {
+      "name": "appNativeHeapMB",
+      "type": "number",
+      "desc": "Native allocations: the JS engine, decoded bitmaps, native modules."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "purgeCaches()",
+      "type": "() => void",
+      "desc": "Requests a garbage collection and re-reads the numbers. Advisory only; the runtime decides when to collect, and it can never free system RAM.",
+      "output": "Returns nothing. The refreshed reading lands in the hook fields, and the amount reclaimed is logged as freedMB."
+    }
+  ],
+  "example": "import { useMemory } from 'pixelkit';\n\nfunction MemoryHUD() {\n  const { freeRAMMB, isLowMemory, purgeCaches } = useMemory();\n  return (\n    <View>\n      <Text>Free: {freeRAMMB} MB</Text>\n      {isLowMemory && <Button title=\"Purge caches\" onPress={purgeCaches} />}\n    </View>\n  );\n}",
+  "agentNote": "React to isLowMemory by dropping image buffers before starting large multimodal payloads. Do not treat usedRAMMB as a leak signal; it includes reclaimable cache."
+}

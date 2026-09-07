@@ -1,0 +1,52 @@
+{
+  "id": "useSensors",
+  "name": "useSensors",
+  "category": "sensors",
+  "chipBadge": "IMU · barometer · light",
+  "summary": "Motion, orientation, air pressure and ambient light, streaming live.",
+  "plain": "A live feed from the phone's motion and environment sensors: how it is being tilted and moved, which way is north, the air pressure, and how bright the room is. Set the interval to trade smoothness against battery.",
+  "description": "Streams from expo-sensors: accelerometer and gyroscope for the six-axis IMU, magnetometer for heading, barometer for pressure, and the ambient light sensor. Relative altitude is computed from pressure with the international hypsometric formula, so it is a derived value and drifts with weather. The sampling interval applies to all streams; shorter intervals cost battery and wake the sensor hub more often.",
+  "signature": "useSensors(intervalMs?: number): SensorTelemetry",
+  "params": [
+    {
+      "name": "updateIntervalMs",
+      "type": "number",
+      "desc": "Sampling period in milliseconds for the IMU, magnetometer and barometer, defaulting to 100; the light sensor samples at twice this. Use 16 to 33 for animation, 500 or more for background monitoring. Changing it re-subscribes every sensor."
+    }
+  ],
+  "returns": [
+    {
+      "name": "accelerometer",
+      "type": "{ x, y, z }",
+      "desc": "Acceleration in g, including gravity. This is how you detect tilt and shake."
+    },
+    {
+      "name": "gyroscope",
+      "type": "{ x, y, z }",
+      "desc": "Rotation rate in radians per second."
+    },
+    {
+      "name": "magnetometer",
+      "type": "{ x, y, z }",
+      "desc": "Magnetic field in microtesla, used for compass heading."
+    },
+    {
+      "name": "barometer",
+      "type": "{ pressure, relativeAltitude? }",
+      "desc": "Pressure in hectopascal, plus an altitude estimate derived from it."
+    },
+    {
+      "name": "lightLux",
+      "type": "number | undefined",
+      "desc": "Ambient brightness in lux. Undefined until the first sample arrives."
+    },
+    {
+      "name": "isAvailable",
+      "type": "boolean",
+      "desc": "Whether the sensors are present and streaming."
+    }
+  ],
+  "actions": [],
+  "example": "import { useSensors } from 'pixelkit';\n\nfunction Level() {\n  const { accelerometer, lightLux } = useSensors(100);\n  return <Text>tilt {accelerometer.x.toFixed(2)} · {lightLux ?? '—'} lux</Text>;\n}",
+  "agentNote": "Do not poll at 16 ms unless something is animating from it. relativeAltitude is derived from pressure, so treat it as relative, never as a GPS altitude."
+}

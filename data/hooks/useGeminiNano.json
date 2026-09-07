@@ -1,0 +1,296 @@
+{
+  "id": "useGeminiNano",
+  "name": "useGeminiNano",
+  "category": "ai",
+  "chipBadge": "AICore · ML Kit Prompt API",
+  "summary": "Gemini Nano running on the phone, with no network and no API key.",
+  "plain": "Chat with a model that runs entirely on the device. Nothing leaves the phone and it works offline, but the model is small and the context is short. Check status first: the weights are managed by the system and may need downloading once.",
+  "description": "Wraps the ML Kit GenAI Prompt API on AICore through the pixel-nano module. The model is owned by the system, not bundled with the app, so checkStatus can report that a download is required; download reports progress as it runs. AICore keeps no conversation history, so each turn re-sends a capped transcript built by buildNanoTurn. Latency and time to first token are measured around the native call, and output token counts come from the on-device tokenizer, so the performance figures are real rather than estimated. There is no cloud fallback: if the model is unavailable, sendMessage appends an error entry.",
+  "signature": "useGeminiNano(): GeminiNanoState",
+  "params": [],
+  "returns": [
+    {
+      "name": "status",
+      "type": "'available' | 'downloadable' | 'downloading' | 'unavailable'",
+      "desc": "Model readiness. Gate every call on this."
+    },
+    {
+      "name": "isAvailable",
+      "type": "boolean",
+      "desc": "Convenience for status === \"available\"."
+    },
+    {
+      "name": "info",
+      "type": "NanoModelInfo | null",
+      "desc": "Base model name, token limit, and which features this build supports (system prompt, thinking mode, structured output, caching)."
+    },
+    {
+      "name": "messages",
+      "type": "AIMessage[]",
+      "desc": "Conversation so far. Entries with role system are local errors, not model output."
+    },
+    {
+      "name": "partial",
+      "type": "string",
+      "desc": "Text streamed so far for the in-flight reply. Render this for a live typing effect."
+    },
+    {
+      "name": "thoughts",
+      "type": "string[]",
+      "desc": "Reasoning steps when thinking mode is enabled and supported."
+    },
+    {
+      "name": "isGenerating",
+      "type": "boolean",
+      "desc": "True while a reply is being produced."
+    },
+    {
+      "name": "downloadedBytes",
+      "type": "number | null",
+      "desc": "Progress while the model downloads."
+    },
+    {
+      "name": "isDownloading",
+      "type": "boolean",
+      "desc": "True during download."
+    },
+    {
+      "name": "warmupMs",
+      "type": "number | null",
+      "desc": "How long the last warm-up took to load the model into memory."
+    },
+    {
+      "name": "lastLatencyMs",
+      "type": "number | null",
+      "desc": "Wall time of the last call, measured natively."
+    },
+    {
+      "name": "lastFirstTokenMs",
+      "type": "number | null",
+      "desc": "Time to the first streamed token, which is what perceived responsiveness depends on."
+    },
+    {
+      "name": "lastOutputTokens",
+      "type": "number | null",
+      "desc": "Tokens produced, counted by the on-device tokenizer."
+    },
+    {
+      "name": "lastDecodeTokensPerSec",
+      "type": "number | null",
+      "desc": "Generation speed after the first token. Derived from the two figures above."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Last failure message, for example a busy model or a request over the token limit."
+    },
+    {
+      "name": "temperature",
+      "type": "number",
+      "desc": "Sampling temperature applied to every turn, 0.7 by default. Lower is more deterministic."
+    },
+    {
+      "name": "topK",
+      "type": "number",
+      "desc": "Top-k sampling cutoff, 40 by default."
+    },
+    {
+      "name": "candidateCount",
+      "type": "number",
+      "desc": "How many candidates the model generates, 1 by default. Each one costs latency."
+    },
+    {
+      "name": "maxOutputTokens",
+      "type": "number",
+      "desc": "Ceiling on the reply, 1024 by default. It shares info.tokenLimit with the prompt and the re-sent transcript."
+    },
+    {
+      "name": "thinkingMode",
+      "type": "boolean",
+      "desc": "Whether thinking is requested. Only honoured when info.thinkingModeAvailable is true; elsewhere thoughts comes back empty."
+    },
+    {
+      "name": "systemInstruction",
+      "type": "string",
+      "desc": "The standing instruction. Sent as a SystemInstruction part when AICore supports one, otherwise prefixed to the prompt — either way it is re-sent every turn, because AICore keeps no history."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "setSystemInstruction(text)",
+      "type": "(text: string) => void",
+      "desc": "Sets the standing instruction used by every later turn.",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "How the model should behave. It counts against info.tokenLimit on every turn, so keep it short."
+        }
+      ],
+      "output": "Returns nothing; the next sendMessage uses it."
+    },
+    {
+      "name": "setTemperature(n) / setTopK(n) / setCandidateCount(n) / setMaxOutputTokens(n)",
+      "type": "(value: number) => void",
+      "desc": "Generation parameters applied to every later turn.",
+      "inputs": [
+        {
+          "name": "value",
+          "type": "number",
+          "desc": "Temperature 0 to 1, top-k a positive integer, candidate count how many replies to generate, max output tokens the reply ceiling within info.tokenLimit."
+        }
+      ],
+      "output": "Returns nothing; the values are read on the next call."
+    },
+    {
+      "name": "setThinkingMode(on)",
+      "type": "(on: boolean) => void",
+      "desc": "Requests thinking mode. Check info.thinkingModeAvailable first; where it is false the request is dropped and thoughts stays empty.",
+      "inputs": [
+        {
+          "name": "on",
+          "type": "boolean",
+          "desc": "Whether to ask the model to think before answering."
+        }
+      ],
+      "output": "Returns nothing."
+    },
+    {
+      "name": "download()",
+      "type": "() => Promise<NanoStatus>",
+      "desc": "Asks AICore to fetch the model weights.",
+      "output": "Resolves with the status after the attempt, or \"unavailable\" when it failed. Progress arrives in downloadedBytes while it runs."
+    },
+    {
+      "name": "warmup()",
+      "type": "() => Promise<number | null>",
+      "desc": "Loads the model into AICore ahead of the first prompt so the first reply is not slow.",
+      "output": "Resolves with the wall time in milliseconds, or null when the warm-up failed. The same value lands in warmupMs."
+    },
+    {
+      "name": "sendMessage(text)",
+      "type": "(prompt: string) => Promise<void>",
+      "desc": "Sends a chat turn with streaming, appending both the question and the reply to messages.",
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "string",
+          "desc": "The user's turn. Blank or whitespace-only input is ignored."
+        }
+      ],
+      "output": "Resolves when the reply is complete. Tokens accumulate in partial while it streams; failures arrive as a system-role entry in messages, never as a rejection."
+    },
+    {
+      "name": "generate(prompt, options?)",
+      "type": "(prompt: string, options?: NanoOptions) => Promise<NanoResult>",
+      "desc": "One-shot generation outside the conversation, with optional per-call parameters.",
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "string",
+          "desc": "The complete prompt; no history is added."
+        },
+        {
+          "name": "options",
+          "type": "NanoOptions | undefined",
+          "desc": "Per-call overrides: systemInstruction, temperature, topK, candidateCount, maxOutputTokens, seed, thinking, imageBase64 for a multimodal turn."
+        }
+      ],
+      "output": "Resolves with { text, finishReason, thoughts, latencyMs, firstTokenMs }. Throws E_NANO_* on failure; there is no fallback."
+    },
+    {
+      "name": "countTokens(prompt, options?)",
+      "type": "(prompt: string, options?: NanoOptions) => Promise<number | null>",
+      "desc": "Measures a prompt with the on-device tokenizer before sending it.",
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "string",
+          "desc": "Text exactly as it would be sent."
+        },
+        {
+          "name": "options",
+          "type": "NanoOptions | undefined",
+          "desc": "The same options the real call would use, since they affect the count."
+        }
+      ],
+      "output": "Resolves with the token count, or null when the tokenizer is unavailable. Compare it against info.tokenLimit."
+    },
+    {
+      "name": "setSafety(threshold)",
+      "type": "(threshold: 'default' | HarmBlockThreshold) => void",
+      "desc": "Sets one blocking threshold across all four harm categories (harassment, hate speech, sexually explicit, dangerous content) and resets the chat session.",
+      "inputs": [
+        {
+          "name": "threshold",
+          "type": "'default' | HarmBlockThreshold",
+          "desc": "'default' sends no safetySettings at all. Otherwise BLOCK_NONE, BLOCK_ONLY_HIGH, BLOCK_MEDIUM_AND_ABOVE or BLOCK_LOW_AND_ABOVE from @google/genai."
+        }
+      ],
+      "output": "Returns nothing; the next turn starts a fresh session carrying that threshold."
+    },
+    {
+      "name": "setSearchGroundingEnabled(enabled)",
+      "type": "(enabled: boolean) => void",
+      "desc": "Attaches or removes the googleSearch tool, letting the model search the web before answering. Resets the chat session.",
+      "inputs": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "desc": "True to ground replies in Google Search. The model decides per turn whether to actually search."
+        }
+      ],
+      "output": "Returns nothing. When a turn does search, lastGrounding carries the queries and source URIs."
+    },
+    {
+      "name": "countTokens(text)",
+      "type": "(text: string) => Promise<number | null>",
+      "desc": "Asks the API how many tokens a prompt costs on the selected model, before you send it.",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "The prompt to measure. Blank input returns null without a network call."
+        }
+      ],
+      "output": "Resolves to the token count, or null without a key or when the call fails. Also written to lastPromptTokens."
+    },
+    {
+      "name": "clearMessages()",
+      "type": "() => void",
+      "desc": "Empties the conversation and the thinking output.",
+      "output": "Returns nothing. AICore keeps no history of its own, so this is the whole reset."
+    },
+    {
+      "name": "setModelConfig(stage, preference)",
+      "type": "(stage: 'stable' | 'preview', preference: 'full' | 'fast') => Promise<void>",
+      "desc": "Chooses the model track AICore serves. The next call creates a new client.",
+      "inputs": [
+        {
+          "name": "stage",
+          "type": "'stable' | 'preview'",
+          "desc": "Production build or the Developer Preview track. Preview models are slower and refuse more often."
+        },
+        {
+          "name": "preference",
+          "type": "'full' | 'fast'",
+          "desc": "Full favours quality, fast favours latency."
+        }
+      ],
+      "output": "Resolves once the config is applied and status and info have been re-read."
+    },
+    {
+      "name": "refresh()",
+      "type": "() => Promise<void>",
+      "desc": "Re-reads status and model facts from AICore.",
+      "output": "Resolves once status and info have been updated. On failure status becomes unavailable and error is set."
+    }
+  ],
+  "example": "import { useGeminiNano } from 'pixelkit';\n\nfunction OnDeviceChat() {\n  const nano = useGeminiNano();\n  if (nano.status === 'downloadable') return <Button title=\"Download model\" onPress={() => nano.download()} />;\n  return (\n    <View>\n      <Button title=\"Ask\" onPress={() => nano.sendMessage('Summarise the thermal state')} disabled={!nano.isAvailable} />\n      <Text>{nano.partial || nano.messages.at(-1)?.content}</Text>\n      <Text>{nano.lastLatencyMs ?? '—'} ms · {nano.lastDecodeTokensPerSec ?? '—'} tok/s</Text>\n    </View>\n  );\n}",
+  "agentNote": "Always branch on status before calling. The model is foreground-only and single-turn, so keep the transcript short and send long or background work to the cloud hook."
+}

@@ -20,39 +20,22 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * The real source of truth is `docs/` in the SDK repository, not this one. Documentation and the
- * code it describes have to change in the same commit (PixelKit rule 2), so the markdown cannot
- * live here — this repo only renders it.
+ * The markdown lives in this repository now, at `docs/`. It used to be cloned out of the SDK repo;
+ * that made a hook change and its documentation update one commit, but across a repository boundary
+ * it also meant the docs could not be edited here. They are the contract now, and the SDK is checked
+ * against `data/hooks/*.json` by its own CI, so the source of truth sits here and the code proves it
+ * is still true.
  *
- * Set PIXELKIT_DOCS to a local checkout's `docs/` directory to work offline or against uncommitted
- * changes. Otherwise the SDK repo is shallow-cloned into a gitignored directory at build time.
+ * This script exists only because Starlight requires a `title` in each page's frontmatter and the
+ * source files carry none. It copies `docs/` into `src/content/docs/`, which is gitignored and
+ * regenerated before every dev run and build, and injects that one field from each file's own first
+ * heading. No prose is added, removed or reworded.
  */
-const SDK_REPO = process.env.PIXELKIT_SDK_REPO ?? 'https://github.com/PixelKit-Labs/pixelkit-sdk.git';
-const CHECKOUT = path.resolve(__dirname, '..', '.pixelkit-sdk');
-
-function resolveSource() {
-  if (process.env.PIXELKIT_DOCS) {
-    const local = path.resolve(process.env.PIXELKIT_DOCS);
-    if (!existsSync(local)) {
-      console.error(`sync-docs: PIXELKIT_DOCS is set to ${local}, which does not exist`);
-      process.exit(1);
-    }
-    console.log(`sync-docs: using local docs at ${local}`);
-    return local;
-  }
-  rmSync(CHECKOUT, { recursive: true, force: true });
-  console.log(`sync-docs: cloning ${SDK_REPO} for its docs/ directory`);
-  execFileSync('git', ['clone', '--depth', '1', '--filter=blob:none', '--sparse', SDK_REPO, CHECKOUT], { stdio: 'inherit' });
-  execFileSync('git', ['sparse-checkout', 'set', 'docs'], { cwd: CHECKOUT, stdio: 'inherit' });
-  return path.join(CHECKOUT, 'docs');
-}
-
-const SOURCE_ROOT = resolveSource();
+const SOURCE_ROOT = path.resolve(__dirname, '..', 'docs');
 
 /** Generated, gitignored: what Starlight's `docsLoader()` reads. */
 const TARGET_ROOT = path.resolve(__dirname, '..', 'src', 'content', 'docs');
@@ -68,9 +51,17 @@ if (!existsSync(SOURCE_ROOT)) {
  * cluttering the site root. Anything under `docs/` not listed here (subdirectories, or a stray
  * top-level file added later) is still picked up: subdirectories are copied as-is by name, and an
  * unlisted top-level `.md` file falls back to the "project" group below.
+ *
+ * `README.md` is deliberately NOT routed to `index.md`. The site's real homepage is a hand-written
+ * page at `src/pages/index.astro` (outside this collection, so this script never touches it). This
+ * script wipes and rewrites `TARGET_ROOT` on every run (see below), so anything meant to survive a
+ * rebuild has to live outside it; routing README.md anywhere under `index.md` would mean the synced
+ * copy and the hand-written page fight over "/" on every build. `readme.md` is unlisted in any
+ * sidebar group (like `404.md` below) but still reachable directly for anyone who wants the raw,
+ * always-current SDK README.
  */
 const TOP_LEVEL_FILE_ROUTES = {
-  'README.md': 'index.md',
+  'README.md': 'readme.md',
   'HARDWARE_API.md': 'api/hardware-api.md',
   'AI_PRIMER.md': 'for-coding-agents/ai-primer.md',
   'PRIVACY.md': 'project/privacy.md',
@@ -87,7 +78,7 @@ const DIRECTORY_ROUTES = {
   'ai-guidance': 'for-coding-agents',
 };
 
-/** The three facts that answer PixelKit's most common support question, rendered above the README content on the landing page. Generated here, not stored as a second copy of prose that belongs in docs/README.md. */
+/** The three facts that answer PixelKit's most common support question, rendered above the synced README content at `readme.md`. Generated here, not stored as a second copy of prose that belongs in docs/README.md. */
 const LANDING_CALLOUT = `:::caution[Read this first]
 - **Android only.** There is no iOS build, and none is planned; every hook is written against Android platform APIs.
 - **Requires a development build.** PixelKit cannot run inside Expo Go — it ships two native Expo Modules (\`@pixelkit/native\`, \`@pixelkit/mlkit\`) that Expo Go does not include. Build a dev client with EAS or a local Gradle build.
@@ -175,7 +166,7 @@ for (const entry of readdirSync(SOURCE_ROOT, { withFileTypes: true })) {
 
   const route = TOP_LEVEL_FILE_ROUTES[entry.name] ?? path.join('project', entry.name);
   const targetPath = path.join(TARGET_ROOT, route);
-  copyMarkdownFile(sourcePath, targetPath, { landingCallout: route === 'index.md' });
+  copyMarkdownFile(sourcePath, targetPath, { landingCallout: route === 'readme.md' });
 }
 
 /** Recursively counts the markdown files actually written, for the console summary below. */

@@ -1,0 +1,249 @@
+{
+  "id": "useAudio",
+  "name": "useAudio",
+  "category": "system",
+  "chipBadge": "expo-audio · capture & playback",
+  "summary": "Microphone recording with levels and input choice, plus playback.",
+  "plain": "Records from the microphone and plays recordings back. It gives you a live loudness reading for meters and speaking indicators, lets you pause and resume a take, choose which microphone to use, and pick between a speech profile and an unprocessed studio profile.",
+  "description": "Built on expo-audio. The speech profile records 16 kHz mono through the voice_recognition source, which is the path that applies the platform noise suppression and is what speech APIs expect; the studio profile records 48 kHz stereo through unprocessed, the raw microphone with no platform processing. Levels are read every 100 ms from the recorder status in dBFS, where -160 is digital silence and 0 is clipping; level maps that onto 0 to 1 with a floor at -60 dBFS so meters behave sensibly. Microphone enumeration only works once the recorder has been prepared, which is why inputs populate after recording starts. Playback routing between speaker and earpiece is an audio-mode setting, so it applies to the whole app.",
+  "signature": "useAudio(): AudioState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isRecording",
+      "type": "boolean",
+      "desc": "Whether the microphone is open. Stays true while paused."
+    },
+    {
+      "name": "isPaused",
+      "type": "boolean",
+      "desc": "Whether the current take is paused."
+    },
+    {
+      "name": "canRecord",
+      "type": "boolean",
+      "desc": "Whether the recorder reports it is ready to start."
+    },
+    {
+      "name": "permissionGranted",
+      "type": "boolean",
+      "desc": "Whether microphone permission has been granted."
+    },
+    {
+      "name": "durationSeconds",
+      "type": "number",
+      "desc": "Elapsed seconds of the current take."
+    },
+    {
+      "name": "quality",
+      "type": "'speech' | 'studio'",
+      "desc": "Active capture profile."
+    },
+    {
+      "name": "meteringDecibels",
+      "type": "number",
+      "desc": "Live level in dBFS, -160 silence to 0 clipping."
+    },
+    {
+      "name": "peakDecibels",
+      "type": "number",
+      "desc": "Loudest level seen during this take, for a peak indicator."
+    },
+    {
+      "name": "level",
+      "type": "number",
+      "desc": "0 to 1 version of the level, floored at -60 dBFS. Use this to drive a meter."
+    },
+    {
+      "name": "isSilent",
+      "type": "boolean",
+      "desc": "True while the level sits below the silence threshold. Useful for a \"say something\" hint."
+    },
+    {
+      "name": "silenceThresholdDbfs",
+      "type": "number",
+      "desc": "Boundary between silence and speech, -45 dBFS by default."
+    },
+    {
+      "name": "inputs",
+      "type": "RecordingInput[]",
+      "desc": "Microphones the platform offers, populated once recording has been prepared."
+    },
+    {
+      "name": "currentInputUid",
+      "type": "string | null",
+      "desc": "Which microphone is selected."
+    },
+    {
+      "name": "route",
+      "type": "'speaker' | 'earpiece'",
+      "desc": "Where playback is sent."
+    },
+    {
+      "name": "lastRecordingUri",
+      "type": "string | null",
+      "desc": "File of the last completed recording."
+    },
+    {
+      "name": "isPlaying",
+      "type": "boolean",
+      "desc": "Whether playback is running."
+    },
+    {
+      "name": "playbackPositionSeconds",
+      "type": "number",
+      "desc": "Playback position, for a scrubber."
+    },
+    {
+      "name": "playbackDurationSeconds",
+      "type": "number",
+      "desc": "Length of the audio being played."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last action failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "startRecording(options?)",
+      "type": "(options?: { maxDurationSeconds?: number; quality?: AudioQuality }) => Promise<boolean>",
+      "desc": "Requests permission if needed, prepares the profile and opens the microphone with metering at 10 Hz.",
+      "inputs": [
+        {
+          "name": "options.maxDurationSeconds",
+          "type": "number | undefined",
+          "desc": "Stop automatically after this many seconds; the recorder finalises the file itself."
+        },
+        {
+          "name": "options.quality",
+          "type": "'speech' | 'studio' | undefined",
+          "desc": "Profile for this take, which also becomes the active profile. speech is 16 kHz mono noise-suppressed, studio is 48 kHz stereo unprocessed."
+        }
+      ],
+      "output": "Resolves true when recording started, false with the reason in error when permission was denied or the recorder refused."
+    },
+    {
+      "name": "pauseRecording()",
+      "type": "() => boolean",
+      "desc": "Pauses without finalising the file, so resumeRecording continues the same take.",
+      "output": "Returns true when the take was paused, false when nothing was recording or it was already paused."
+    },
+    {
+      "name": "resumeRecording()",
+      "type": "() => boolean",
+      "desc": "Continues the same take after a pause.",
+      "output": "Returns true when recording resumed, false when there was nothing paused."
+    },
+    {
+      "name": "stopRecording()",
+      "type": "() => Promise<string | null>",
+      "desc": "Finalises the take and stops metering.",
+      "output": "Resolves with the recorded file URI, also stored in lastRecordingUri, or null when nothing was recording or the stop failed."
+    },
+    {
+      "name": "setSilenceThresholdDbfs(dbfs)",
+      "type": "(dbfs: number) => void",
+      "desc": "Moves the boundary between silence and speech that isSilent reports against.",
+      "inputs": [
+        {
+          "name": "dbfs",
+          "type": "number",
+          "desc": "Threshold in dBFS, -45 by default. A quiet room sits near -50, so raising it makes isSilent stricter."
+        }
+      ],
+      "output": "Returns nothing; isSilent re-evaluates on the next metering sample."
+    },
+    {
+      "name": "setQuality(quality)",
+      "type": "(quality: 'speech' | 'studio') => void",
+      "desc": "Chooses the capture profile for the next recording, not the current one.",
+      "inputs": [
+        {
+          "name": "quality",
+          "type": "'speech' | 'studio'",
+          "desc": "speech records 16 kHz mono through the noise-suppressed voice path; studio records 48 kHz stereo unprocessed."
+        }
+      ],
+      "output": "Returns nothing; quality updates immediately."
+    },
+    {
+      "name": "refreshInputs()",
+      "type": "() => RecordingInput[]",
+      "desc": "Re-reads the available microphones. Only valid once a recording has been prepared.",
+      "output": "Returns the list, also written to inputs. Empty when the platform cannot answer."
+    },
+    {
+      "name": "selectInput(uid)",
+      "type": "(uid: string) => boolean",
+      "desc": "Switches to a specific microphone, such as an attached USB or Bluetooth one.",
+      "inputs": [
+        {
+          "name": "uid",
+          "type": "string",
+          "desc": "A uid from the inputs list."
+        }
+      ],
+      "output": "Returns true when the platform accepted it, false with the reason in error otherwise."
+    },
+    {
+      "name": "setRoute(route)",
+      "type": "(route: 'speaker' | 'earpiece') => Promise<void>",
+      "desc": "Sends playback to the loudspeaker or the call earpiece, at the audio-mode level.",
+      "inputs": [
+        {
+          "name": "route",
+          "type": "'speaker' | 'earpiece'",
+          "desc": "earpiece is the quiet, held-to-the-ear path."
+        }
+      ],
+      "output": "Resolves once the audio mode is applied; on failure route is unchanged and error is set."
+    },
+    {
+      "name": "playLastRecording(uri?)",
+      "type": "(uri?: string) => Promise<boolean>",
+      "desc": "Plays a recording and starts position polling five times a second.",
+      "inputs": [
+        {
+          "name": "uri",
+          "type": "string | undefined",
+          "desc": "A specific file to play. Defaults to lastRecordingUri."
+        }
+      ],
+      "output": "Resolves true when playback started, false when there is nothing to play or the player refused."
+    },
+    {
+      "name": "pausePlayback()",
+      "type": "() => void",
+      "desc": "Pauses playback where it is.",
+      "output": "Returns nothing; isPlaying becomes false and position polling stops."
+    },
+    {
+      "name": "stopPlayback()",
+      "type": "() => Promise<void>",
+      "desc": "Stops playback and rewinds to the start.",
+      "output": "Resolves once rewound; playbackPositionSeconds returns to 0."
+    },
+    {
+      "name": "seekPlayback(seconds)",
+      "type": "(seconds: number) => Promise<void>",
+      "desc": "Jumps to a position in the file being played.",
+      "inputs": [
+        {
+          "name": "seconds",
+          "type": "number",
+          "desc": "Absolute position; negatives are clamped to 0."
+        }
+      ],
+      "output": "Resolves once the seek completes; playbackPositionSeconds updates."
+    }
+  ],
+  "example": "import { useAudio } from 'pixelkit';\n\nfunction Recorder() {\n  const audio = useAudio();\n  return (\n    <View>\n      <Button\n        title={audio.isRecording ? 'Stop' : 'Record'}\n        onPress={() => audio.isRecording ? audio.stopRecording() : audio.startRecording({ maxDurationSeconds: 30 })}\n      />\n      <View style={{ width: 200 * audio.level, height: 4, backgroundColor: '#6FDCF2' }} />\n      <Text>{audio.durationSeconds}s · peak {audio.peakDecibels} dBFS</Text>\n      {audio.lastRecordingUri && <Button title=\"Play\" onPress={() => audio.playLastRecording()} />}\n    </View>\n  );\n}",
+  "agentNote": "Use level for meters, not meteringDecibels, because the dBFS scale is logarithmic and looks wrong on a bar. Use the speech profile for anything heading to speech recognition."
+}

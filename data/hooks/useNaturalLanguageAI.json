@@ -1,0 +1,114 @@
+{
+  "id": "useNaturalLanguageAI",
+  "name": "useNaturalLanguageAI",
+  "category": "ai",
+  "chipBadge": "ML Kit NLP · 58 languages",
+  "summary": "Translation, language detection, smart replies and entity extraction, all offline.",
+  "plain": "Language tools that work without a connection: translate between 58 languages, work out what language some text is in, suggest replies to a conversation, and pull out things like dates, addresses and tracking numbers.",
+  "description": "Wraps the ML Kit language stack through pixel-nano: language-id, translate, smart-reply and entity-extraction. Translation models download per language pair on first use and then run entirely offline, which is why the first call for a new pair is slower. Smart reply takes a short conversation history and proposes replies. Entity extraction returns typed spans with their positions in the original string.",
+  "signature": "useNaturalLanguageAI(): NaturalLanguageState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isProcessing",
+      "type": "boolean",
+      "desc": "True while any language operation runs."
+    },
+    {
+      "name": "languageResult",
+      "type": "LanguageIdResult | null",
+      "desc": "Detected BCP-47 code plus alternatives with confidence scores."
+    },
+    {
+      "name": "translationResult",
+      "type": "TranslationResult | null",
+      "desc": "Translated text with the source and target languages."
+    },
+    {
+      "name": "smartReplyResult",
+      "type": "SmartReplyResult | null",
+      "desc": "Suggested replies for the supplied conversation."
+    },
+    {
+      "name": "entityResult",
+      "type": "EntityExtractionResult | null",
+      "desc": "Typed entities with their start and end offsets."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last operation failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "identifyLanguage(text)",
+      "type": "(text: string) => Promise<LanguageIdResult | null>",
+      "desc": "Detects the language of a sample. Run it before translating when the source is unknown.",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "A sample; a few words is usually enough."
+        }
+      ],
+      "output": "Resolves with { languageCode, possibleLanguages, latencyMs, source } — languageCode is null when nothing was confident enough — or null on failure."
+    },
+    {
+      "name": "translate(text, from?, to?)",
+      "type": "(text: string, sourceLang?: string, targetLang?: string) => Promise<TranslationResult | null>",
+      "desc": "Translates offline. The first call for a language pair downloads that model, so it is slower than the ones after it.",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "The text to translate."
+        },
+        {
+          "name": "sourceLang",
+          "type": "string | undefined",
+          "desc": "BCP-47 language code of the input. Defaults to 'en'."
+        },
+        {
+          "name": "targetLang",
+          "type": "string | undefined",
+          "desc": "BCP-47 language code to translate into. Defaults to 'es'."
+        }
+      ],
+      "output": "Resolves with { translatedText, sourceLanguage, targetLanguage, latencyMs, source }, or null on failure."
+    },
+    {
+      "name": "suggestReplies(history)",
+      "type": "(history: { text: string; timestamp?: number; isLocalUser?: boolean; sender?: string }[]) => Promise<SmartReplyResult | null>",
+      "desc": "Proposes short replies for the end of a conversation.",
+      "inputs": [
+        {
+          "name": "history",
+          "type": "Array<{ text, timestamp?, isLocalUser?, sender? }>",
+          "desc": "Messages in order. isLocalUser marks this user's own messages, so the model replies to the other party."
+        }
+      ],
+      "output": "Resolves with { suggestions, status, latencyMs, source }. suggestions is empty when the model has nothing confident to offer; null on failure."
+    },
+    {
+      "name": "extractEntities(text)",
+      "type": "(text: string) => Promise<EntityExtractionResult | null>",
+      "desc": "Finds dates, addresses, money, phone numbers, flight numbers and tracking codes.",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "The text to scan."
+        }
+      ],
+      "output": "Resolves with { entities, latencyMs, source }; each entity carries type, text and the start and end offsets into your input. Null on failure."
+    }
+  ],
+  "example": "import { useNaturalLanguageAI } from 'pixelkit';\n\nasync function localise(text: string, nlp) {\n  const { languageCode } = await nlp.identifyLanguage(text);\n  if (!languageCode || languageCode === 'en') return text;\n  const out = await nlp.translate(text, languageCode, 'en');\n  return out.translatedText;\n}",
+  "agentNote": "Warn the user that a first translation for a new language pair downloads a model. Do not assume identifyLanguage succeeds; languageCode can be null for very short input."
+}

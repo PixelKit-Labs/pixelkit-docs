@@ -1,0 +1,92 @@
+{
+  "id": "useSpeechAI",
+  "name": "useSpeechAI",
+  "category": "ai",
+  "chipBadge": "Offline ASI · Gemini audio",
+  "summary": "Turning speech into text, on the device or in the cloud.",
+  "plain": "Records the user talking and returns what they said. It can work offline using the phone's own recogniser, or send the clip to Gemini for higher accuracy. Offline is faster and private; cloud handles harder audio.",
+  "description": "Capture runs through useAudio at 16 kHz mono on the voice_recognition source, which is the path that applies the platform noise suppression. In offline mode the native module drives Android System Intelligence streaming recognition and emits partial results as the user speaks. In cloud mode the finished clip is sent to Gemini audio understanding. Neither path fabricates a transcript: without a key, cloud mode keeps the recording and returns an error.",
+  "signature": "useSpeechAI(): SpeechState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isListening",
+      "type": "boolean",
+      "desc": "True while the microphone is capturing."
+    },
+    {
+      "name": "isTranscribing",
+      "type": "boolean",
+      "desc": "True while audio is being converted to text."
+    },
+    {
+      "name": "recognitionMode",
+      "type": "'offline' | 'cloud'",
+      "desc": "Which engine will handle the next transcription."
+    },
+    {
+      "name": "isOfflineAvailable",
+      "type": "boolean",
+      "desc": "Whether on-device recognition is installed for the current language."
+    },
+    {
+      "name": "streamingPartial",
+      "type": "string",
+      "desc": "Live text as the user is still speaking, offline mode only."
+    },
+    {
+      "name": "voiceDecibels",
+      "type": "number",
+      "desc": "Current input level, for a meter or a speaking indicator."
+    },
+    {
+      "name": "lastTranscript",
+      "type": "SpeechTranscriptionResult | null",
+      "desc": "Final text with confidence, audio duration and latency."
+    },
+    {
+      "name": "lastRecordingUri",
+      "type": "string | null",
+      "desc": "File of the last capture, kept even when transcription fails."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last attempt failed."
+    },
+    {
+      "name": "model",
+      "type": "string",
+      "desc": "Engine used for the last cloud transcription."
+    }
+  ],
+  "actions": [
+    {
+      "name": "startListening()",
+      "type": "() => Promise<boolean>",
+      "desc": "Opens the microphone using the current recognitionMode: the on-device recognizer, or a recording for cloud transcription.",
+      "output": "Resolves true when the microphone opened, false with the reason in error when permission was denied or the recognizer refused."
+    },
+    {
+      "name": "stopListeningAndTranscribe()",
+      "type": "() => Promise<SpeechTranscriptionResult | null>",
+      "desc": "Closes the microphone and returns what was heard.",
+      "output": "Resolves with { transcript, confidence, durationSeconds, latencyMs, language } — confidence is null for cloud transcripts — or null when nothing was captured or transcription failed. In cloud mode the audio file is kept in lastRecordingUri either way."
+    },
+    {
+      "name": "setRecognitionMode(mode)",
+      "type": "(mode: 'on-device' | 'cloud') => void",
+      "desc": "Chooses the engine for the next run.",
+      "inputs": [
+        {
+          "name": "mode",
+          "type": "'on-device' | 'cloud'",
+          "desc": "On-device keeps audio on the phone and streams partials; cloud records first and needs an API key."
+        }
+      ],
+      "output": "Returns nothing. model updates to name the engine that will be used."
+    }
+  ],
+  "example": "import { useSpeechAI } from 'pixelkit';\n\nfunction VoiceButton() {\n  const speech = useSpeechAI();\n  const toggle = async () => {\n    if (speech.isListening) {\n      const result = await speech.stopListeningAndTranscribe();\n      console.log(result?.transcript);\n    } else {\n      await speech.startListening();\n    }\n  };\n  return <Button title={speech.isListening ? 'Stop' : 'Speak'} onPress={toggle} />;\n}",
+  "agentNote": "Prefer offline mode when isOfflineAvailable is true: it is lower latency and keeps audio on the device. Show streamingPartial so the user knows they are being heard."
+}

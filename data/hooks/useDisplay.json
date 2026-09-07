@@ -1,0 +1,99 @@
+{
+  "id": "useDisplay",
+  "name": "useDisplay",
+  "category": "system",
+  "chipBadge": "LTPO OLED · ARR",
+  "summary": "Refresh rate, HDR capability, brightness and the screen wake lock.",
+  "plain": "Reads what the screen is doing and lets you influence it. The refresh rate changes constantly on this panel to save power, so it is re-read live rather than assumed.",
+  "description": "Display mode, supported refresh rates, HDR types and resolution come from the Android Display object through the native module, re-read every two seconds because adaptive refresh rate changes the active mode continuously. Brightness uses expo-brightness and the wake lock uses expo-keep-awake. setPreferredRefreshRate requests a rate; the platform may ignore it, so read refreshRateHz back rather than assuming it took.",
+  "signature": "useDisplay(): DisplayState",
+  "params": [],
+  "returns": [
+    {
+      "name": "refreshRateHz",
+      "type": "number",
+      "desc": "Rate the panel is running at right now. Changes on its own with adaptive refresh."
+    },
+    {
+      "name": "hasArrSupport",
+      "type": "boolean | null",
+      "desc": "Whether adaptive refresh rate is supported."
+    },
+    {
+      "name": "supportedRefreshRates",
+      "type": "number[]",
+      "desc": "Every rate the panel can drive, down to 1 Hz on this device."
+    },
+    {
+      "name": "resolution",
+      "type": "{ width, height, densityDpi } | null",
+      "desc": "Physical resolution and density of the active mode."
+    },
+    {
+      "name": "hdrTypes",
+      "type": "number[]",
+      "desc": "Supported HDR formats: 1 Dolby Vision, 2 HDR10, 3 HLG, 4 HDR10+."
+    },
+    {
+      "name": "isHdr",
+      "type": "boolean",
+      "desc": "Whether the panel reports HDR capability at all."
+    },
+    {
+      "name": "maxLuminance",
+      "type": "number | null",
+      "desc": "Peak luminance the panel reports, when it reports one."
+    },
+    {
+      "name": "brightness",
+      "type": "number",
+      "desc": "Current screen brightness from 0 to 1."
+    },
+    {
+      "name": "isKeepAwake",
+      "type": "boolean",
+      "desc": "Whether this app is currently holding the screen on."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "setPreferredRefreshRate(hz)",
+      "type": "(rateHz: number) => Promise<boolean>",
+      "desc": "Asks the system for a refresh rate for this window, for example 120 during an animation and 60 otherwise.",
+      "inputs": [
+        {
+          "name": "rateHz",
+          "type": "number",
+          "desc": "A rate from supportedRefreshRates."
+        }
+      ],
+      "output": "Resolves true when the request was applied. It is a request, not a guarantee: the system may pick another mode."
+    },
+    {
+      "name": "setScreenBrightness(value)",
+      "type": "(value: number) => Promise<void>",
+      "desc": "Sets the brightness of this app window.",
+      "inputs": [
+        {
+          "name": "value",
+          "type": "number",
+          "desc": "0 to 1; values outside are clamped."
+        }
+      ],
+      "output": "Resolves once applied. No-op on web; on failure brightness is left unchanged."
+    },
+    {
+      "name": "toggleKeepAwake()",
+      "type": "() => Promise<void>",
+      "desc": "Acquires or releases a tagged screen wake lock, so the display does not dim during a long read or capture.",
+      "output": "Resolves once the lock state has flipped; isKeepAwake reflects it. Release it when you no longer need it."
+    }
+  ],
+  "example": "import { useDisplay } from 'pixelkit';\n\nfunction DisplayPanel() {\n  const display = useDisplay();\n  return (\n    <View>\n      <Text>{display.refreshRateHz} Hz{display.hasArrSupport ? ' · adaptive' : ''}</Text>\n      <Button title=\"Prefer 120 Hz\" onPress={() => display.setPreferredRefreshRate(120)} />\n    </View>\n  );\n}",
+  "agentNote": "Do not cache refreshRateHz; it moves. Always release the wake lock when the screen no longer needs to stay on, or you will drain the battery."
+}

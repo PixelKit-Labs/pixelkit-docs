@@ -1,0 +1,73 @@
+{
+  "id": "useCPU",
+  "name": "useCPU",
+  "category": "silicon",
+  "chipBadge": "Tensor G6 · /proc/cpuinfo + cpufreq",
+  "summary": "What the CPU is and how hard it is working right now.",
+  "plain": "Tells you the shape of the processor (how many cores, which type, how fast each one can go) and how busy it is at this instant. Use it to decide whether the phone has room for heavy work, or to show a live performance readout.",
+  "description": "Core identity comes from /proc/cpuinfo and per-core frequencies from the cpufreq sysfs tree, both read through the PixelNative module. Two different load signals are reported and they mean different things: cpuLoadPercent is how close the cores are running to their maximum clock, read from hardware; appCpuPercent is this app's own share of CPU time, computed from process time over wall time. Android does not let apps read system-wide /proc/stat, so a true \"system load\" figure does not exist here and is not invented.",
+  "signature": "useCPU(): CPUState",
+  "params": [],
+  "returns": [
+    {
+      "name": "coreTopology",
+      "type": "string",
+      "desc": "Readable summary of the clusters, for example \"1x Arm C1-Ultra @ 4.11 GHz + 4x Arm C1-Pro @ 3.38 GHz\"."
+    },
+    {
+      "name": "coreCount",
+      "type": "number",
+      "desc": "Cores visible to this process. Seven on the Tensor G6."
+    },
+    {
+      "name": "cpuLoadPercent",
+      "type": "number | null",
+      "desc": "How close the cores are to their maximum clock, averaged. Null when the sysfs files cannot be read."
+    },
+    {
+      "name": "appCpuPercent",
+      "type": "number | null",
+      "desc": "This app's own CPU usage. Null on the very first sample because it needs two readings."
+    },
+    {
+      "name": "cores",
+      "type": "{ index, part, name, curMHz, maxMHz, minMHz }[]",
+      "desc": "Per-core detail, including the frequency each core is running at right now."
+    },
+    {
+      "name": "clusters",
+      "type": "{ part, name, maxMHz, count }[]",
+      "desc": "Cores grouped by type, which is how you tell the big cores from the efficiency ones."
+    },
+    {
+      "name": "governorMode",
+      "type": "string",
+      "desc": "Kernel scheduling policy for cpu0, \"sched_pixel\" on this device. Read-only without root."
+    },
+    {
+      "name": "lastBenchmarkDurationMs",
+      "type": "number | null",
+      "desc": "Milliseconds the last benchmark took. Null until you run one."
+    },
+    {
+      "name": "isBenchmarking",
+      "type": "boolean",
+      "desc": "True while the benchmark is running, so you can disable the button."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "benchmarkCPU()",
+      "type": "() => Promise<number>",
+      "desc": "Runs a real single-threaded prime sieve on the JS thread. It measures Hermes single-thread throughput, not the system, and blocks the UI while it runs.",
+      "output": "Resolves with the run duration in milliseconds, which is also written to lastBenchmarkDurationMs. Lower is faster."
+    }
+  ],
+  "example": "import { useCPU } from 'pixelkit';\n\nfunction CPUWidget() {\n  const { coreTopology, cpuLoadPercent, cores, benchmarkCPU } = useCPU();\n  return (\n    <View>\n      <Text>{coreTopology}</Text>\n      <Text>{cpuLoadPercent ?? '—'}% · {cores.map(c => c.curMHz).join('/')} MHz</Text>\n      <Button title=\"Run benchmark\" onPress={() => benchmarkCPU()} />\n    </View>\n  );\n}",
+  "agentNote": "Values are null until the native module answers; never substitute a default. cpuLoadPercent is frequency utilisation, not scheduler load, so do not label it \"CPU usage\"."
+}

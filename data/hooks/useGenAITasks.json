@@ -1,0 +1,119 @@
+{
+  "id": "useGenAITasks",
+  "name": "useGenAITasks",
+  "category": "ai",
+  "chipBadge": "ML Kit GenAI · on-device",
+  "summary": "Four focused text tasks that run locally: summarise, proofread, rewrite, describe.",
+  "plain": "Purpose-built text helpers that run on the phone. Each does one job well and is faster and more reliable than prompting a general model for the same thing. No network, no key.",
+  "description": "Wraps the ML Kit GenAI task modules on AICore through pixel-nano: genai-summarization, genai-proofreading and genai-rewriting, plus image description. Because each task ships a tuned model rather than a free-form prompt, the output is more consistent than asking a chat model, and it works on more devices. Every call reports its own measured latency and the engine that served it.",
+  "signature": "useGenAITasks(): GenAITasksState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isRunning",
+      "type": "boolean",
+      "desc": "True while any task is executing."
+    },
+    {
+      "name": "summaryResult",
+      "type": "SummarizeResult | null",
+      "desc": "Bullet summary with latency and engine name."
+    },
+    {
+      "name": "proofreadResult",
+      "type": "ProofreadResult | null",
+      "desc": "Corrected text plus the individual suggestions."
+    },
+    {
+      "name": "rewriteResult",
+      "type": "RewriteResult | null",
+      "desc": "Rewritten text in the requested tone."
+    },
+    {
+      "name": "imageDescriptionResult",
+      "type": "ImageDescriptionResult | null",
+      "desc": "Generated description of a supplied image."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last task failed, for example the model not being downloaded."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    }
+  ],
+  "actions": [
+    {
+      "name": "summarize(text, options?)",
+      "type": "(text: string, options?: SummarizeOptions) => Promise<SummarizeResult | null>",
+      "desc": "Condenses an article or a conversation on-device. Nothing leaves the phone.",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "The article or transcript to condense."
+        },
+        {
+          "name": "options",
+          "type": "SummarizeOptions | undefined",
+          "desc": "inputType: 'article' or 'conversation' tells the model how to read it; outputType: 'one_bullet', 'two_bullets' or 'three_bullets' sets the length."
+        }
+      ],
+      "output": "Resolves with { summary, latencyMs, engine, source }, or null on failure with the reason in error."
+    },
+    {
+      "name": "proofread(text)",
+      "type": "(text: string) => Promise<ProofreadResult | null>",
+      "desc": "Fixes grammar, punctuation and wording. Good for cleaning up dictated text.",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "The text to correct."
+        }
+      ],
+      "output": "Resolves with { correctedText, suggestions, latencyMs, engine, source } — suggestions lists the individual changes — or null on failure."
+    },
+    {
+      "name": "rewrite(text, tone?)",
+      "type": "(text: string, tone?: TaskTone) => Promise<RewriteResult | null>",
+      "desc": "Rewrites text in a different tone or length while keeping the meaning.",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "The text to transform."
+        },
+        {
+          "name": "tone",
+          "type": "TaskTone | undefined",
+          "desc": "One of elaborate, emojify, shorten, friendly, professional, rephrase. Defaults to professional."
+        }
+      ],
+      "output": "Resolves with { rewrittenText, suggestions, latencyMs, engine, source }, or null on failure."
+    },
+    {
+      "name": "describeImage(input, style?)",
+      "type": "(imageInput: string, style?: 'detailed' | 'caption' | 'labels' | 'concise') => Promise<ImageDescriptionResult | null>",
+      "desc": "Describes an image locally. Useful for alt text without a network round-trip.",
+      "inputs": [
+        {
+          "name": "imageInput",
+          "type": "string",
+          "desc": "A file URI or a base64 image."
+        },
+        {
+          "name": "style",
+          "type": "string | undefined",
+          "desc": "detailed, caption, labels or concise. Defaults to concise."
+        }
+      ],
+      "output": "Resolves with { description, finishReason, latencyMs, engine, source }, or null on failure."
+    }
+  ],
+  "example": "import { useGenAITasks } from 'pixelkit';\n\nasync function tidy(dictated: string, tasks) {\n  const fixed = await tasks.proofread(dictated);\n  const short = await tasks.summarize(fixed.correctedText, { outputType: 'two_bullets' });\n  return short.summary;\n}",
+  "agentNote": "Reach for these before prompting a chat model for the same job: they are faster, run offline and give steadier output. Handle the model-not-downloaded error."
+}

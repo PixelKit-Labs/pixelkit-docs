@@ -1,0 +1,143 @@
+/**
+ * PixelKit theme for Starlight.
+ *
+ * This overrides Starlight's CSS custom properties only (per Starlight's documented theming
+ * mechanism: https://starlight.astro.build/guides/css-and-tailwind/#custom-css-styles) — the
+ * component templates and layout are untouched, so upgrading `@astrojs/starlight` does not require
+ * re-forking anything here.
+ *
+ * Values are taken from PixelKit's own design tokens (`packages/pixelkit/src/theme/colors.ts` in
+ * the SDK repo): a near-black field with a blue cast, cyan as the one interactive accent, and green
+ * / red / amber / violet reserved for well / wrong / needs-action / model-and-external meanings —
+ * the same semantics Starlight already assigns to its tip / note / caution / danger asides, which is
+ * why those four hues map directly onto that set below.
+ */
+
+:root {
+	/* ---- Base palette (dark is the primary theme) ---- */
+	--sl-color-black: #0e1119; /* page field: near-black, blue cast */
+	--sl-color-gray-7: #10141c;
+	--sl-color-gray-6: #151925; /* panel face: nav + sidebar background */
+	--sl-color-gray-5: rgba(255, 255, 255, 0.16); /* hairline / border */
+	--sl-color-gray-4: #7c8290;
+	--sl-color-gray-3: #a8adb8; /* muted text: captions, metadata */
+	--sl-color-gray-2: #c7cbd6; /* body text */
+	--sl-color-gray-1: #f4f5f8; /* headings, emphasis */
+	--sl-color-white: #f4f5f8;
+
+	--sl-color-bg: var(--sl-color-black);
+	--sl-color-bg-nav: var(--sl-color-gray-7);
+	--sl-color-bg-sidebar: var(--sl-color-black);
+	--sl-color-bg-inline-code: rgba(255, 255, 255, 0.08);
+	--sl-color-hairline: rgba(255, 255, 255, 0.1);
+	--sl-color-hairline-light: rgba(255, 255, 255, 0.16);
+	--sl-color-hairline-shade: #05070c;
+
+	/* ---- Accent: cyan, the one interactive colour ---- */
+	--sl-color-accent-low: #123842;
+	--sl-color-accent: #6fdcf2;
+	--sl-color-accent-high: #bdf1fa;
+	--sl-color-text-accent: #6fdcf2;
+	--sl-color-text-invert: #101826;
+	--sl-color-bg-accent: #6fdcf2;
+
+	/* ---- Semantic hues used by Starlight's asides (note/tip/caution/danger) ---- */
+	/* note -> a cooler blue, kept distinct from the cyan accent used for links/buttons */
+	--sl-color-blue-low: #0f2a38;
+	--sl-color-blue: #4fb3e0;
+	--sl-color-blue-high: #c9e9f7;
+	/* tip -> violet: the model / external streams */
+	--sl-color-purple-low: #241c40;
+	--sl-color-purple: #a18bf6;
+	--sl-color-purple-high: #dcd3fd;
+	/* caution -> amber: a human or a tool must act */
+	--sl-color-orange-low: #3a2c10;
+	--sl-color-orange: #f0be4f;
+	--sl-color-orange-high: #fbe7ba;
+	/* danger -> red: wrong, failed, refused */
+	--sl-color-red-low: #3a1210;
+	--sl-color-red: #f25c55;
+	--sl-color-red-high: #fbc7c3;
+	/* success is not one of Starlight's built-in hues, but is used by our own hero/cards below */
+	--pk-color-green: #46d786;
+	--pk-color-green-high: #b9f3d3;
+
+	/* ---- Type ---- */
+	--sl-font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+		sans-serif;
+	--sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono',
+		monospace;
+
+	/* Slightly wider content column: hardware API tables and code samples are wide. */
+	--sl-content-width: 50rem;
+}
+
+:root[data-theme='light'] {
+	/* Starlight uses "black"/"white" as the two text/bg extremes, swapped per theme, not literal
+	   colour names — e.g. Hero title colour is `var(--sl-color-white)` in both themes, so in light
+	   mode that has to resolve to a dark, readable colour, not literal white. */
+	--sl-color-black: #ffffff;
+	--sl-color-white: #171a22;
+	--sl-color-gray-7: #f5f6f9;
+	--sl-color-gray-6: #eceef3;
+	--sl-color-gray-5: rgba(14, 17, 25, 0.14);
+	--sl-color-gray-4: #6b7180;
+	--sl-color-gray-3: #5e6472;
+	--sl-color-gray-2: #333743;
+	--sl-color-gray-1: #171a22;
+
+	--sl-color-bg: #ffffff;
+	--sl-color-bg-nav: var(--sl-color-gray-7);
+	--sl-color-bg-sidebar: var(--sl-color-gray-7);
+	--sl-color-bg-inline-code: rgba(14, 17, 25, 0.06);
+	--sl-color-hairline: rgba(14, 17, 25, 0.12);
+	--sl-color-hairline-light: rgba(14, 17, 25, 0.08);
+	--sl-color-hairline-shade: rgba(14, 17, 25, 0.12);
+
+	--sl-color-accent-low: #d7eef6;
+	--sl-color-accent: #1f7a9c;
+	--sl-color-accent-high: #114b60;
+	--sl-color-text-accent: #1f7a9c;
+	--sl-color-text-invert: #ffffff;
+	--sl-color-bg-accent: #1f7a9c;
+
+	--sl-color-blue-low: #e3f2fa;
+	--sl-color-blue: #1f7a9c;
+	--sl-color-blue-high: #0f4356;
+	--sl-color-purple-low: #ece8fb;
+	--sl-color-purple: #5b44c9;
+	--sl-color-purple-high: #33266f;
+	--sl-color-orange-low: #f7ecd3;
+	--sl-color-orange: #9a6b00;
+	--sl-color-orange-high: #5c4000;
+	--sl-color-red-low: #fbe3e1;
+	--sl-color-red: #c62842;
+	--sl-color-red-high: #7a1729;
+	--pk-color-green: #1e8e4e;
+	--pk-color-green-high: #0f4a29;
+}
+
+/* Tighten heading tracking slightly; the system sans stack renders a touch loose at these sizes. */
+.sl-markdown-content :is(h1, h2, h3, h4) {
+	letter-spacing: -0.01em;
+}
+
+/* Table treatment: precise, quiet grid rather than the default alternating shade. */
+.sl-markdown-content table {
+	font-size: var(--sl-text-sm);
+}
+.sl-markdown-content th {
+	color: var(--sl-color-gray-1);
+	border-bottom-width: 2px;
+}
+.sl-markdown-content td,
+.sl-markdown-content th {
+	border: 1px solid var(--sl-color-hairline);
+	padding: 0.4rem 0.75rem;
+}
+
+/* Inline code: a hairline rather than a flat fill, so it reads as a value, not a highlight. */
+.sl-markdown-content code:not(:where(.not-content *)) {
+	border: 1px solid var(--sl-color-hairline);
+	border-radius: 4px;
+}
