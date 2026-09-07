@@ -1,0 +1,30 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # The content lives in another repository, so nothing here changing does not mean the site is
+  # still correct. Rebuild daily to catch a docs change that breaks rendering.
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Clones the SDK repo for its docs/, then builds. Fails if the docs source is unreachable.
+      - run: npm run build
+      - name: Check every section rendered
+        run: |
+          for d in getting-started api guides for-coding-agents; do
+            test -d "dist/$d" || { echo "missing section: $d"; exit 1; }
+          done
+          echo "pages built: $(find dist -name index.html | wc -l)"
