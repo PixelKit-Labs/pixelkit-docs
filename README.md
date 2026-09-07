@@ -1,6 +1,6 @@
 # pixelkit-docs
 
-The documentation site for [PixelKit](https://github.com/PixelKit-Labs/pixelkit), built with
+The documentation site for [PixelKit](https://github.com/PixelKit-Labs/pixelkit-sdk), built with
 [Astro Starlight](https://starlight.astro.build/).
 
 ## The markdown does not live here
@@ -24,17 +24,17 @@ Working on documentation at the same time? Point it at your local checkout inste
 pick up uncommitted changes:
 
 ```bash
-PIXELKIT_DOCS=../pixelkit/docs npm run dev
+PIXELKIT_DOCS=../pixelkit-sdk/docs npm run dev
 ```
 
 | Variable | Effect |
 | :--- | :--- |
 | `PIXELKIT_DOCS` | Path to a local `docs/` directory. Skips cloning entirely. |
-| `PIXELKIT_SDK_REPO` | Clone a different SDK repository. Defaults to `PixelKit-Labs/pixelkit`. |
+| `PIXELKIT_SDK_REPO` | Clone a different SDK repository. Defaults to `PixelKit-Labs/pixelkit-sdk`. |
 
 ## Editing the docs
 
-Open a pull request against [PixelKit-Labs/pixelkit](https://github.com/PixelKit-Labs/pixelkit),
+Open a pull request against [PixelKit-Labs/pixelkit-sdk](https://github.com/PixelKit-Labs/pixelkit-sdk),
 not this repository. Changes here only affect how pages are rendered — navigation, theme, layout.
 
 MIT.

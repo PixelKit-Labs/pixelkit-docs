@@ -32,7 +32,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * Set PIXELKIT_DOCS to a local checkout's `docs/` directory to work offline or against uncommitted
  * changes. Otherwise the SDK repo is shallow-cloned into a gitignored directory at build time.
  */
-const SDK_REPO = process.env.PIXELKIT_SDK_REPO ?? 'https://github.com/PixelKit-Labs/pixelkit.git';
+const SDK_REPO = process.env.PIXELKIT_SDK_REPO ?? 'https://github.com/PixelKit-Labs/pixelkit-sdk.git';
 const CHECKOUT = path.resolve(__dirname, '..', '.pixelkit-sdk');
 
 function resolveSource() {
