@@ -1,47 +1,50 @@
 ---
 /**
- * The site's homepage.
+ * @file index.astro
+ * @description The documentation landing page.
  *
- * This is a "custom page" in Starlight's sense: a file under `src/pages/` rendered with the
- * `<StarlightPage>` component, rather than a page in the `docs` content collection. Astro's
- * file-based routing gives files in `src/pages/` priority over Starlight's own collection-driven
- * routes, so this file owns "/" outright — `scripts/sync-docs.mjs` writes its synced copy of the
- * SDK's README to `readme.md`, not `index.md`, specifically so the two never contend for the same
- * route. See that script's comment on `TOP_LEVEL_FILE_ROUTES` for the full reasoning.
+ * Deliberately outside the sync pipeline: scripts/sync-docs.mjs writes src/content/docs/ and never
+ * touches src/pages/, so this hand-written page cannot be clobbered by a docs rebuild.
  *
- * Content below is hand-written for this site; it is not sourced from `docs/` and is not touched by
- * the sync script.
+ * It answers the four questions a reader actually arrives with, in order: what can I read off the
+ * phone, how do I install it, what does the code look like, and what will stop me. The provenance
+ * design lives on its own page - it is what makes the readings trustworthy once you are using them,
+ * not what decides whether to install.
  */
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { CardGrid, LinkCard, Aside, Code } from '@astrojs/starlight/components';
 
-const provenanceExample = `import { useCPU } from 'pixelkit';
-
-const { cpuLoadPercent, source } = useCPU();
-
-// source: 'hardware' | 'derived' | 'unavailable' — never 'simulated'.
-// cpuLoadPercent is null when cpufreq sysfs can't be read, not a guess.
-return <Text>{cpuLoadPercent ?? '—'}%</Text>;`;
-
 const installExample = `npx expo install pixelkit @pixelkit/native
 
-# optional, separate: on-device Gemini Nano (+19 ML Kit artifacts)
+# on-device ML, opt-in: adds 19 ML Kit artifacts to your APK
 npx expo install @pixelkit/mlkit`;
 
-const importExample = `import { useCPU } from 'pixelkit';
-import { useGeminiNano } from 'pixelkit/mlkit';`;
+const usageExample = `import { useCPU, useSensors, useBiometrics } from 'pixelkit';
+import { useGeminiNano } from 'pixelkit/mlkit';
+
+function Readout() {
+  const cpu = useCPU();
+  const { pressure } = useSensors();
+
+  return (
+    <>
+      <Text>{cpu.cores[0]?.curMHz ?? '—'} MHz</Text>
+      <Text>{pressure ?? '—'} hPa</Text>
+    </>
+  );
+}`;
 ---
 
 <StarlightPage
 	frontmatter={{
 		title: 'PixelKit',
 		description:
-			'Typed React hooks for real Google Pixel hardware and on-device AI, each one telling you whether its value is real.',
+			'Typed React hooks for Google Pixel hardware and on-device AI: silicon telemetry, sensors, radios, security and Gemini Nano.',
 		template: 'splash',
 		hero: {
-			title: 'Real hardware. No pretending.',
+			title: 'The Pixel, as React hooks.',
 			tagline:
-				'32 typed React hooks for the Google Pixel: per-core CPU frequencies, battery temperature, camera, radios, biometrics, the hardware keystore, and Gemini Nano on-device.',
+				'Per-core CPU frequencies, battery temperature, the camera and microphone, every radio from NFC to ultra-wideband, biometrics and the hardware keystore, and Gemini Nano running on the phone.',
 			actions: [
 				{ text: 'Get started', link: '/getting-started/quickstart/', variant: 'primary', icon: 'right-arrow' },
 				{ text: 'API reference', link: '/api/hardware-api/', variant: 'secondary' },
@@ -50,62 +53,90 @@ import { useGeminiNano } from 'pixelkit/mlkit';`;
 	}}
 >
 	<div class="sl-markdown-content">
-		<h2>Every value says where it came from</h2>
-		<p>
-			Every hook returns a <code>source</code> field typed as
-			<code>'hardware' | 'derived' | 'unavailable'</code>. There is no <code>'simulated'</code> member —
-			the type makes a fabricated reading unrepresentable. When a value can't be read, it is
-			<code>null</code>, it renders as an em dash, and <code>source</code> says
-			<code>'unavailable'</code>, so the caller can tell the difference and the UI can refuse
-			rather than show a plausible-looking number that isn't real.
-		</p>
-
-		<Code code={provenanceExample} lang="tsx" title="any component" />
-
 		<h2>Install</h2>
-		<p>
-			The core SDK and the native telemetry module install together. On-device inference is a
-			separate, opt-in package, because it adds 19 ML Kit artifacts to the built APK.
-		</p>
-
 		<Code code={installExample} lang="sh" />
 
-		<p>Two entry points, both typed:</p>
-
-		<Code code={importExample} lang="tsx" />
-
-		<Aside type="caution" title="Before you install">
-			<p>
-				PixelKit is Android only — there is no iOS build. It also cannot run inside Expo Go:
-				reading a thermal sensor or a fuel-gauge register takes native code compiled into the app,
-				so every project needs a development build (<code>npx expo run:android</code> or an EAS dev
-				client).
-			</p>
+		<Aside type="caution" title="Android, and a development build">
+			The hooks talk to Kotlin native modules that have to be compiled into your app, so this
+			cannot run in Expo Go. Build it onto the device with <code>npx expo run:android</code> — one
+			command, a few minutes the first time. On other platforms every native-backed hook reports
+			<code>unavailable</code>.
 		</Aside>
 
-		<h2>Where to go</h2>
+		<h2>Use it</h2>
+		<Code code={usageExample} lang="tsx" />
 
+		<h2>What you can read</h2>
+		<table>
+			<thead>
+				<tr><th>Area</th><th>Hooks</th></tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><strong>Silicon</strong></td>
+					<td><code>useCPU</code> <code>useGPU</code> <code>useMemory</code> <code>useADPF</code> <code>useTPU</code></td>
+				</tr>
+				<tr>
+					<td><strong>System</strong></td>
+					<td><code>useDevice</code> <code>useDisplay</code> <code>useNetwork</code> <code>useCellular</code> <code>useCapabilities</code></td>
+				</tr>
+				<tr>
+					<td><strong>Sensors</strong></td>
+					<td><code>useSensors</code> <code>useLocation</code> <code>useCamera</code> <code>useVideo</code> <code>useMediaLibrary</code> <code>useAudio</code></td>
+				</tr>
+				<tr>
+					<td><strong>Actuators</strong></td>
+					<td><code>useHaptics</code> <code>useTorch</code> <code>useHiLight</code></td>
+				</tr>
+				<tr>
+					<td><strong>Radios</strong></td>
+					<td><code>useBLE</code> <code>useNFC</code> <code>useUWB</code> <code>useRadios</code></td>
+				</tr>
+				<tr>
+					<td><strong>Security</strong></td>
+					<td><code>useBiometrics</code> <code>useSecurity</code></td>
+				</tr>
+				<tr>
+					<td><strong>AI</strong></td>
+					<td><code>useGemini</code> <code>useSpeechAI</code> <code>useSpeech</code> <code>useGeminiNano</code> <code>useGenAITasks</code> <code>useVisionAI</code> <code>useNaturalLanguageAI</code></td>
+				</tr>
+			</tbody>
+		</table>
+
+		<p>
+			Every hook is documented with its arguments, every field it returns with the type it really
+			has, and a contract for each function it exposes.
+		</p>
+
+		<h2>Where to go</h2>
 		<CardGrid>
 			<LinkCard
 				title="Quickstart"
-				description="Install the SDK, run a development build, read your first hook."
 				href="/getting-started/quickstart/"
+				description="Install, build onto a device, and read your first value."
 			/>
 			<LinkCard
 				title="API reference"
-				description="All 32 hooks: arguments, return fields, units, and failure modes."
 				href="/api/hardware-api/"
+				description="Every hook: inputs, outputs, and what failure looks like."
 			/>
 			<LinkCard
 				title="Guides"
-				description="On-device Gemini Nano, function calling over hardware, voice, troubleshooting."
 				href="/guides/"
+				description="On-device Gemini Nano, function calling, and voice."
 			/>
 			<LinkCard
-				title="For coding agents"
-				description="The rules an agent follows in a PixelKit project, and the hook table it needs."
-				href="/for-coding-agents/ai-primer/"
+				title="Architecture"
+				href="/getting-started/architecture/"
+				description="How the hooks reach the hardware, layer by layer."
 			/>
 		</CardGrid>
+
+		<p>
+			Built from <a href="https://github.com/PixelKit-Labs/pixelkit-template">the template</a>? It
+			is a working four-tab app exercising every hook on a real device. Something reading
+			<code>—</code> and you are not sure why? <code>npx @pixelkit/cli doctor</code> says which of
+			adb, the device, the development build or AICore is missing.
+		</p>
 	</div>
 </StarlightPage>
