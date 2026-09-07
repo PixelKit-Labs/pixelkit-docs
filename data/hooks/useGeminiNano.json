@@ -222,45 +222,6 @@
       "output": "Resolves with the token count, or null when the tokenizer is unavailable. Compare it against info.tokenLimit."
     },
     {
-      "name": "setSafety(threshold)",
-      "type": "(threshold: 'default' | HarmBlockThreshold) => void",
-      "desc": "Sets one blocking threshold across all four harm categories (harassment, hate speech, sexually explicit, dangerous content) and resets the chat session.",
-      "inputs": [
-        {
-          "name": "threshold",
-          "type": "'default' | HarmBlockThreshold",
-          "desc": "'default' sends no safetySettings at all. Otherwise BLOCK_NONE, BLOCK_ONLY_HIGH, BLOCK_MEDIUM_AND_ABOVE or BLOCK_LOW_AND_ABOVE from @google/genai."
-        }
-      ],
-      "output": "Returns nothing; the next turn starts a fresh session carrying that threshold."
-    },
-    {
-      "name": "setSearchGroundingEnabled(enabled)",
-      "type": "(enabled: boolean) => void",
-      "desc": "Attaches or removes the googleSearch tool, letting the model search the web before answering. Resets the chat session.",
-      "inputs": [
-        {
-          "name": "enabled",
-          "type": "boolean",
-          "desc": "True to ground replies in Google Search. The model decides per turn whether to actually search."
-        }
-      ],
-      "output": "Returns nothing. When a turn does search, lastGrounding carries the queries and source URIs."
-    },
-    {
-      "name": "countTokens(text)",
-      "type": "(text: string) => Promise<number | null>",
-      "desc": "Asks the API how many tokens a prompt costs on the selected model, before you send it.",
-      "inputs": [
-        {
-          "name": "text",
-          "type": "string",
-          "desc": "The prompt to measure. Blank input returns null without a network call."
-        }
-      ],
-      "output": "Resolves to the token count, or null without a key or when the call fails. Also written to lastPromptTokens."
-    },
-    {
       "name": "clearMessages()",
       "type": "() => void",
       "desc": "Empties the conversation and the thinking output.",
