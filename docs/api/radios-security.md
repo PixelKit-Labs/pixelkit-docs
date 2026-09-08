@@ -20,7 +20,7 @@ This document covers wireless radios, near-field interactions, satellite positio
 
 Fingerprint and face authentication through the platform `BiometricPrompt` (`expo-local-authentication`). Sensor presence and enrolment are reported separately, because a device can have the sensor with nothing enrolled, in which case a prompt can never succeed and the caller should offer a passcode path instead of a button that always fails.
 
-A failed prompt is not a broken one: `authenticate` resolves `false` for a cancel or a mismatch and sets `error` only when the call itself failed.
+A failed prompt is not a broken one: `authenticate` resolves `false` for a cancel or a mismatch and sets `error` only when the call itself failed. Capabilities are read on mount.
 
 ### Signature
 ```typescript
@@ -33,9 +33,6 @@ function useBiometrics(): BiometricState & {
  refresh: () => Promise<void>;
 };
 ```
-
-### Inputs
-`useBiometrics()` takes no arguments. Capabilities are read on mount.
 
 ### Outputs
 | Field | Type | Description |
@@ -60,7 +57,7 @@ function useBiometrics(): BiometricState & {
 
 Secret storage through `expo-secure-store`, which encrypts values with a key held in the **Android Keystore** (StrongBox-backed on devices that have it, including the Pixel 11 Pro). Secret values are never logged: events record the key name, the operation and whether it succeeded, which is enough to debug a storage problem without putting the secret in logcat.
 
-No post-quantum algorithms are involved; `isPostQuantumProtected` is always `false`.
+No post-quantum algorithms are involved; `isPostQuantumProtected` is always `false`. On web it falls back to `localStorage`, which is **not** encrypted; `isHardwareBacked` is `false` there and should gate anything sensitive.
 
 ### Signature
 ```typescript
@@ -76,9 +73,6 @@ function useSecurity(): {
  source: TelemetrySource;
 };
 ```
-
-### Inputs
-`useSecurity()` takes no arguments. On web it falls back to `localStorage`, which is **not** encrypted; `isHardwareBacked` is `false` there and should gate anything sensitive.
 
 ### Outputs
 | Field | Type | Description |
@@ -115,7 +109,7 @@ export function VaultManager() {
 
 ## `useBLE`
 
-Reads the physical Bluetooth adapter state, Bluetooth 5.4 Channel Sounding silicon support and real bonded devices from `BluetoothAdapter`, and discovers nearby peripherals with Android `BluetoothLeScanner`. Distance is estimated from RSSI with the log-distance path-loss model (`n = 2.0`, free space), so it is an estimate and drifts with obstacles.
+Reads the physical Bluetooth adapter state, Bluetooth 5.4 Channel Sounding silicon support and real bonded devices from `BluetoothAdapter`, and discovers nearby peripherals with Android `BluetoothLeScanner`. Distance is estimated from RSSI with the log-distance path-loss model (`n = 2.0`, free space), so it is an estimate and drifts with obstacles. Adapter state is read per render from the native module; discovery is polled every 500 ms while a scan is running.
 
 ### Signature
 ```typescript
@@ -134,9 +128,6 @@ function useBLE(): {
  stopScan: () => void;
 };
 ```
-
-### Inputs
-`useBLE()` takes no arguments. Adapter state is read per render from the native module; discovery is polled every 500 ms while a scan is running.
 
 ### Outputs
 | Field | Type | Description |
@@ -164,7 +155,7 @@ function useBLE(): {
 
 Real NFC: adapter state, plus NDEF tag reading and writing through reader mode. `startReader` enables `NfcAdapter` reader mode on the foreground Activity; every tag entering the field arrives as an event carrying its identifier, technologies, capacity, writability and decoded NDEF records. `writeText` queues a text record for the next tag presented.
 
-Two platform constraints are surfaced rather than hidden: reader mode needs a foreground Activity, so it stops when the app is backgrounded and must be restarted on resume; and a tag is only readable while it is physically in the field.
+Two platform constraints are surfaced rather than hidden: reader mode needs a foreground Activity, so it stops when the app is backgrounded and must be restarted on resume; and a tag is only readable while it is physically in the field. It subscribes to `onNfcTag` and `onNfcError` on mount and releases reader mode on unmount.
 
 ### Signature
 ```typescript
@@ -186,9 +177,6 @@ function useNFC(): {
  clearTag: () => void;
 };
 ```
-
-### Inputs
-`useNFC()` takes no arguments. It subscribes to `onNfcTag` and `onNfcError` on mount and releases reader mode on unmount.
 
 ### Outputs
 | Field | Type | Description |
@@ -217,7 +205,7 @@ function useNFC(): {
 
 ## `useRadios`
 
-Unified hardware radio telemetry, queried directly from Android system services (`NfcAdapter`, `BluetoothManager`, `UwbManager`, `WifiRttManager`, `PackageManager`) and refreshed every 5 s. Use it to decide which radio features to show at all; use the per-radio hooks to drive them.
+Unified hardware radio telemetry, queried directly from Android system services (`NfcAdapter`, `BluetoothManager`, `UwbManager`, `WifiRttManager`, `PackageManager`) and refreshed every 5 s. Use it to decide which radio features to show at all; use the per-radio hooks to drive them. It reads on mount and every 5,000 ms thereafter.
 
 ### Signature
 ```typescript
@@ -231,9 +219,6 @@ function useRadios(): {
  refresh: () => void;
 };
 ```
-
-### Inputs
-`useRadios()` takes no arguments. It reads on mount and every 5,000 ms thereafter.
 
 ### Outputs
 | Field | Type | Description |
@@ -263,7 +248,7 @@ function useRadios(): {
 
 Position, altitude, heading and speed from the multi-band GNSS receiver (`expo-location`, `Accuracy.Highest`). Coordinates are never written to the log: events record accuracy, whether a fix arrived and how long it took, which is what you need to debug positioning without recording where the user was.
 
-`accuracy` is the radius in metres the platform believes the position lies within. Indoors it can be tens of metres, so it gates whether a coordinate is worth acting on.
+`accuracy` is the radius in metres the platform believes the position lies within. Indoors it can be tens of metres, so it gates whether a coordinate is worth acting on. It requests foreground location permission and takes one fix on mount; there is no continuous watch, so call `refreshLocation()` when you need a newer position.
 
 ### Signature
 ```typescript
@@ -276,9 +261,6 @@ function useLocation(): LocationTelemetry & {
  refreshLocation: () => Promise<boolean>;
 };
 ```
-
-### Inputs
-`useLocation()` takes no arguments. It requests foreground location permission and takes one fix on mount; there is no continuous watch, so call `refreshLocation()` when you need a newer position.
 
 ### Outputs
 | Field | Type | Description |

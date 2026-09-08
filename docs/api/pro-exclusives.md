@@ -22,7 +22,7 @@ PixelKit includes a native, zero-dependency Java daemon (`scripts/hilight-daemon
 | :--- | :--- | :--- | :--- |
 | `'hardware'` | Native ADB daemon active (`npm run hilight:daemon`) | Drives real physical LEDs via `ILightsManager` | `'hardware'` |
 | `'unavailable'` | Pixel 11 Pro without the daemon running | The LEDs cannot be driven; state is tracked but nothing lights | `'unavailable'` |
-| `'unsupported'` | No HiLight array on this device | Nothing | `'unavailable'` |
+| `'unsupported'` | No HiLight array on this device | Nothing | `'unavailable'` | It probes the daemon on mount and every 5,000 ms, and clears any pending auto-off timer on unmount.
 
 ### Signature
 ```typescript
@@ -49,9 +49,6 @@ function useHiLight(): {
 
 type HiLightMode = 'off' | 'glow' | 'breathing' | 'pulse' | 'gemini_thinking' | 'incoming_call' | 'notification';
 ```
-
-### Inputs
-`useHiLight()` takes no arguments. It probes the daemon on mount and every 5,000 ms, and clears any pending auto-off timer on unmount.
 
 ### Outputs
 | Field | Type | Description |
@@ -104,7 +101,7 @@ export function HiLightHUD() {
 
 Ultra-Wideband transceiver state and ranging sessions. Chip presence, enabled state, chip id and ranging-service readiness are read from Android `UwbManager` and `PackageManager` through the native module (`source: 'hardware'`). Sessions are created through `UwbManager` / `RangingManager` with `startRanging(sessionId)`.
 
-`activeTargets` is populated only by a live session that reports peers; it is empty rather than filled with placeholder anchors.
+`activeTargets` is populated only by a live session that reports peers; it is empty rather than filled with placeholder anchors. Radio state is read from the native module per render; sessions are started explicitly.
 
 ### Signature
 ```typescript
@@ -123,9 +120,6 @@ function useUWB(): {
  stopRanging: () => void;
 };
 ```
-
-### Inputs
-`useUWB()` takes no arguments. Radio state is read from the native module per render; sessions are started explicitly.
 
 ### Outputs
 | Field | Type | Description |

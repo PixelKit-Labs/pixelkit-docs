@@ -22,7 +22,7 @@ This document covers system telemetry, media capture and playback, power and the
 
 Microphone capture, level metering and playback on `expo-audio`. Two capture profiles: `speech` (16 kHz mono through the Pixel `voice_recognition` path, which applies the platform's noise suppression) and `studio` (48 kHz stereo through `unprocessed`, the raw microphone signal). Nothing is simulated: before the first sample `meteringDecibels` sits at the silence floor and `source` is `'unavailable'`.
 
-Verified on Pixel 11 Pro: `dumpsys audio` shows `src:VOICE_RECOGNITION pack:com.pixelkit.sdk` while the speech profile is recording.
+Verified on Pixel 11 Pro: `dumpsys audio` shows `src:VOICE_RECOGNITION pack:com.pixelkit.sdk` while the speech profile is recording. It requests microphone permission on mount and clears every timer on unmount. Per-take options go to `startRecording`.
 
 ### Signature
 ```typescript
@@ -45,9 +45,6 @@ function useAudio(): {
  pausePlayback: () => void; stopPlayback: () => Promise<void>; seekPlayback: (seconds: number) => Promise<void>;
 };
 ```
-
-### Inputs
-`useAudio()` takes no arguments. It requests microphone permission on mount and clears every timer on unmount. Per-take options go to `startRecording`.
 
 ### Outputs
 | Field | Type | Description |
@@ -102,15 +99,12 @@ await audio.playLastRecording();
 
 ## `useCapabilities`
 
-The first hook to call: it answers "does this device have that?" so an interface can hide what the phone cannot do instead of showing a control that will fail. Capabilities resolve from the model table, then upgrade to device-verified `PackageManager` feature flags when the PixelNative module is present. Memoised for the app lifetime.
+The first hook to call: it answers "does this device have that?" so an interface can hide what the phone cannot do instead of showing a control that will fail. Capabilities resolve from the model table, then upgrade to device-verified `PackageManager` feature flags when the PixelNative module is present. Memoised for the app lifetime. It reads `expo-device` and, when available, the native module; the result is computed once and reused.
 
 ### Signature
 ```typescript
 function useCapabilities(): DeviceCapabilities;
 ```
-
-### Inputs
-`useCapabilities()` takes no arguments. It reads `expo-device` and, when available, the native module; the result is computed once and reused.
 
 ### Outputs
 | Field | Type | Description |
@@ -153,7 +147,7 @@ if (caps.verification === 'device' && caps.hasUWB) enableRanging();
 
 ## `useDisplay`
 
-Display telemetry and control: the live refresh-rate mode, adaptive refresh rate (ARR) support, HDR capabilities and resolution from Android `Display`, plus brightness (`expo-brightness`) and the screen wake lock (`expo-keep-awake`). Refresh rate is re-read every 2 s because ARR changes it while you watch.
+Display telemetry and control: the live refresh-rate mode, adaptive refresh rate (ARR) support, HDR capabilities and resolution from Android `Display`, plus brightness (`expo-brightness`) and the screen wake lock (`expo-keep-awake`). Refresh rate is re-read every 2 s because ARR changes it while you watch. It reads brightness once on mount and display information every 2,000 ms.
 
 ### Signature
 ```typescript
@@ -173,9 +167,6 @@ function useDisplay(): {
  setPreferredRefreshRate: (rateHz: number) => Promise<boolean>;
 };
 ```
-
-### Inputs
-`useDisplay()` takes no arguments. It reads brightness once on mount and display information every 2,000 ms.
 
 ### Outputs
 | Field | Type | Description |
@@ -202,7 +193,7 @@ function useDisplay(): {
 
 ## `useDevice`
 
-Model identity, battery level, fuel gauge thermistor temperature, real-time voltage/current/wattage, and connectivity in one object, with live listeners for battery state and native PMIC telemetry via `PixelNative`.
+Model identity, battery level, fuel gauge thermistor temperature, real-time voltage/current/wattage, and connectivity in one object, with live listeners for battery state and native PMIC telemetry via `PixelNative`. It reads once on mount and then keeps `batteryPercent` and `isCharging` current through `expo-battery` listeners and `PixelNative.getBatteryTelemetry()`.
 
 ### Signature
 ```typescript
@@ -226,9 +217,6 @@ function useDevice(): DeviceTelemetry & {
  refresh: () => Promise<void>;
 };
 ```
-
-### Inputs
-`useDevice()` takes no arguments. It reads once on mount and then keeps `batteryPercent` and `isCharging` current through `expo-battery` listeners and `PixelNative.getBatteryTelemetry()`.
 
 ### Outputs
 | Field | Type | Description |
@@ -270,7 +258,7 @@ function useDevice(): DeviceTelemetry & {
 
 Connectivity, address and metering from `expo-network`. Being attached to Wi-Fi is not the same as having internet, so `isConnected` requires both a connection and a reachable route. Nothing is assumed before the first read: the type is `UNKNOWN` and `isConnected` is `false` until the platform answers.
 
-For what kind of cellular connection this is, and which carrier, see [`useCellular`](#usecellular).
+For what kind of cellular connection this is, and which carrier, see [`useCellular`](#usecellular). It reads once on mount; each sub-read (address, state, airplane mode) fails independently so one missing value does not blank the rest.
 
 ### Signature
 ```typescript
@@ -282,9 +270,6 @@ function useNetwork(): NetworkTelemetry & {
  refreshNetwork: () => Promise<void>;
 };
 ```
-
-### Inputs
-`useNetwork()` takes no arguments. It reads once on mount; each sub-read (address, state, airplane mode) fails independently so one missing value does not blank the rest.
 
 ### Outputs
 | Field | Type | Description |
@@ -370,7 +355,7 @@ function useVideo(initialSource?: VideoSource): {
 
 Saving captures to the device gallery and reading them back, on `expo-media-library`. Without this, a photo from `useCamera().takePicture()` or a clip from `startRecording()` lives in the app cache and disappears when the system reclaims it. `save()` promotes a capture into the user's media store, where it survives and is visible to every other app.
 
-SDK 57 uses the class API (`Asset.create`, `Album.create`, `Query`) rather than the deprecated `createAssetAsync` helpers, which now throw at runtime. Android 13+ grants read access per media type, and the user may share only selected items, so a granted permission does not mean access to everything.
+SDK 57 uses the class API (`Asset.create`, `Album.create`, `Query`) rather than the deprecated `createAssetAsync` helpers, which now throw at runtime. Android 13+ grants read access per media type, and the user may share only selected items, so a granted permission does not mean access to everything. It checks existing permission on mount without prompting; `save()` and `loadRecent()` prompt if needed.
 
 ### Signature
 ```typescript
@@ -389,9 +374,6 @@ function useMediaLibrary(): {
  remove: (media: SavedMedia) => Promise<boolean>;
 };
 ```
-
-### Inputs
-`useMediaLibrary()` takes no arguments. It checks existing permission on mount without prompting; `save()` and `loadRecent()` prompt if needed.
 
 ### Outputs
 | Field | Type | Description |
@@ -421,7 +403,7 @@ function useMediaLibrary(): {
 
 Mobile network telemetry on `expo-cellular`: carrier, radio generation and network codes. `useNetwork` can tell you the connection is cellular; it cannot tell you whether that is 5G or 2G, or who is serving it.
 
-Two caveats. `generation` reflects the current data connection, so it changes as the phone moves and reads `unknown` with no cellular data attached, including on Wi-Fi. And carrier and network codes need the phone-state permission on Android; without it they stay `null` rather than being guessed at.
+Two caveats. `generation` reflects the current data connection, so it changes as the phone moves and reads `unknown` with no cellular data attached, including on Wi-Fi. And carrier and network codes need the phone-state permission on Android; without it they stay `null` rather than being guessed at. It checks the existing permission and reads everything the platform will answer without prompting, on mount.
 
 ### Signature
 ```typescript
@@ -440,9 +422,6 @@ function useCellular(): {
  requestPermission: () => Promise<boolean>;
 };
 ```
-
-### Inputs
-`useCellular()` takes no arguments. It checks the existing permission and reads everything the platform will answer without prompting, on mount.
 
 ### Outputs
 | Field | Type | Description |

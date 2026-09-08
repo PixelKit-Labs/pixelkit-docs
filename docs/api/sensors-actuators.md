@@ -76,7 +76,7 @@ export function AltitudeHUD() {
 
 Camera control and capture on `expo-camera`: lens selection, zoom, flash, torch, stills and video. The hook owns a ref to a `CameraView` and drives it, so a screen renders the view and attaches `cameraRef` and `handleCameraReady`.
 
-Two device facts the API does not make obvious. `zoom` is a **0 to 1 fraction of the lens range**, not an optical multiplier, so a "5x" figure from the Pixel Camera app does not map onto it. And Camera Looks, Super Res Zoom and the low-light video mode belong to the Pixel Camera app and cannot be driven from a third-party app; `selectedLook` is a label for your own interface.
+Two device facts the API does not make obvious. `zoom` is a **0 to 1 fraction of the lens range**, not an optical multiplier, so a "5x" figure from the Pixel Camera app does not map onto it. And Camera Looks, Super Res Zoom and the low-light video mode belong to the Pixel Camera app and cannot be driven from a third-party app; `selectedLook` is a label for your own interface. It requests camera permission on mount. Capture requires `cameraRef` to be attached to a mounted `<CameraView>`; without it every capture call returns `null` and sets `error`.
 
 ### Signature
 ```typescript
@@ -111,9 +111,6 @@ function useCamera(): CameraTelemetry & {
  resumePreview: () => Promise<void>;
 };
 ```
-
-### Inputs
-`useCamera()` takes no arguments. It requests camera permission on mount. Capture requires `cameraRef` to be attached to a mounted `<CameraView>`; without it every capture call returns `null` and sets `error`.
 
 ### Outputs
 | Field | Type | Description |
@@ -184,7 +181,7 @@ export function Capture() {
 
 Operates the rear camera flash LED through Android `CameraManager.setTorchMode` and, on Android 13+, `turnOnTorchWithStrengthLevel` for variable brightness. State follows the system torch callback, so a Quick Settings toggle is reflected here. Nothing is simulated: without the PixelNative module `isAvailable` is `false` and every action refuses.
 
-Verified on Pixel 11 Pro: camera id `0`, **21 strength levels**; the camera HAL logs `Torch for camera id 0 turned on`.
+Verified on Pixel 11 Pro: camera id `0`, **21 strength levels**; the camera HAL logs `Torch for camera id 0 turned on`. It reads torch capabilities on mount and subscribes to `onTorchState`. On unmount it clears any strobe timer and switches the LED off.
 
 ### Signature
 ```typescript
@@ -201,9 +198,6 @@ function useTorch(): {
  stopStrobe: () => void;
 };
 ```
-
-### Inputs
-`useTorch()` takes no arguments. It reads torch capabilities on mount and subscribes to `onTorchState`. On unmount it clears any strobe timer and switches the LED off.
 
 ### Outputs
 | Field | Type | Description |
@@ -236,7 +230,7 @@ const torch = useTorch();
 
 Drives the Linear Resonant Actuator: standard Pixel patterns through `expo-haptics`, plus the vibrator's real capabilities and **Android 16 envelope effects** (`VibrationEffect.BasicEnvelopeBuilder`) and primitive compositions through the PixelNative module. Capabilities are read once per app, not once per button.
 
-Verified on Pixel 11 Pro: resonant **134.4 Hz**, Q 14.5, amplitude control, `CAP_COMPOSE_PWLE_EFFECTS_V2` (envelopes supported), primitives `CLICK, TICK, QUICK_RISE, SLOW_RISE, QUICK_FALL, THUD, SPIN, LOW_TICK`.
+Verified on Pixel 11 Pro: resonant **134.4 Hz**, Q 14.5, amplitude control, `CAP_COMPOSE_PWLE_EFFECTS_V2` (envelopes supported), primitives `CLICK, TICK, QUICK_RISE, SLOW_RISE, QUICK_FALL, THUD, SPIN, LOW_TICK`. Vibrator capabilities are read once per app process and cached.
 
 ### Signature
 ```typescript
@@ -262,9 +256,6 @@ function useHaptics(): {
 type EnvelopePoint = { intensity: number; sharpness: number; durationMs: number };
 type PrimitiveStep = { primitive: 'CLICK' | 'TICK' | 'THUD' | 'SPIN' | 'QUICK_RISE' | 'SLOW_RISE' | 'QUICK_FALL' | 'LOW_TICK'; scale?: number; delayMs?: number };
 ```
-
-### Inputs
-`useHaptics()` takes no arguments. Vibrator capabilities are read once per app process and cached.
 
 ### Outputs
 | Field | Type | Description |

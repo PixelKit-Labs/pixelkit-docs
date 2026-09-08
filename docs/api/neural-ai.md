@@ -22,7 +22,7 @@ This document covers conversational reasoning, on-device generative tasks, speec
 
 Official Google Gen AI SDK (`@google/genai`) on **`gemini-3.8-flash`** with real multi-turn history via `ai.chats.create()` and a system instruction. **There is no simulated fallback**: without an API key, `sendMessage` appends a `system`-role message containing `NO_API_KEY_MESSAGE`. Token counts come from the API's `usageMetadata`.
 
-Changing the model, the key, or any generation parameter resets the chat session, because those settings are fixed when the session is created.
+Changing the model, the key, or any generation parameter resets the chat session, because those settings are fixed when the session is created. It loads the stored key on mount and, when one exists, fetches the live model list. Everything else is set through the setters below, which are the hook's real inputs.
 
 ### Signature
 ```typescript
@@ -55,9 +55,6 @@ function useGemini(): {
  countTokens: (text: string) => Promise<number | null>;
 };
 ```
-
-### Inputs
-`useGemini()` takes no arguments. It loads the stored key on mount and, when one exists, fetches the live model list. Everything else is set through the setters below, which are the hook's real inputs.
 
 ### Outputs
 | Field | Type | Description |
@@ -136,7 +133,7 @@ Gemini Nano on-device through the local `packages/mlkit` Expo Module, which wrap
 
 AICore keeps no conversation state, so `buildNanoTurn()` re-sends a capped transcript (6,000 characters, newest turns first) with the system instruction. **There is no cloud fallback and no simulated reply**: when the model is not `available`, `sendMessage` appends a `system`-role error.
 
-Requires a dev client or release APK on a device with AICore (Pixel 9 and later; verified on Pixel 11 Pro). On web and in Expo Go the module resolves to `null` and `source` is `'unavailable'`.
+Requires a dev client or release APK on a device with AICore (Pixel 9 and later; verified on Pixel 11 Pro). On web and in Expo Go the module resolves to `null` and `source` is `'unavailable'`. It reads model info on mount and subscribes to download progress. Generation parameters are held as state and applied to every call; per-call overrides go in the `NanoOptions` argument of `generate` and `countTokens`.
 
 ### Signature
 ```typescript
@@ -168,9 +165,6 @@ function useGeminiNano(): {
  rewrite: (text: string, tone?: TaskTone) => Promise<RewriteResult>;
 };
 ```
-
-### Inputs
-`useGeminiNano()` takes no arguments. It reads model info on mount and subscribes to download progress. Generation parameters are held as state and applied to every call; per-call overrides go in the `NanoOptions` argument of `generate` and `countTokens`.
 
 | `NanoOptions` field | Type | Description |
 | :--- | :--- | :--- |
@@ -266,7 +260,7 @@ export function OnDeviceAssistant() {
 
 ## `useGenAITasks`
 
-Dedicated on-device GenAI task clients on ML Kit and AICore, separate from the chat surface: summarize, proofread, rewrite and describe an image. Every call is measured and reported with hardware provenance. Unlike `useGeminiNano`'s equivalents, these resolve to `null` on failure instead of throwing, and keep the last result in state.
+Dedicated on-device GenAI task clients on ML Kit and AICore, separate from the chat surface: summarize, proofread, rewrite and describe an image. Every call is measured and reported with hardware provenance. Unlike `useGeminiNano`'s equivalents, these resolve to `null` on failure instead of throwing, and keep the last result in state. Each task takes its own text or image input; nothing is read on mount.
 
 ### Signature
 ```typescript
@@ -284,9 +278,6 @@ function useGenAITasks(): {
  describeImage: (imageInput: string, style?: 'detailed' | 'caption' | 'labels' | 'concise') => Promise<ImageDescriptionResult | null>;
 };
 ```
-
-### Inputs
-`useGenAITasks()` takes no arguments. Each task takes its own text or image input; nothing is read on mount.
 
 ### Outputs
 | Field | Type | Description |
@@ -316,7 +307,7 @@ On-device natural language intelligence through ML Kit, working entirely offline
 * **Language identification** across 50+ languages with a candidate distribution.
 * **Machine translation** across 58 languages, no network required.
 * **Smart reply** suggestions from a conversation history.
-* **Entity extraction**: dates, addresses, flight numbers, money, phone numbers and tracking codes.
+* **Entity extraction**: dates, addresses, flight numbers, money, phone numbers and tracking codes. Each function takes its own text; nothing runs on mount. The first translation between a new language pair downloads that model, so it is slower than the ones after it.
 
 ### Signature
 ```typescript
@@ -334,9 +325,6 @@ function useNaturalLanguageAI(): {
  extractEntities: (text: string) => Promise<EntityExtractionResult | null>;
 };
 ```
-
-### Inputs
-`useNaturalLanguageAI()` takes no arguments. Each function takes its own text; nothing runs on mount. The first translation between a new language pair downloads that model, so it is slower than the ones after it.
 
 ### Outputs
 | Field | Type | Description |
@@ -363,7 +351,7 @@ function useNaturalLanguageAI(): {
 
 Speech recognition in two modes. **On-device** uses Android System Intelligence through `SpeechRecognizer` in the native module: partial results stream in as you speak, and nothing leaves the phone. **Cloud** records through `useAudio` (16 kHz mono via the `voice_recognition` source) and transcribes with Gemini audio understanding.
 
-Without an API key in cloud mode the recording is kept (`lastRecordingUri`) and `error` is set to `NO_API_KEY_MESSAGE`. There is no simulated transcript in either mode.
+Without an API key in cloud mode the recording is kept (`lastRecordingUri`) and `error` is set to `NO_API_KEY_MESSAGE`. There is no simulated transcript in either mode. It probes on-device recognition availability on mount and subscribes to the speech events. Mode is chosen with `setRecognitionMode`, defaulting to `'on-device'`.
 
 ### Signature
 ```typescript
@@ -384,9 +372,6 @@ function useSpeechAI(): {
  stopListeningAndTranscribe: () => Promise<SpeechTranscriptionResult | null>;
 };
 ```
-
-### Inputs
-`useSpeechAI()` takes no arguments. It probes on-device recognition availability on mount and subscribes to the speech events. Mode is chosen with `setRecognitionMode`, defaulting to `'on-device'`.
 
 ### Outputs
 | Field | Type | Description |
@@ -436,7 +421,7 @@ const handleVoice = async () => {
 
 Text to speech on `expo-speech`, the output half of the voice story: `useSpeechAI` listens, this one talks back.
 
-Voices come from the platform speech service, so language coverage and quality depend on what the user has downloaded in system settings rather than on this app. Read `voices` instead of assuming a language exists. `speak` resolves when the engine finishes, so utterances can be awaited in sequence instead of overlapping. Text longer than `maxInputLength` is rejected rather than silently truncated, and the engine is stopped on unmount so speech does not continue after the screen is gone.
+Voices come from the platform speech service, so language coverage and quality depend on what the user has downloaded in system settings rather than on this app. Read `voices` instead of assuming a language exists. `speak` resolves when the engine finishes, so utterances can be awaited in sequence instead of overlapping. Text longer than `maxInputLength` is rejected rather than silently truncated, and the engine is stopped on unmount so speech does not continue after the screen is gone. It reads the installed voices on mount. Per-utterance settings go in the `speak` options; `setVoice`, `setRate` and `setPitch` set the defaults those options fall back to.
 
 ### Signature
 ```typescript
@@ -463,9 +448,6 @@ function useSpeech(): {
  setPitch: (n: number) => void;
 };
 ```
-
-### Inputs
-`useSpeech()` takes no arguments. It reads the installed voices on mount. Per-utterance settings go in the `speak` options; `setVoice`, `setRate` and `setPitch` set the defaults those options fall back to.
 
 | `SpeakOptions` field | Type | Description |
 | :--- | :--- | :--- |
@@ -536,7 +518,7 @@ Google ML Kit on-device computer vision plus Gemini multimodal scene understandi
 * **Pose detection** — 33 skeletal landmarks, on-device.
 * **Selfie & subject segmentation** — foreground and background masks, on-device.
 * **Digital ink recognition** — handwriting from stroke data, on-device.
-* **Gemini scene analysis** — a two-sentence description and 3–5 labels, via the cloud with a JSON schema.
+* **Gemini scene analysis** — a two-sentence description and 3–5 labels, via the cloud with a JSON schema. Every on-device function takes the same `imageInput`: **a file URI or a base64 image string**. The cloud path needs base64, which is why `pickImage` requests it.
 
 ### Signature
 ```typescript
@@ -567,9 +549,6 @@ function useVisionAI(): {
  recognizeDigitalInk: (strokes: Array<Array<{ x: number; y: number; t?: number }>>, languageTag?: string) => Promise<DigitalInkResult | null>;
 };
 ```
-
-### Inputs
-`useVisionAI()` takes no arguments. Every on-device function takes the same `imageInput`: **a file URI or a base64 image string**. The cloud path needs base64, which is why `pickImage` requests it.
 
 ### Outputs
 | Field | Type | Description |

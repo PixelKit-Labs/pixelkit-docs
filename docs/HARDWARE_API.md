@@ -3,7 +3,7 @@
 
 This document is the consolidated reference for every hook in the PixelKit SDK (React Native, Expo SDK 57) on the **Google Pixel 11 Pro** (Android 17, Google Tensor G6). Figures described as verified were read from the device with `adb` and `dumpsys`.
 
-**How to read an entry.** Each hook lists where it lives, what hardware or platform API it sits on, what it does, its **Inputs** (arguments, with defaults and units), its **Outputs** (the returned object, with a link to the field-by-field table in the matching `docs/api/*` page) and its **Functions** (every callable, with what each parameter means and what the call returns). No hook fabricates a reading: a value that cannot be read is `null` and `source` reports `'unavailable'`.
+**How to read an entry.** Each hook lists where it lives, what hardware or platform API it sits on, what it does, its **Inputs** where it takes any, its **Outputs** (the returned object, with a link to the field-by-field table in the matching `docs/api/*` page) and its **Functions** (every callable, with what each parameter means and what the call returns). No hook fabricates a reading: a value that cannot be read is `null` and `source` reports `'unavailable'`.
 
 ---
 
@@ -62,8 +62,7 @@ import {
 ### `useCPU`
 * **File Path**: `packages/pixelkit/src/hardware/useCPU.ts`
 * **Target Hardware**: Google Tensor G6 7-core cluster. Verified from `/proc/cpuinfo` + cpufreq: **1x Arm C1-Ultra @ 4.11 GHz + 4x Arm C1-Pro @ 3.38 GHz + 2x Arm C1-Pro @ 2.65 GHz**, governor `sched_pixel`. (Process node is not exposed by the device and is not claimed.)
-* **Description**: Real topology, per-core current/max MHz, kernel governor, cluster frequency utilisation (hardware) and this app's CPU share (derived).
-* **Inputs**: none. Topology is read on mount; load polls every 1,000 ms.
+* **Description**: Real topology, per-core current/max MHz, kernel governor, cluster frequency utilisation (hardware) and this app's CPU share (derived). Topology is read on mount; load polls every 1,000 ms.
 * **Outputs**: [field table →](api/silicon-compute.md#usecpu)
 
 ```typescript
@@ -86,8 +85,7 @@ source: TelemetrySource;
 ### `useGPU`
 * **File Path**: `packages/pixelkit/src/hardware/useGPU.ts`
 * **Target Hardware**: Verified via EGL: `ANGLE (Imagination Technologies, Vulkan 1.4.317 (PowerVR C-Series CXTP-48-1536 MC1))`, OpenGL ES 3.2.
-* **Description**: Renderer, vendor and GL version from an offscreen EGL context, Vulkan version from the system feature, and **Choreographer** frame pacing (presented FPS, average and max frame interval, jank frames above 1.5× expected). GPU memory is not exposed by Android → `null`.
-* **Inputs**: none. Identity is read on mount; frame stats arrive once per second as a native event.
+* **Description**: Renderer, vendor and GL version from an offscreen EGL context, Vulkan version from the system feature, and **Choreographer** frame pacing (presented FPS, average and max frame interval, jank frames above 1.5× expected). GPU memory is not exposed by Android → `null`. Identity is read on mount; frame stats arrive once per second as a native event.
 * **Outputs**: [field table →](api/silicon-compute.md#usegpu)
 
 ```typescript
@@ -105,8 +103,7 @@ isStuttering: boolean; gpuMemoryUsageMB: null; source: TelemetrySource;
 ### `useTPU`
 * **File Path**: `packages/pixelkit/src/ai/useTPU.ts`
 * **Target Hardware**: Tensor TPU via **AICore** (the Gemini Nano host). Verified: AICore `0.release.prod_aicore_20260723.00_RC11`, Private Compute Services `1.0.release.962568596`.
-* **Description**: Detects the on-device AI stack (needs `<queries>` for package visibility). Real inference metrics live in `useGeminiNano()`; `benchmarkTPU()` runs a JS matmul labelled **CPU Fallback**.
-* **Inputs**: none. Detection runs once on mount.
+* **Description**: Detects the on-device AI stack (needs `<queries>` for package visibility). Real inference metrics live in `useGeminiNano()`; `benchmarkTPU()` runs a JS matmul labelled **CPU Fallback**. Detection runs once on mount.
 * **Outputs**: [field table →](api/silicon-compute.md#usetpu)
 
 ```typescript
@@ -128,7 +125,6 @@ cpuFallbackLatencyMs: number | null; isBenchmarking: boolean; source: TelemetryS
 * **File Path**: `packages/pixelkit/src/hardware/useMemory.ts`
 * **Target Hardware**: 12 GB LPDDR5X (reports 11,647 MB total).
 * **Description**: `ActivityManager.getMemoryInfo` (total, available, threshold, low-memory flag), plus this process's Java and native heaps, polled every 2 s.
-* **Inputs**: none.
 * **Outputs**: [field table →](api/silicon-compute.md#usememory)
 
 ```typescript
@@ -148,7 +144,6 @@ source: TelemetrySource;
 * **File Path**: `packages/pixelkit/src/hardware/useADPF.ts`
 * **Target Hardware**: Android Dynamic Performance Framework. Verified: headroom 0.55 at status NONE; thresholds `{1: 0.8, 2: 0.933, 3: 1.0, 4: 1.05, 5: 1.233, 6: 1.667}`.
 * **Description**: `PowerManager.getThermalHeadroom` on a 10 s poll (Google's minimum) — **how close the phone is to throttling itself: 0.0 cold, 1.0 the point where clocks get cut, above 1.0 already throttling** ([what that means](api/silicon-compute.md#what-thermal-headroom-actually-means)) — a live thermal-status listener, headroom thresholds, Android 16+ `SystemHealthManager` CPU/GPU headroom, display-mode `targetFps` and Choreographer `currentFps`.
-* **Inputs**: none.
 * **Outputs**: [field table →](api/silicon-compute.md#useadpf)
 
 ```typescript
@@ -171,8 +166,7 @@ targetFps: number | null; currentFps: number | null; source: TelemetrySource;
 ### `useHiLight`
 * **File Path**: `packages/pixelkit/src/hardware/useHiLight.ts`
 * **Target Hardware**: Eight `Light.LIGHT_TYPE_APPLICATION` RGB LEDs around the flash (ids 1-8, 33 ms update period) on Pixel 11 Pro-class devices.
-* **Description**: Android restricts `CONTROL_DEVICE_LIGHTS` to signature|privileged permissions, so there is no public third-party API. `useHiLight` drives the real LEDs when the native PixelKit ADB daemon is running (`npm run hilight:daemon`; `availability: 'hardware'`). Without it the LEDs cannot be driven: `availability` is `'unavailable'` and the controls refuse rather than pretending.
-* **Inputs**: none. The daemon is probed on mount and every 5,000 ms.
+* **Description**: Android restricts `CONTROL_DEVICE_LIGHTS` to signature|privileged permissions, so there is no public third-party API. `useHiLight` drives the real LEDs when the native PixelKit ADB daemon is running (`npm run hilight:daemon`; `availability: 'hardware'`). Without it the LEDs cannot be driven: `availability` is `'unavailable'` and the controls refuse rather than pretending. The daemon is probed on mount and every 5,000 ms.
 * **Outputs**: [field table →](api/pro-exclusives.md#usehilight)
 
 ```typescript
@@ -211,8 +205,7 @@ const hilight = useHiLight();
 ### `useUWB`
 * **File Path**: `packages/pixelkit/src/hardware/useUWB.ts`
 * **Target Hardware**: Ultra-Wideband transceiver (`UwbManager`, chip id `default`).
-* **Description**: Chip state, enabled status and ranging-session management through Android `UwbManager`/`RangingManager`. `activeTargets` stays empty until paired UWB responders report.
-* **Inputs**: none. Radio state is read from the native module per render.
+* **Description**: Chip state, enabled status and ranging-session management through Android `UwbManager`/`RangingManager`. `activeTargets` stays empty until paired UWB responders report. Radio state is read from the native module per render.
 * **Outputs**: [field table →](api/pro-exclusives.md#useuwb)
 
 ```typescript
@@ -237,8 +230,7 @@ error: string | null; source: TelemetrySource;
 ### `useGemini`
 * **File Path**: `packages/pixelkit/src/ai/useGemini.ts`
 * **Backing Service**: Google Gen AI SDK (`@google/genai`) on `gemini-3.8-flash`.
-* **Description**: Multi-turn chat over `ai.chats` with a system instruction, API token counts and measured latency. Replies stream through `sendMessageStream`, and the session can carry safety thresholds and the Google Search grounding tool. There is no simulated fallback: without a key, `sendMessage` appends a `system`-role error. Changing the key, model or any generation parameter resets the session.
-* **Inputs**: none as arguments; the setters below are the hook's inputs.
+* **Description**: Multi-turn chat over `ai.chats` with a system instruction, API token counts and measured latency. Replies stream through `sendMessageStream`, and the session can carry safety thresholds and the Google Search grounding tool. There is no simulated fallback: without a key, `sendMessage` appends a `system`-role error. Changing the key, model or any generation parameter resets the session. As arguments; the setters below are the hook's inputs.
 * **Outputs**: [field table →](api/neural-ai.md#usegemini)
 
 ```typescript
@@ -269,8 +261,7 @@ error: string | null; source: TelemetrySource;
 ### `useGeminiNano`
 * **File Path**: `packages/pixelkit/src/ai/useGeminiNano.ts` + `packages/mlkit` (Kotlin)
 * **Target Hardware**: Gemini Nano on the Tensor G6 through **AICore**, reached with `com.google.mlkit:genai-prompt`. Verified with AICore `0.release.prod_aicore_20260723.00_RC11`.
-* **Description**: Status, base model name, token limit and feature flags from `GenerativeModel`; download with progress events; streaming generation; latency and first-token time measured natively; output tokens from the on-device tokenizer. No cloud fallback, no simulated reply.
-* **Inputs**: none as arguments. Generation parameters are held as state; per-call overrides go in `NanoOptions` (`systemInstruction`, `temperature`, `topK`, `candidateCount`, `maxOutputTokens`, `seed`, `thinking`, `imageBase64`).
+* **Description**: Status, base model name, token limit and feature flags from `GenerativeModel`; download with progress events; streaming generation; latency and first-token time measured natively; output tokens from the on-device tokenizer. No cloud fallback, no simulated reply. As arguments. Generation parameters are held as state; per-call overrides go in `NanoOptions` (`systemInstruction`, `temperature`, `topK`, `candidateCount`, `maxOutputTokens`, `seed`, `thinking`, `imageBase64`).
 * **Outputs**: [field table →](api/neural-ai.md#usegemininano)
 
 ```typescript
@@ -306,8 +297,7 @@ thinkingMode: boolean; systemInstruction: string;
 ### `useGenAITasks`
 * **File Path**: `packages/pixelkit/src/ai/useGenAITasks.ts` + `packages/mlkit` (Kotlin)
 * **Target Hardware**: Tensor G6 via ML Kit GenAI task APIs on AICore.
-* **Description**: Dedicated on-device task clients — summarize, proofread, rewrite, describe an image — each measured and reported with hardware provenance. Unlike the `useGeminiNano` equivalents these resolve to `null` on failure instead of throwing, and keep the last result in state.
-* **Inputs**: none as arguments; each task takes its own text or image.
+* **Description**: Dedicated on-device task clients — summarize, proofread, rewrite, describe an image — each measured and reported with hardware provenance. Unlike the `useGeminiNano` equivalents these resolve to `null` on failure instead of throwing, and keep the last result in state. As arguments; each task takes its own text or image.
 * **Outputs**: [field table →](api/neural-ai.md#usegenaitasks)
 
 ```typescript
@@ -328,8 +318,7 @@ rewriteResult: RewriteResult | null; imageDescriptionResult: ImageDescriptionRes
 ### `useNaturalLanguageAI`
 * **File Path**: `packages/pixelkit/src/ai/useNaturalLanguageAI.ts` + `packages/mlkit` (Kotlin)
 * **Target Hardware**: ML Kit natural language models, entirely offline.
-* **Description**: 58-language translation, language identification across 50+ languages with confidences, context-aware smart replies, and structured entity extraction (dates, addresses, flight numbers, money, phone numbers, tracking codes).
-* **Inputs**: none as arguments. The first translation for a language pair downloads that model, so it is slower than the ones after it.
+* **Description**: 58-language translation, language identification across 50+ languages with confidences, context-aware smart replies, and structured entity extraction (dates, addresses, flight numbers, money, phone numbers, tracking codes). As arguments. The first translation for a language pair downloads that model, so it is slower than the ones after it.
 * **Outputs**: [field table →](api/neural-ai.md#usenaturallanguageai)
 
 ```typescript
@@ -352,8 +341,7 @@ entityResult: EntityExtractionResult | null; // { entities: [{ type, text, start
 ### `useSpeechAI`
 * **File Path**: `packages/pixelkit/src/ai/useSpeechAI.ts`
 * **Target Hardware**: Microphone (`VOICE_RECOGNITION` source, 16 kHz mono) plus Android System Intelligence on-device recognizer, or Gemini audio understanding in the cloud.
-* **Description**: Dual-mode recognition. On-device streams partial text with dBFS metering and sends nothing off the phone; cloud records through `useAudio` and transcribes with Gemini. No simulated transcript in either mode.
-* **Inputs**: none as arguments; choose the engine with `setRecognitionMode`, default `'on-device'`.
+* **Description**: Dual-mode recognition. On-device streams partial text with dBFS metering and sends nothing off the phone; cloud records through `useAudio` and transcribes with Gemini. No simulated transcript in either mode. As arguments; choose the engine with `setRecognitionMode`, default `'on-device'`.
 * **Outputs**: [field table →](api/neural-ai.md#usespeechai)
 
 ```typescript
@@ -376,8 +364,7 @@ source: TelemetrySource; model: string;
 ### `useSpeech`
 * **File Path**: `packages/pixelkit/src/ai/useSpeech.ts`
 * **Backing Module**: `expo-speech` on the platform speech service.
-* **Description**: The output half of voice. `speak` resolves when the engine finishes, so utterances can be sequenced rather than overlapping. Text longer than `maxInputLength` is rejected rather than silently truncated. Voice coverage depends on what the user has installed, so read `voices` instead of assuming a language. The engine is stopped on unmount.
-* **Inputs**: none as arguments. Per-utterance options are `{ language?, voice?, rate?, pitch?, volume? }`; `setVoice`, `setRate` and `setPitch` set the fallbacks.
+* **Description**: The output half of voice. `speak` resolves when the engine finishes, so utterances can be sequenced rather than overlapping. Text longer than `maxInputLength` is rejected rather than silently truncated. Voice coverage depends on what the user has installed, so read `voices` instead of assuming a language. The engine is stopped on unmount. As arguments. Per-utterance options are `{ language?, voice?, rate?, pitch?, volume? }`; `setVoice`, `setRate` and `setPitch` set the fallbacks.
 * **Outputs**: [field table →](api/neural-ai.md#usespeech)
 
 ```typescript
@@ -404,8 +391,7 @@ error: string | null; source: TelemetrySource;
 ### `useVisionAI`
 * **File Path**: `packages/pixelkit/src/ai/useVisionAI.ts` + `packages/mlkit` (Kotlin)
 * **Target Hardware**: Camera stack plus the ML Kit on-device vision suite, and Gemini multimodal in the cloud.
-* **Description**: OCR v2, 1D/2D barcode and QR scanning, image labelling, face detection and 468-point 3D mesh, object detection and tracking, pose landmarks, selfie and subject segmentation, digital ink recognition — all on-device — plus cloud Gemini scene analysis with a JSON schema.
-* **Inputs**: none as arguments. Every on-device function takes `imageInput: string`, **a file URI or a base64 image**; the cloud path needs base64, which is why `pickImage` requests it.
+* **Description**: OCR v2, 1D/2D barcode and QR scanning, image labelling, face detection and 468-point 3D mesh, object detection and tracking, pose landmarks, selfie and subject segmentation, digital ink recognition — all on-device — plus cloud Gemini scene analysis with a JSON schema. As arguments. Every on-device function takes `imageInput: string`, **a file URI or a base64 image**; the cloud path needs base64, which is why `pickImage` requests it.
 * **Outputs**: [field table →](api/neural-ai.md#usevisionai)
 
 ```typescript
@@ -464,8 +450,7 @@ error: string | null; source: TelemetrySource;
 ### `useCamera`
 * **File Path**: `packages/pixelkit/src/hardware/useCamera.ts`
 * **Backing Module**: `expo-camera`.
-* **Description**: Lens selection, zoom, flash, torch and capture. The hook owns a ref to a `CameraView`, so a screen renders the view and attaches `cameraRef` and `handleCameraReady`. **`zoom` is a 0..1 fraction of the lens range, not an optical multiplier.** Camera Looks, Super Res Zoom and the low-light video mode belong to the Pixel Camera app and are interface state only.
-* **Inputs**: none as arguments. Capture requires `cameraRef` on a mounted `<CameraView>`.
+* **Description**: Lens selection, zoom, flash, torch and capture. The hook owns a ref to a `CameraView`, so a screen renders the view and attaches `cameraRef` and `handleCameraReady`. **`zoom` is a 0..1 fraction of the lens range, not an optical multiplier.** Camera Looks, Super Res Zoom and the low-light video mode belong to the Pixel Camera app and are interface state only. As arguments. Capture requires `cameraRef` on a mounted `<CameraView>`.
 * **Outputs**: [field table →](api/sensors-actuators.md#usecamera)
 
 ```typescript
@@ -501,8 +486,7 @@ error: string | null; source: TelemetrySource;
 ### `useTorch`
 * **File Path**: `packages/pixelkit/src/hardware/useTorch.ts`
 * **Target Hardware**: Rear camera flash LED via `CameraManager.setTorchMode` and Android 13+ `turnOnTorchWithStrengthLevel`. Verified: camera id 0, **21 brightness levels**; the camera HAL logs "Torch for camera id 0 turned on".
-* **Description**: Real torch control; `isTorchOn` follows the system torch callback, so Quick Settings toggles are reflected. Strobe toggles the hardware at ≥120 ms.
-* **Inputs**: none as arguments. Capabilities are read on mount; the LED is switched off on unmount.
+* **Description**: Real torch control; `isTorchOn` follows the system torch callback, so Quick Settings toggles are reflected. Strobe toggles the hardware at ≥120 ms. As arguments. Capabilities are read on mount; the LED is switched off on unmount.
 * **Outputs**: [field table →](api/sensors-actuators.md#usetorch)
 
 ```typescript
@@ -522,8 +506,7 @@ maxStrengthLevel: number | null; error: string | null; source: TelemetrySource;
 ### `useHaptics`
 * **File Path**: `packages/pixelkit/src/hardware/useHaptics.ts`
 * **Target Hardware**: LRA via `expo-haptics` plus `PixelNative` vibrator access. Verified: resonant **134.4 Hz**, Q 14.5, amplitude control, `CAP_COMPOSE_PWLE_EFFECTS_V2`, primitives CLICK/TICK/QUICK_RISE/SLOW_RISE/QUICK_FALL/THUD/SPIN/LOW_TICK.
-* **Description**: Standard patterns, Android 16 envelope effects with presets (`HapticEnvelopes.thinkingRamp | doublePulse | spring`), and primitive compositions. Capabilities are read once per app process.
-* **Inputs**: none as arguments.
+* **Description**: Standard patterns, Android 16 envelope effects with presets (`HapticEnvelopes.thinkingRamp | doublePulse | spring`), and primitive compositions. Capabilities are read once per app process. As arguments.
 * **Outputs**: [field table →](api/sensors-actuators.md#usehaptics)
 
 ```typescript
@@ -548,8 +531,7 @@ resonantFrequencyHz: number | null; supportedPrimitives: string[]; source: Telem
 ### `useBiometrics`
 * **File Path**: `packages/pixelkit/src/hardware/useBiometrics.ts`
 * **Target Hardware**: Under-display ultrasonic fingerprint and Class 3 face unlock, through the platform `BiometricPrompt`.
-* **Description**: Sensor presence and enrolment are reported separately, because a device can have the sensor with nothing enrolled. A cancel or a mismatch resolves `false` without setting `error`; only a failed call does.
-* **Inputs**: none as arguments. Capabilities are read on mount.
+* **Description**: Sensor presence and enrolment are reported separately, because a device can have the sensor with nothing enrolled. A cancel or a mismatch resolves `false` without setting `error`; only a failed call does. As arguments. Capabilities are read on mount.
 * **Outputs**: [field table →](api/radios-security.md#usebiometrics)
 
 ```typescript
@@ -568,8 +550,7 @@ error: string | null; source: TelemetrySource;
 ### `useSecurity`
 * **File Path**: `packages/pixelkit/src/hardware/useSecurity.ts`
 * **Target Hardware**: Android Keystore; StrongBox present on Pixel 11 Pro (`android.hardware.strongbox_keystore`, verified by `useCapabilities`).
-* **Description**: Secret storage through `expo-secure-store` (AES keys in the Keystore, `WHEN_UNLOCKED_THIS_DEVICE_ONLY`). Secret values are never logged. No post-quantum algorithms are used; `isPostQuantumProtected` is always `false`.
-* **Inputs**: none as arguments. On web it falls back to `localStorage`, which is not encrypted.
+* **Description**: Secret storage through `expo-secure-store` (AES keys in the Keystore, `WHEN_UNLOCKED_THIS_DEVICE_ONLY`). Secret values are never logged. No post-quantum algorithms are used; `isPostQuantumProtected` is always `false`. As arguments. On web it falls back to `localStorage`, which is not encrypted.
 * **Outputs**: [field table →](api/radios-security.md#usesecurity)
 
 ```typescript
@@ -590,8 +571,7 @@ error: string | null; lastOperation: string | null; source: TelemetrySource;
 ### `useBLE`
 * **File Path**: `packages/pixelkit/src/hardware/useBLE.ts`
 * **Target Hardware**: Bluetooth 5.4 Low Energy radio (`BluetoothAdapter`, `BluetoothManager`, `BluetoothLeScanner`).
-* **Description**: Adapter state, Channel Sounding silicon support, real bonded devices, and live discovery with RSSI in dBm and a log-distance path-loss distance estimate (`n = 2.0`).
-* **Inputs**: none as arguments. Discovery results are polled every 500 ms while scanning.
+* **Description**: Adapter state, Channel Sounding silicon support, real bonded devices, and live discovery with RSSI in dBm and a log-distance path-loss distance estimate (`n = 2.0`). As arguments. Discovery results are polled every 500 ms while scanning.
 * **Outputs**: [field table →](api/radios-security.md#useble)
 
 ```typescript
@@ -612,8 +592,7 @@ scanError: string | null; error: string | null; source: TelemetrySource;
 ### `useNFC`
 * **File Path**: `packages/pixelkit/src/hardware/useNFC.ts`
 * **Target Hardware**: NFC controller (`NfcAdapter`), reader mode on the foreground Activity.
-* **Description**: Adapter power and antenna state, Android 15+ Observe Mode capability, and real NDEF tag reading and writing. Reader mode needs a foreground Activity, so it stops when the app is backgrounded and must be restarted on resume.
-* **Inputs**: none as arguments. Tag and error events are subscribed on mount; reader mode is released on unmount.
+* **Description**: Adapter power and antenna state, Android 15+ Observe Mode capability, and real NDEF tag reading and writing. Reader mode needs a foreground Activity, so it stops when the app is backgrounded and must be restarted on resume. As arguments. Tag and error events are subscribed on mount; reader mode is released on unmount.
 * **Outputs**: [field table →](api/radios-security.md#usenfc)
 
 ```typescript
@@ -637,8 +616,7 @@ error: string | null; source: TelemetrySource;
 ### `useRadios`
 * **File Path**: `packages/pixelkit/src/hardware/useRadios.ts`
 * **Target Hardware**: Unified radio subsystem (NFC, Bluetooth LE, UWB, Wi-Fi RTT, satellite).
-* **Description**: One read across every radio, from `NfcAdapter`, `BluetoothManager`, `UwbManager`, `WifiRttManager` and `PackageManager`, refreshed every 5 s. Use it to decide which features to show at all.
-* **Inputs**: none as arguments.
+* **Description**: One read across every radio, from `NfcAdapter`, `BluetoothManager`, `UwbManager`, `WifiRttManager` and `PackageManager`, refreshed every 5 s. Use it to decide which features to show at all. As arguments.
 * **Outputs**: [field table →](api/radios-security.md#useradios)
 
 ```typescript
@@ -659,8 +637,7 @@ source: TelemetrySource;
 ### `useLocation`
 * **File Path**: `packages/pixelkit/src/hardware/useLocation.ts`
 * **Target Hardware**: Dual-band multi-constellation GNSS (GPS L1/L5, Galileo, GLONASS, BeiDou).
-* **Description**: One high-accuracy fix on mount, with position, altitude, heading and speed. Coordinates are never logged; events record accuracy and timing only. There is no continuous watch.
-* **Inputs**: none as arguments.
+* **Description**: One high-accuracy fix on mount, with position, altitude, heading and speed. Coordinates are never logged; events record accuracy and timing only. There is no continuous watch. As arguments.
 * **Outputs**: [field table →](api/radios-security.md#uselocation)
 
 ```typescript
@@ -685,8 +662,7 @@ lastFixAt: number | null; error: string | null; source: TelemetrySource;
 * **File Path**: `packages/pixelkit/src/hardware/useAudio.ts`
 * **Target Hardware**: Multi-microphone array. `speech` uses the `VOICE_RECOGNITION` source (platform noise suppression), `studio` uses `unprocessed`.
 * **Backing Module**: `expo-audio` (SDK 57). The legacy `expo-av` dependency has been removed.
-* **Description**: Capture with pause and resume and an optional fixed duration; two profiles (16 kHz mono or 48 kHz stereo); dBFS metering every 100 ms with a running peak, a 0..1 `level` and a silence flag; microphone enumeration and selection; speaker/earpiece routing; and playback with seek.
-* **Inputs**: none as arguments; per-take options go to `startRecording`.
+* **Description**: Capture with pause and resume and an optional fixed duration; two profiles (16 kHz mono or 48 kHz stereo); dBFS metering every 100 ms with a running peak, a 0..1 `level` and a silence flag; microphone enumeration and selection; speaker/earpiece routing; and playback with seek. As arguments; per-take options go to `startRecording`.
 * **Outputs**: [field table →](api/system-media.md#useaudio)
 
 ```typescript
@@ -753,8 +729,7 @@ error: string | null; source: TelemetrySource;
 ### `useMediaLibrary`
 * **File Path**: `packages/pixelkit/src/hardware/useMediaLibrary.ts`
 * **Backing Module**: `expo-media-library` (SDK 57 class API: `Asset.create`, `Album.create`, `Query`; the `createAssetAsync` helpers now throw).
-* **Description**: Promotes a capture out of the app cache, where the system will eventually reclaim it, into the user's media store. Also lists recent items and deletes them. Android 13+ grants read access per media type and the user may share only selected items, reported as `hasLimitedAccess`.
-* **Inputs**: none as arguments. Permission is checked on mount without prompting.
+* **Description**: Promotes a capture out of the app cache, where the system will eventually reclaim it, into the user's media store. Also lists recent items and deletes them. Android 13+ grants read access per media type and the user may share only selected items, reported as `hasLimitedAccess`. As arguments. Permission is checked on mount without prompting.
 * **Outputs**: [field table →](api/system-media.md#usemedialibrary)
 
 ```typescript
@@ -777,8 +752,7 @@ error: string | null; source: TelemetrySource;
 ### `useCellular`
 * **File Path**: `packages/pixelkit/src/hardware/useCellular.ts`
 * **Backing Module**: `expo-cellular`. Carrier and network codes need `READ_PHONE_STATE`; generation does not.
-* **Description**: Answers what `useNetwork` cannot: whether a cellular connection is 5G or something slower, and which carrier is serving it. `generation` follows the live data connection, so it changes as the device moves and reads `unknown` with no cellular data attached, including on Wi-Fi. Match carriers on the MCC/MNC pair rather than the display name.
-* **Inputs**: none as arguments.
+* **Description**: Answers what `useNetwork` cannot: whether a cellular connection is 5G or something slower, and which carrier is serving it. `generation` follows the live data connection, so it changes as the device moves and reads `unknown` with no cellular data attached, including on Wi-Fi. Match carriers on the MCC/MNC pair rather than the display name. As arguments.
 * **Outputs**: [field table →](api/system-media.md#usecellular)
 
 ```typescript
@@ -800,8 +774,7 @@ permissionGranted: boolean; error: string | null; source: TelemetrySource;
 ### `useCapabilities`
 * **File Path**: `packages/pixelkit/src/hardware/useCapabilities.ts` (pure resolver in `packages/pixelkit/src/core/capabilities.ts`)
 * **Target Hardware**: Device identity via `expo-device`, upgraded with `PackageManager.hasSystemFeature` through PixelNative.
-* **Description**: Single source of truth for what this Pixel physically has and which platform APIs exist. Every Pro-exclusive hook and every Android 16/17-gated feature reads from it. Memoised for the app lifetime.
-* **Inputs**: none as arguments.
+* **Description**: Single source of truth for what this Pixel physically has and which platform APIs exist. Every Pro-exclusive hook and every Android 16/17-gated feature reads from it. Memoised for the app lifetime. As arguments.
 * **Outputs**: [field table →](api/system-media.md#usecapabilities)
 
 ```typescript
@@ -828,8 +801,7 @@ aicoreVersion: string | null;
 ### `useDisplay`
 * **File Path**: `packages/pixelkit/src/hardware/useDisplay.ts`
 * **Target Hardware**: 1-120 Hz LTPO OLED. Verified: active mode 120 Hz, `hasArrSupport = true`, rates 120/60/40/30/24/20/15/10/5/2/1 Hz, HDR10 · HLG · HDR10+, render mode 1080×2410 (panel native 1280×2856), 420 dpi.
-* **Description**: Real `Display` mode telemetry polled every 2 s, `setPreferredRefreshRate(hz)` (confirmed as `frameRateOverride` in `dumpsys display`), brightness via expo-brightness and a tagged wake lock via expo-keep-awake.
-* **Inputs**: none as arguments.
+* **Description**: Real `Display` mode telemetry polled every 2 s, `setPreferredRefreshRate(hz)` (confirmed as `frameRateOverride` in `dumpsys display`), brightness via expo-brightness and a tagged wake lock via expo-keep-awake. As arguments.
 * **Outputs**: [field table →](api/system-media.md#usedisplay)
 
 ```typescript
@@ -850,8 +822,7 @@ isKeepAwake: boolean; brightness: number; source: TelemetrySource;
 ### `useDevice`
 * **File Path**: `packages/pixelkit/src/hardware/useDevice.ts`
 * **Target Hardware**: Android HAL, PMIC, fuel gauge NTC thermistor, and Qi2 magnetic wireless charging.
-* **Description**: Model identity, battery percentage, real-time NTC thermistor pack temperature (°C), cell terminal voltage (mV), current flow (mA), wattage rate (W), Battery Saver, battery health, and lifetime charge cycles.
-* **Inputs**: none as arguments.
+* **Description**: Model identity, battery percentage, real-time NTC thermistor pack temperature (°C), cell terminal voltage (mV), current flow (mA), wattage rate (W), Battery Saver, battery health, and lifetime charge cycles. As arguments.
 * **Outputs**: [field table →](api/system-media.md#usedevice)
 
 ```typescript
@@ -878,8 +849,7 @@ pluggedSource: string | null; // AC, USB, WIRELESS, DOCK, NONE
 ### `useNetwork`
 * **File Path**: `packages/pixelkit/src/hardware/useNetwork.ts`
 * **Target Hardware**: Modem and Wi-Fi radio, through `expo-network`.
-* **Description**: Interface type, IP address, reachability, metering and airplane mode. Attached is not the same as reachable, so `isConnected` requires both. Each sub-read fails independently, so one missing value does not blank the rest.
-* **Inputs**: none as arguments.
+* **Description**: Interface type, IP address, reachability, metering and airplane mode. Attached is not the same as reachable, so `isConnected` requires both. Each sub-read fails independently, so one missing value does not blank the rest. As arguments.
 * **Outputs**: [field table →](api/system-media.md#usenetwork)
 
 ```typescript

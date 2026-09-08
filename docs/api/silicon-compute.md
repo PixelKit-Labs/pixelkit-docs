@@ -23,7 +23,7 @@ Each entry documents its **Inputs** (what you pass in, with defaults and units),
 
 Reads the CPU topology from `/proc/cpuinfo` (per-core Arm part ids mapped to names such as `Arm C1-Ultra`, `Arm C1-Pro`) and cpufreq sysfs (`cpuinfo_max_freq`, `scaling_cur_freq`, `scaling_governor`). Android does not expose whole-system `/proc/stat` to apps, so the two load signals are (a) cluster frequency utilisation and (b) this app's own CPU share.
 
-Verified on Pixel 11 Pro: `1x Arm C1-Ultra @ 4.11 GHz + 4x Arm C1-Pro @ 3.38 GHz + 2x Arm C1-Pro @ 2.65 GHz`, governor `sched_pixel`.
+Verified on Pixel 11 Pro: `1x Arm C1-Ultra @ 4.11 GHz + 4x Arm C1-Pro @ 3.38 GHz + 2x Arm C1-Pro @ 2.65 GHz`, governor `sched_pixel`. Topology is read once on mount; load polls every 1,000 ms until unmount.
 
 ### Signature
 ```typescript
@@ -41,9 +41,6 @@ function useCPU(): {
  source: TelemetrySource;
 };
 ```
-
-### Inputs
-`useCPU()` takes no arguments. Topology is read once on mount; load polls every 1,000 ms until unmount.
 
 ### Outputs
 | Field | Type | Description |
@@ -77,7 +74,7 @@ const { coreTopology, cpuLoadPercent, cores, benchmarkCPU } = useCPU();
 
 GPU identity comes from an offscreen EGL context (`GL_RENDERER`, `GL_VENDOR`, `GL_VERSION`) plus the `android.hardware.vulkan.version` feature. Frame pacing is measured on the UI thread with `Choreographer` in 1 s windows: presented FPS, average and max frame interval, jank frames (interval > 1.5× the display's expected frame time). GPU memory is not exposed by Android and is always `null`.
 
-Verified on Pixel 11 Pro: `ANGLE (Imagination Technologies, Vulkan 1.4.317 (PowerVR C-Series CXTP-48-1536 MC1))`, 114 FPS presented in a 120 Hz mode.
+Verified on Pixel 11 Pro: `ANGLE (Imagination Technologies, Vulkan 1.4.317 (PowerVR C-Series CXTP-48-1536 MC1))`, 114 FPS presented in a 120 Hz mode. Identity is read once on mount; the hook then subscribes to the native `onFrameStats` event, which fires once per second while mounted.
 
 ### Signature
 ```typescript
@@ -96,9 +93,6 @@ function useGPU(): {
  source: TelemetrySource;
 };
 ```
-
-### Inputs
-`useGPU()` takes no arguments. Identity is read once on mount; the hook then subscribes to the native `onFrameStats` event, which fires once per second while mounted.
 
 ### Outputs
 | Field | Type | Description |
@@ -125,7 +119,7 @@ function useGPU(): {
 
 The Tensor TPU is reachable through AICore (Gemini Nano via ML Kit Prompt API in `@pixelkit/mlkit`) or LiteRT. This hook reports what is verifiably installed; real on-device inference metrics (latency, token counts, TTFT) live in `useGeminiNano()`. `benchmarkTPU()` runs a real 256×256 JS matmul and reports it as **CPU fallback**, clearly labelled.
 
-Verified on Pixel 11 Pro: AICore `0.release.prod_aicore_20260723.00_RC11`, Private Compute Services `1.0.release.962568596`. Requires the `<queries>` declaration in the module manifest (Android 11+ package visibility).
+Verified on Pixel 11 Pro: AICore `0.release.prod_aicore_20260723.00_RC11`, Private Compute Services `1.0.release.962568596`. Requires the `<queries>` declaration in the module manifest (Android 11+ package visibility). Package and feature detection runs once on mount.
 
 ### Signature
 ```typescript
@@ -145,9 +139,6 @@ function useTPU(): {
  source: TelemetrySource;
 };
 ```
-
-### Inputs
-`useTPU()` takes no arguments. Package and feature detection runs once on mount.
 
 ### Outputs
 | Field | Type | Description |
@@ -174,7 +165,7 @@ function useTPU(): {
 
 ## `useMemory`
 
-`ActivityManager.getMemoryInfo` (total, available, low-memory threshold and flag), the Java heap (`Runtime`) and the native heap (`Debug.getNativeHeapAllocatedSize`), polled every 2 s. `purgeCaches()` requests a GC and re-reads; it does not pretend to free system RAM.
+`ActivityManager.getMemoryInfo` (total, available, low-memory threshold and flag), the Java heap (`Runtime`) and the native heap (`Debug.getNativeHeapAllocatedSize`), polled every 2 s. `purgeCaches()` requests a GC and re-reads; it does not pretend to free system RAM. It reads on mount and every 2,000 ms thereafter.
 
 ### Signature
 ```typescript
@@ -191,9 +182,6 @@ function useMemory(): {
  source: TelemetrySource;
 };
 ```
-
-### Inputs
-`useMemory()` takes no arguments. It reads on mount and every 2,000 ms thereafter.
 
 ### Outputs
 | Field | Type | Description |
@@ -222,7 +210,7 @@ function useMemory(): {
 * Android 16+ `SystemHealthManager.getCpuHeadroom / getGpuHeadroom` (reflection, `null` when the device does not report them).
 * `targetFps` from the display mode, `currentFps` from Choreographer.
 
-Verified on Pixel 11 Pro: headroom 0.55 at status NONE; thresholds `{1: 0.8, 2: 0.933, 3: 1.0, 4: 1.05, 5: 1.233, 6: 1.667}`.
+Verified on Pixel 11 Pro: headroom 0.55 at status NONE; thresholds `{1: 0.8, 2: 0.933, 3: 1.0, 4: 1.05, 5: 1.233, 6: 1.667}`. Thermal readings poll every 10,000 ms; status changes and frame stats arrive as native events.
 
 ### Signature
 ```typescript
@@ -256,9 +244,6 @@ You never see the underlying temperature: Android deliberately does not expose o
 `thermalThresholds` is the same scale seen from the other side: the headroom value at which each `thermalStatus` begins on **this** device, e.g. `{1: 0.8, 2: 0.933, 3: 1.0, …}` — light throttling starts at 0.8, moderate at 0.933.
 
 Practical use: read it before starting something expensive, not during. Above roughly 0.8, shed work — drop the frame rate target, stop a benchmark loop, defer a model download — because the alternative is the system doing it for you, less gracefully. Google's minimum polling interval is 10 seconds; asking faster returns `NaN`, which is why this hook polls at exactly that rate.
-
-### Inputs
-`useADPF()` takes no arguments. Thermal readings poll every 10,000 ms; status changes and frame stats arrive as native events.
 
 ### Outputs
 | Field | Type | Description |
