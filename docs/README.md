@@ -11,7 +11,7 @@ Documentation for the **PixelKit SDK**: the silicon, sensors, radios and on-devi
 
 ### [Getting Started](./getting-started/)
 * **[Quickstart Guide](./getting-started/quickstart.md)**: Workstation prerequisites (Node 20+, Google Android CLI), installing dependencies, running on Pixel 11 Pro via Expo Go or development builds.
-* **[Using this template](./getting-started/using-this-template.md)**: what to rename, what to keep, what to delete, and how to add a hook the parity check accepts.
+* **[Using this template](https://github.com/PixelKit-Labs/pixelkit-template/blob/main/docs/using-this-template.md)**: what to rename, what to keep, what to delete, and how to add a hook the parity check accepts.
 * **[Architecture & Silicon Overview](./getting-started/architecture.md)**: The Tensor G6 7-core cluster, the PowerVR GPU, the StrongBox-backed keystore, wireless charging and the Hermes runtime — with device-verified figures separated from Google's published specification.
 
 ### [API Reference](./api/)
@@ -35,9 +35,9 @@ Documentation for the **PixelKit SDK**: the silicon, sensors, radios and on-devi
 * **[Troubleshooting & Diagnostics](./guides/troubleshooting.md)**: Expo SDK 57 specifics, camera permissions, keep-awake tags, Hermes bytecode compilation, and thermal throttling mitigations.
 
 ### Release
-* **[RELEASING.md](../RELEASING.md)**: the gates, versioning, the on-device walk, signing, EAS profiles, and the GitHub and Play steps.
-* **[Privacy policy](./PRIVACY.md)**: what stays on the device, what leaves only with your own API key, and what each permission is for.
-* **[Store listing](./store-listing.md)**: listing copy, data-safety answers and a declared purpose for every sensitive permission.
+* **[RELEASING.md](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/RELEASING.md)**: the gates, versioning, the on-device walk, signing, EAS profiles, and the GitHub and Play steps.
+* **[Privacy policy](https://github.com/PixelKit-Labs/pixelkit-template/blob/main/docs/PRIVACY.md)**: what stays on the device, what leaves only with your own API key, and what each permission is for.
+* **[Store listing](https://github.com/PixelKit-Labs/pixelkit-template/blob/main/docs/store-listing.md)**: listing copy, data-safety answers and a declared purpose for every sensitive permission.
 
 
 ### Consolidated Single-File Manuals

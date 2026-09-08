@@ -16,7 +16,7 @@ on the hook's declared type.
 | [Radios and security](./radios-security.md) | `useBLE`, `useNFC`, `useUWB`, `useRadios`, `useBiometrics`, `useSecurity` |
 | [System and media](./system-media.md) | `useAudio`, `useDisplay`, `useDevice`, `useNetwork`, `useCellular` |
 | [Pixel Pro exclusives](./pro-exclusives.md) | `useHiLight`, `useUWB` |
-| [Complete hardware API](./hardware-api.md) | All 32 in one page |
+| [Complete hardware API](../HARDWARE_API.md) | All 32 in one page |
 
 ## Reading a hook's `source`
 

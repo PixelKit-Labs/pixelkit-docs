@@ -5,7 +5,7 @@ for them.
 
 | Page | What it covers |
 | :--- | :--- |
-| [AI primer](./ai-primer.md) | The operational architecture and the prompt contracts an agent needs before touching this codebase |
+| [AI primer](../AI_PRIMER.md) | The operational architecture and the prompt contracts an agent needs before touching this codebase |
 | [Recipes](./recipes.md) | Task-shaped patterns: the sequence of hooks and calls for common jobs |
 
 ## The rule that matters most

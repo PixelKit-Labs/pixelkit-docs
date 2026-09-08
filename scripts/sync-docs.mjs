@@ -142,8 +142,74 @@ function injectDiagrams(markdown, sourcePath) {
   });
 }
 
+/**
+ * Maps a path inside `docs/` to the URL the site serves it at, using the same two route tables the
+ * copy below uses. Returns null when the file does not exist, which is how a dead link is caught.
+ */
+function docsPathToUrl(relativeFromDocs) {
+  const normalised = relativeFromDocs.split(path.sep).join('/');
+  if (!existsSync(path.join(SOURCE_ROOT, normalised))) return null;
+
+  const segments = normalised.split('/');
+  let route;
+
+  if (segments.length === 1) {
+    route = TOP_LEVEL_FILE_ROUTES[segments[0]] ?? `project/${segments[0]}`;
+  } else {
+    const [dir, ...rest] = segments;
+    const mapped = DIRECTORY_ROUTES[dir] ?? dir;
+    const last = rest[rest.length - 1] === 'README.md' ? 'index.md' : rest[rest.length - 1];
+    route = [mapped, ...rest.slice(0, -1), last].join('/');
+  }
+
+  const withoutExtension = route.replace(/\.mdx?$/, '');
+  const asDirectory = withoutExtension.replace(/\/index$/, '');
+  return `/${asDirectory}/`;
+}
+
+/**
+ * Rewrites relative `.md` links to the URLs the site actually serves.
+ *
+ * The prose is written to be read on GitHub as well as here, so links between pages are relative
+ * file paths — `./quickstart.md`, `../api/neural-ai.md`. Starlight serves those pages at extensionless
+ * directory URLs, so every one of them 404s on the site. There were 82 across 10 pages, and nothing
+ * reported them because a markdown link to a missing page is not a build error.
+ *
+ * A link whose target does not exist under `docs/` throws rather than being rewritten into a URL
+ * that would also 404 — a dead cross-reference should fail the build, not get tidier.
+ */
+function rewriteLinks(markdown, sourcePath) {
+  const fromDir = path.dirname(path.relative(SOURCE_ROOT, sourcePath));
+
+  return markdown.replace(/\]\((\.{1,2}\/[^)\s#]+?\.mdx?|[^)\s#:]+?\.mdx?)(#[^)\s]*)?\)/g, (match, target, anchor = '') => {
+    // Absolute paths and anything outside docs/ are left alone: they point at the repository, not
+    // at a page on this site.
+    if (target.startsWith('/')) return match;
+
+    // A relative link that climbs out of docs/ points at a repository file with no page on this
+    // site, so it 404s for every reader. `../RELEASING.md` was exactly that. There is no correct
+    // rewrite — the target genuinely is not published here — so it has to become an absolute URL.
+    const resolved = path.normalize(path.join(fromDir, target));
+    if (resolved.startsWith('..')) {
+      throw new Error(
+        `${path.relative(SOURCE_ROOT, sourcePath)}: link to "${target}" points outside docs/, so it ` +
+          'has no page on this site. Use an absolute https:// URL to the file on GitHub.'
+      );
+    }
+
+    const url = docsPathToUrl(resolved);
+    if (!url) {
+      throw new Error(
+        `${path.relative(SOURCE_ROOT, sourcePath)}: link to "${target}" has no such file under docs/. ` +
+          'Fix the link, or point it at the repository with an absolute URL.'
+      );
+    }
+    return `](${url}${anchor})`;
+  });
+}
+
 function copyMarkdownFile(sourcePath, targetPath, { landingCallout = false } = {}) {
-  const raw = injectDiagrams(readFileSync(sourcePath, 'utf8'), sourcePath);
+  const raw = rewriteLinks(injectDiagrams(readFileSync(sourcePath, 'utf8'), sourcePath), sourcePath);
   let out;
 
   if (hasFrontmatter(raw)) {
