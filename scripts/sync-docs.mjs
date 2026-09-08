@@ -181,7 +181,16 @@ function docsPathToUrl(relativeFromDocs) {
 function rewriteLinks(markdown, sourcePath) {
   const fromDir = path.dirname(path.relative(SOURCE_ROOT, sourcePath));
 
-  return markdown.replace(/\]\((\.{1,2}\/[^)\s#]+?\.mdx?|[^)\s#:]+?\.mdx?)(#[^)\s]*)?\)/g, (match, target, anchor = '') => {
+  // Directory links first. `./api/` is not a file link, so the rule below never sees it, and a
+  // browser resolves it against the *current URL* rather than the source tree: from /readme/ it
+  // becomes /readme/api/, which 404s. All four section links on the docs landing page were dead
+  // this way, including ./ai-guidance/, whose section is served at /for-coding-agents/.
+  const withDirectories = markdown.replace(/\]\((\.{1,2}\/)([a-z0-9-]+)\/\)/g, (match, _prefix, dir) => {
+    if (!existsSync(path.join(SOURCE_ROOT, dir))) return match;
+    return `](/${DIRECTORY_ROUTES[dir] ?? dir}/)`;
+  });
+
+  return withDirectories.replace(/\]\((\.{1,2}\/[^)\s#]+?\.mdx?|[^)\s#:]+?\.mdx?)(#[^)\s]*)?\)/g, (match, target, anchor = '') => {
     // Absolute paths and anything outside docs/ are left alone: they point at the repository, not
     // at a page on this site.
     if (target.startsWith('/')) return match;

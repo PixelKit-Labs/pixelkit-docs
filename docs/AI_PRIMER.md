@@ -75,7 +75,7 @@ Every hook exposes `source: 'hardware' | 'derived' | 'unavailable'` (see `packag
 
 ## Master Silicon & Hook Mapping Table
 
-Every hook's full contract — each input with its default and units, each output field with its meaning, and each function with what it takes and returns — is in [`docs/HARDWARE_API.md`](HARDWARE_API.md) and the per-domain pages under [`docs/api/`](api/). This table is the index.
+Every hook's full contract — each input with its default and units, each output field with its meaning, and each function with what it takes and returns — is in [`docs/HARDWARE_API.md`](HARDWARE_API.md) and the per-domain pages under [`docs/api/`](/api/). This table is the index.
 
 | Component | Hook | Inputs | Key outputs | Functions |
 | :--- | :--- | :--- | :--- | :--- |
