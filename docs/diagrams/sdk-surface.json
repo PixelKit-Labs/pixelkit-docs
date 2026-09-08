@@ -1,0 +1,49 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "What the SDK exposes",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "runtime", "label": "Runtime" },
+    { "id": "sdk", "label": "PixelKit" },
+    { "id": "silicon", "label": "Hardware" }
+  ],
+  "mainPath": ["rn", "sdk", "tpu"],
+  "nodes": [
+    { "id": "rn", "lane": "runtime", "col": 0, "type": "frontend", "label": "React Native", "sublabel": "Expo, Hermes bytecode", "width": 132 },
+    { "id": "sdk", "lane": "sdk", "col": 0, "type": "backend", "label": "@pixelkit-labs/sdk", "sublabel": "32 hooks from one barrel", "tag": "src/index.ts", "width": 146 },
+    { "id": "cpu", "lane": "silicon", "col": 0, "type": "database", "label": "CPU and GPU", "sublabel": "Tensor G6, real cpufreq", "width": 134 },
+    { "id": "tpu", "lane": "silicon", "col": 1, "type": "cloud", "label": "Tensor TPU", "sublabel": "AICore, Nano, ML Kit", "width": 128 },
+    { "id": "pro", "lane": "silicon", "col": 2, "type": "messagebus", "label": "Pro exclusives", "sublabel": "HiLight array, UWB", "width": 130 },
+    { "id": "vault", "lane": "silicon", "col": 3, "type": "security", "label": "Keystore", "sublabel": "StrongBox, biometrics", "width": 130 }
+  ],
+  "edges": [
+    { "from": "rn", "to": "sdk", "label": "import a hook", "variant": "emphasis" },
+    { "from": "sdk", "to": "cpu" },
+    { "from": "sdk", "to": "tpu", "variant": "emphasis" },
+    { "from": "sdk", "to": "pro" },
+    { "from": "sdk", "to": "vault" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Four domains, one import",
+      "items": [
+        "Every hook comes from @pixelkit-labs/sdk; only the four ML Kit hooks live behind the /mlkit subpath",
+        "Pro exclusives report unsupported rather than failing on a device without a HiLight array or UWB",
+        "The keystore path never returns key material to JavaScript, only the result of using it"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "What reaches real silicon",
+      "items": [
+        "CPU frequencies are read per core from cpufreq, not estimated from a model name",
+        "The TPU is only reachable through AICore, so useTPU reports what AICore exposes rather than claiming the chip directly",
+        "13 of the 32 hooks need no Kotlin at all and work on any Android device"
+      ]
+    }
+  ]
+}

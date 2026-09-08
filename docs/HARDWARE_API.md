@@ -23,23 +23,7 @@ This document is the consolidated reference for every hook in the PixelKit SDK (
 
 PixelKit exposes Pixel 11 Pro hardware to React Native through Expo modules and two local Kotlin Expo Modules.
 
-```
-+-------------------------------------------------------------------------+
-| REACT NATIVE / EXPO |
-| (Hermes Bytecode Execution) |
-+-------------------------------------------------------------------------+
- |
-+-------------------------------------------------------------------------+
-| PIXELKIT SDK |
-| (packages/sdk/src/index.ts Re-exports) |
-+-------------------------------------------------------------------------+
- | | | |
-+---------------+ +---------------+ +------------------+ +---------------+
-| CPU / GPU | | Tensor TPU | | Pro Exclusives | | Keystore |
-| Tensor G6 | | AICore/Nano | | HiLight LED ring | | StrongBox |
-| real cpufreq | | ML Kit GenAI | | UWB ranging | | Biometrics |
-+---------------+ +---------------+ +------------------+ +---------------+
-```
+<!-- diagram: sdk-surface -->
 
 Every hook is exported from `./src`:
 ```typescript

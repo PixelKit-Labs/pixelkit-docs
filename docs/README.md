@@ -48,23 +48,7 @@ Documentation for the **PixelKit SDK**: the silicon, sensors, radios and on-devi
 
 ## Silicon Architecture Diagram
 
-```
-+-------------------------------------------------------------------------+
-| REACT NATIVE / EXPO |
-| (Hermes Bytecode Execution) |
-+-------------------------------------------------------------------------+
- |
-+-------------------------------------------------------------------------+
-| PIXELKIT SDK |
-| (packages/sdk/src/index.ts Re-exports) |
-+-------------------------------------------------------------------------+
- | | | |
-+---------------+ +---------------+ +------------------+ +---------------+
-| CPU / GPU | | Tensor TPU | | Pro Exclusives | | Keystore |
-| Tensor G6 | | NNAPI/LiteRT | | HiLight LED Ring | | Quantum Vault |
-| Tensor G6 | | Gemini 3.8 | | UWB Radar AoA | | Biometrics |
-+---------------+ +---------------+ +------------------+ +---------------+
-```
+<!-- diagram: sdk-surface -->
 
 ---
 
