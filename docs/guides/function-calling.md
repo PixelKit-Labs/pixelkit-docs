@@ -383,7 +383,7 @@ export function parseToolCode(text: string) {
 
 AppFunctions (Android 16+, Jetpack `androidx.appfunctions` 1.0.0-alpha10) let **agent apps** such as Gemini discover and execute functions your app publishes, like an on-device MCP server. Integration with Gemini itself is in private preview (trusted testers, as of mid-2026), but the platform API and `adb` tooling are usable today, so build and verify now.
 
-### 5.1 Gradle (in the `@pixelkit/mlkit` module or a dedicated `pixel-appfunctions` module)
+### 5.1 Gradle (in the `@pixelkit-labs/mlkit` module or a dedicated `pixel-appfunctions` module)
 
 ```groovy
 plugins { id "com.google.devtools.ksp" }

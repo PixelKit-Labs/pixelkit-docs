@@ -94,6 +94,6 @@
       "output": "Resolves once the lock state has flipped; isKeepAwake reflects it. Release it when you no longer need it."
     }
   ],
-  "example": "import { useDisplay } from 'pixelkit';\n\nfunction DisplayPanel() {\n  const display = useDisplay();\n  return (\n    <View>\n      <Text>{display.refreshRateHz} Hz{display.hasArrSupport ? ' · adaptive' : ''}</Text>\n      <Button title=\"Prefer 120 Hz\" onPress={() => display.setPreferredRefreshRate(120)} />\n    </View>\n  );\n}",
+  "example": "import { useDisplay } from '@pixelkit-labs/sdk';\n\nfunction DisplayPanel() {\n  const display = useDisplay();\n  return (\n    <View>\n      <Text>{display.refreshRateHz} Hz{display.hasArrSupport ? ' · adaptive' : ''}</Text>\n      <Button title=\"Prefer 120 Hz\" onPress={() => display.setPreferredRefreshRate(120)} />\n    </View>\n  );\n}",
   "agentNote": "Do not cache refreshRateHz; it moves. Always release the wake lock when the screen no longer needs to stay on, or you will drain the battery."
 }

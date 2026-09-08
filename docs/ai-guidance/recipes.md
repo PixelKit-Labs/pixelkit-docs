@@ -28,7 +28,7 @@ Records from the microphone, transcribes it, lights the camera-bar ring while th
 ```tsx
 import React from 'react';
 import { View, Text } from 'react-native';
-import { useSpeechAI, useGemini, useHiLight, useHaptics, HapticButton } from 'pixelkit';
+import { useSpeechAI, useGemini, useHiLight, useHaptics, HapticButton } from '@pixelkit-labs/sdk';
 
 export function VoiceCommander() {
  const speech = useSpeechAI();
@@ -83,7 +83,7 @@ Slows the sensor stream down as the phone warms up, instead of waiting for the s
 ```tsx
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
-import { useSensors, useADPF, MetricCard } from 'pixelkit';
+import { useSensors, useADPF, MetricCard } from '@pixelkit-labs/sdk';
 
 export function AdaptiveTelemetryHUD() {
  const [intervalMs, setIntervalMs] = useState(100);
@@ -131,7 +131,7 @@ Drives the camera and takes a still. **Zoom is a 0 to 1 fraction of the lens ran
 import React from 'react';
 import { View, Text } from 'react-native';
 import { CameraView } from 'expo-camera';
-import { useCamera, useMediaLibrary, useHaptics, HapticButton } from 'pixelkit';
+import { useCamera, useMediaLibrary, useHaptics, HapticButton } from '@pixelkit-labs/sdk';
 
 export function ProPhotoSuite() {
  const camera = useCamera();
@@ -176,7 +176,7 @@ Persists secrets through SecureStore (Android Keystore, StrongBox-backed on this
 ```tsx
 import React, { useState } from 'react';
 import { View, Text } from 'react-native';
-import { useSecurity, useBiometrics, HapticButton } from 'pixelkit';
+import { useSecurity, useBiometrics, HapticButton } from '@pixelkit-labs/sdk';
 
 export function CredentialVault() {
  const security = useSecurity();
@@ -220,7 +220,7 @@ Opens a ranging session and renders distance and angle to each peer.
 ```tsx
 import React from 'react';
 import { View, Text } from 'react-native';
-import { useUWB, HapticButton } from 'pixelkit';
+import { useUWB, HapticButton } from '@pixelkit-labs/sdk';
 
 export function SpatialRadarView() {
  const { activeTargets, isRanging, isSupported, startRanging, stopRanging, sessionError } = useUWB();

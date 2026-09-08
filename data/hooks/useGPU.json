@@ -71,6 +71,6 @@
     }
   ],
   "actions": [],
-  "example": "import { useGPU } from 'pixelkit';\n\nfunction GPUHUD() {\n  const { measuredFps, frameRenderTimeMs, targetBudgetMs, isStuttering } = useGPU();\n  return (\n    <Text style={{ color: isStuttering ? '#F25C55' : '#46D786' }}>\n      {measuredFps ?? '—'} FPS · {frameRenderTimeMs ?? '—'} / {targetBudgetMs} ms\n    </Text>\n  );\n}",
+  "example": "import { useGPU } from '@pixelkit-labs/sdk';\n\nfunction GPUHUD() {\n  const { measuredFps, frameRenderTimeMs, targetBudgetMs, isStuttering } = useGPU();\n  return (\n    <Text style={{ color: isStuttering ? '#F25C55' : '#46D786' }}>\n      {measuredFps ?? '—'} FPS · {frameRenderTimeMs ?? '—'} / {targetBudgetMs} ms\n    </Text>\n  );\n}",
   "agentNote": "Check isStuttering before adding animation work. Frame timing measures the UI thread, so heavy JS shows up here even when the GPU is idle."
 }

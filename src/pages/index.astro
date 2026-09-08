@@ -14,13 +14,13 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { CardGrid, LinkCard, Aside, Code } from '@astrojs/starlight/components';
 
-const installExample = `npx expo install pixelkit @pixelkit/native
+const installExample = `npx expo install @pixelkit-labs/sdk @pixelkit-labs/native
 
 # on-device ML, opt-in: adds 19 ML Kit artifacts to your APK
-npx expo install @pixelkit/mlkit`;
+npx expo install @pixelkit-labs/mlkit`;
 
-const usageExample = `import { useCPU, useSensors, useBiometrics } from 'pixelkit';
-import { useGeminiNano } from 'pixelkit/mlkit';
+const usageExample = `import { useCPU, useSensors, useBiometrics } from '@pixelkit-labs/sdk';
+import { useGeminiNano } from '@pixelkit-labs/sdk/mlkit';
 
 function Readout() {
   const cpu = useCPU();
@@ -135,7 +135,7 @@ function Readout() {
 		<p>
 			Built from <a href="https://github.com/PixelKit-Labs/pixelkit-template">the template</a>? It
 			is a working four-tab app exercising every hook on a real device. Something reading
-			<code>—</code> and you are not sure why? <code>npx @pixelkit/cli doctor</code> says which of
+			<code>—</code> and you are not sure why? <code>npx @pixelkit-labs/cli doctor</code> says which of
 			adb, the device, the development build or AICore is missing.
 		</p>
 	</div>

@@ -85,6 +85,6 @@
       "output": "Returns nothing; isStrobing becomes false."
     }
   ],
-  "example": "import { useTorch } from 'pixelkit';\n\nfunction Flashlight() {\n  const { isTorchOn, maxStrengthLevel, setTorch, toggleTorch } = useTorch();\n  return (\n    <View>\n      <Button title={isTorchOn ? 'Off' : 'On'} onPress={toggleTorch} />\n      <Button title=\"Half\" onPress={() => setTorch(true, Math.ceil((maxStrengthLevel ?? 2) / 2))} />\n    </View>\n  );\n}",
+  "example": "import { useTorch } from '@pixelkit-labs/sdk';\n\nfunction Flashlight() {\n  const { isTorchOn, maxStrengthLevel, setTorch, toggleTorch } = useTorch();\n  return (\n    <View>\n      <Button title={isTorchOn ? 'Off' : 'On'} onPress={toggleTorch} />\n      <Button title=\"Half\" onPress={() => setTorch(true, Math.ceil((maxStrengthLevel ?? 2) / 2))} />\n    </View>\n  );\n}",
   "agentNote": "The torch competes with the camera; a capture session can take it away. Always surface error rather than assuming the call worked."
 }

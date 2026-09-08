@@ -252,6 +252,6 @@
       "output": "Resolves once status and info have been updated. On failure status becomes unavailable and error is set."
     }
   ],
-  "example": "import { useGeminiNano } from 'pixelkit';\n\nfunction OnDeviceChat() {\n  const nano = useGeminiNano();\n  if (nano.status === 'downloadable') return <Button title=\"Download model\" onPress={() => nano.download()} />;\n  return (\n    <View>\n      <Button title=\"Ask\" onPress={() => nano.sendMessage('Summarise the thermal state')} disabled={!nano.isAvailable} />\n      <Text>{nano.partial || nano.messages.at(-1)?.content}</Text>\n      <Text>{nano.lastLatencyMs ?? '—'} ms · {nano.lastDecodeTokensPerSec ?? '—'} tok/s</Text>\n    </View>\n  );\n}",
+  "example": "import { useGeminiNano } from '@pixelkit-labs/sdk';\n\nfunction OnDeviceChat() {\n  const nano = useGeminiNano();\n  if (nano.status === 'downloadable') return <Button title=\"Download model\" onPress={() => nano.download()} />;\n  return (\n    <View>\n      <Button title=\"Ask\" onPress={() => nano.sendMessage('Summarise the thermal state')} disabled={!nano.isAvailable} />\n      <Text>{nano.partial || nano.messages.at(-1)?.content}</Text>\n      <Text>{nano.lastLatencyMs ?? '—'} ms · {nano.lastDecodeTokensPerSec ?? '—'} tok/s</Text>\n    </View>\n  );\n}",
   "agentNote": "Always branch on status before calling. The model is foreground-only and single-turn, so keep the transcript short and send long or background work to the cloud hook."
 }

@@ -67,7 +67,7 @@ export function useDictationRecorder() {
 
 `state.metering` drives the `SensorVisualizer` waveform and the HiLight `pulse` brightness.
 
-### 2.3 Realtime PCM streaming (native, in the `@pixelkit/mlkit` module)
+### 2.3 Realtime PCM streaming (native, in the `@pixelkit-labs/mlkit` module)
 
 `expo-audio` records to files; the Live API needs a PCM stream. Add an `AudioRecord` loop to the same Expo Module. Use `VOICE_RECOGNITION` so the Pixel's multi-mic noise suppression is applied.
 

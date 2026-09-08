@@ -68,6 +68,6 @@
       "output": "Resolves with { activeDelegate: \"CPU Fallback\", isHardwareAccelerated: false, lastInferenceLatencyMs, throughputTokensPerSec: null, memoryFootprintMB: null }. Label it as a CPU number wherever you show it."
     }
   ],
-  "example": "import { useTPU } from 'pixelkit';\n\nfunction AIStack() {\n  const { aicoreInstalled, aicoreVersion, cpuFallbackLatencyMs, benchmarkTPU } = useTPU();\n  return (\n    <View>\n      <Text>AICore: {aicoreInstalled ? aicoreVersion : 'not installed'}</Text>\n      <Text>CPU matmul: {cpuFallbackLatencyMs ?? '—'} ms</Text>\n      <Button title=\"Run CPU fallback benchmark\" onPress={() => benchmarkTPU()} />\n    </View>\n  );\n}",
+  "example": "import { useTPU } from '@pixelkit-labs/sdk';\n\nfunction AIStack() {\n  const { aicoreInstalled, aicoreVersion, cpuFallbackLatencyMs, benchmarkTPU } = useTPU();\n  return (\n    <View>\n      <Text>AICore: {aicoreInstalled ? aicoreVersion : 'not installed'}</Text>\n      <Text>CPU matmul: {cpuFallbackLatencyMs ?? '—'} ms</Text>\n      <Button title=\"Run CPU fallback benchmark\" onPress={() => benchmarkTPU()} />\n    </View>\n  );\n}",
   "agentNote": "Check aicoreInstalled before offering on-device AI. Never present cpuFallbackLatencyMs as TPU performance; it is a JavaScript number."
 }

@@ -109,6 +109,6 @@
       "output": "Resolves true when the item was deleted, and it is dropped from recent."
     }
   ],
-  "example": "import { useCamera, useMediaLibrary } from 'pixelkit';\n\nfunction Keep() {\n  const cam = useCamera();\n  const library = useMediaLibrary();\n\n  const shoot = async () => {\n    const photo = await cam.takePicture();\n    if (photo) await library.save(photo.uri, 'PixelKit');\n  };\n  return <Button title=\"Capture and keep\" onPress={shoot} />;\n}",
+  "example": "import { useCamera, useMediaLibrary } from '@pixelkit-labs/sdk';\n\nfunction Keep() {\n  const cam = useCamera();\n  const library = useMediaLibrary();\n\n  const shoot = async () => {\n    const photo = await cam.takePicture();\n    if (photo) await library.save(photo.uri, 'PixelKit');\n  };\n  return <Button title=\"Capture and keep\" onPress={shoot} />;\n}",
   "agentNote": "A capture is not kept until you call save; cache files are collected by the system. Ask with writeOnly when you only need to save, and handle hasLimitedAccess rather than assuming the whole library is readable."
 }

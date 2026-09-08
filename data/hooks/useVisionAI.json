@@ -201,6 +201,6 @@
       "output": "Resolves with { subjectsCount, foregroundConfidence, latencyMs, source }. Null on failure."
     }
   ],
-  "example": "import { useVisionAI } from 'pixelkit';\n\nasync function readLabel(uri: string, vision) {\n  const ocr = await vision.recognizeText(uri);   // stays on the device\n  return ocr.text;\n}",
+  "example": "import { useVisionAI } from '@pixelkit-labs/sdk';\n\nasync function readLabel(uri: string, vision) {\n  const ocr = await vision.recognizeText(uri);   // stays on the device\n  return ocr.text;\n}",
   "agentNote": "Prefer the on-device calls: they are faster, work offline and never send the image anywhere. Only use captureAndAnalyze when the question is genuinely open-ended."
 }

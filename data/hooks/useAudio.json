@@ -244,6 +244,6 @@
       "output": "Resolves once the seek completes; playbackPositionSeconds updates."
     }
   ],
-  "example": "import { useAudio } from 'pixelkit';\n\nfunction Recorder() {\n  const audio = useAudio();\n  return (\n    <View>\n      <Button\n        title={audio.isRecording ? 'Stop' : 'Record'}\n        onPress={() => audio.isRecording ? audio.stopRecording() : audio.startRecording({ maxDurationSeconds: 30 })}\n      />\n      <View style={{ width: 200 * audio.level, height: 4, backgroundColor: '#6FDCF2' }} />\n      <Text>{audio.durationSeconds}s · peak {audio.peakDecibels} dBFS</Text>\n      {audio.lastRecordingUri && <Button title=\"Play\" onPress={() => audio.playLastRecording()} />}\n    </View>\n  );\n}",
+  "example": "import { useAudio } from '@pixelkit-labs/sdk';\n\nfunction Recorder() {\n  const audio = useAudio();\n  return (\n    <View>\n      <Button\n        title={audio.isRecording ? 'Stop' : 'Record'}\n        onPress={() => audio.isRecording ? audio.stopRecording() : audio.startRecording({ maxDurationSeconds: 30 })}\n      />\n      <View style={{ width: 200 * audio.level, height: 4, backgroundColor: '#6FDCF2' }} />\n      <Text>{audio.durationSeconds}s · peak {audio.peakDecibels} dBFS</Text>\n      {audio.lastRecordingUri && <Button title=\"Play\" onPress={() => audio.playLastRecording()} />}\n    </View>\n  );\n}",
   "agentNote": "Use level for meters, not meteringDecibels, because the dBFS scale is logarithmic and looks wrong on a bar. Use the speech profile for anything heading to speech recognition."
 }

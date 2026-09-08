@@ -76,6 +76,6 @@
       "output": "Returns nothing; a final results sync runs first, so nothing already discovered is lost."
     }
   ],
-  "example": "import { useBLE } from 'pixelkit';\n\nfunction Bluetooth() {\n  const { isEnabled, bondedDevices, peripherals, isScanning, startScan, stopScan } = useBLE();\n  return (\n    <View>\n      <Text>{isEnabled ? `${bondedDevices.length} paired · ${peripherals.length} discovered` : 'Bluetooth off'}</Text>\n      <Button\n        title={isScanning ? 'Stop scan' : 'Scan for peripherals'}\n        onPress={() => isScanning ? stopScan() : startScan(8000)}\n      />\n    </View>\n  );\n}",
+  "example": "import { useBLE } from '@pixelkit-labs/sdk';\n\nfunction Bluetooth() {\n  const { isEnabled, bondedDevices, peripherals, isScanning, startScan, stopScan } = useBLE();\n  return (\n    <View>\n      <Text>{isEnabled ? `${bondedDevices.length} paired · ${peripherals.length} discovered` : 'Bluetooth off'}</Text>\n      <Button\n        title={isScanning ? 'Stop scan' : 'Scan for peripherals'}\n        onPress={() => isScanning ? stopScan() : startScan(8000)}\n      />\n    </View>\n  );\n}",
   "agentNote": "BLE scanning uses Android BluetoothLeScanner directly on physical hardware. Call startScan with a finite timeout to preserve battery."
 }

@@ -40,6 +40,6 @@
       "output": "Resolves true only on success. A cancel or a mismatch resolves false without setting error; missing hardware or no enrolment resolves false and sets error. lastResult tells the three apart."
     }
   ],
-  "example": "import { useBiometrics } from 'pixelkit';\n\nfunction Unlock() {\n  const { hasHardware, isEnrolled, authenticate } = useBiometrics();\n  if (!hasHardware || !isEnrolled) return <Text>Use a passcode instead</Text>;\n  return <Button title=\"Unlock\" onPress={() => authenticate('Confirm your identity')} />;\n}",
+  "example": "import { useBiometrics } from '@pixelkit-labs/sdk';\n\nfunction Unlock() {\n  const { hasHardware, isEnrolled, authenticate } = useBiometrics();\n  if (!hasHardware || !isEnrolled) return <Text>Use a passcode instead</Text>;\n  return <Button title=\"Unlock\" onPress={() => authenticate('Confirm your identity')} />;\n}",
   "agentNote": "Always provide a non-biometric path. Never treat a false result as an attack; a cancel and a failure look the same here."
 }

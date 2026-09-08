@@ -63,6 +63,6 @@
       "output": "Returns nothing. The refreshed reading lands in the hook fields, and the amount reclaimed is logged as freedMB."
     }
   ],
-  "example": "import { useMemory } from 'pixelkit';\n\nfunction MemoryHUD() {\n  const { freeRAMMB, isLowMemory, purgeCaches } = useMemory();\n  return (\n    <View>\n      <Text>Free: {freeRAMMB} MB</Text>\n      {isLowMemory && <Button title=\"Purge caches\" onPress={purgeCaches} />}\n    </View>\n  );\n}",
+  "example": "import { useMemory } from '@pixelkit-labs/sdk';\n\nfunction MemoryHUD() {\n  const { freeRAMMB, isLowMemory, purgeCaches } = useMemory();\n  return (\n    <View>\n      <Text>Free: {freeRAMMB} MB</Text>\n      {isLowMemory && <Button title=\"Purge caches\" onPress={purgeCaches} />}\n    </View>\n  );\n}",
   "agentNote": "React to isLowMemory by dropping image buffers before starting large multimodal payloads. Do not treat usedRAMMB as a leak signal; it includes reclaimable cache."
 }

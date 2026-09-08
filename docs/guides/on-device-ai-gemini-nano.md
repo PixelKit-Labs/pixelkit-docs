@@ -1,6 +1,6 @@
 # On-Device AI with Gemini Nano 4 (AICore + ML Kit GenAI)
 
-> The `@pixelkit/mlkit` local Expo Module bridges the **ML Kit GenAI Prompt API** to React Native and `useGeminiNano` wraps it. Target: Pixel 11 / 11 Pro / 11 Pro XL / 11 Pro Fold (Gemini Nano tier `nano-v4`). Works on Pixel 9 and 10 with `nano-v3`.
+> The `@pixelkit-labs/mlkit` local Expo Module bridges the **ML Kit GenAI Prompt API** to React Native and `useGeminiNano` wraps it. Target: Pixel 11 / 11 Pro / 11 Pro XL / 11 Pro Fold (Gemini Nano tier `nano-v4`). Works on Pixel 9 and 10 with `nano-v3`.
 
 **Status (1.0.2):** implemented in `packages/mlkit` and `packages/pixelkit/src/ai/useGeminiNano.ts`, wired into the AI Lab as a second conversation engine. The shipped code differs from the sketches below where the beta4 AAR disagrees with the docs:
 
@@ -52,7 +52,7 @@ Facts that drive the design:
 
 ```bash
 npm i expo-build-properties expo-dev-client
-npx create-expo-module@latest --local # prompt: name "@pixelkit/mlkit", Android package "expo.modules.pixelnano"
+npx create-expo-module@latest --local # prompt: name "@pixelkit-labs/mlkit", Android package "expo.modules.pixelnano"
 ```
 
 `app.json` additions (see [guides README](./README.md#3-build-prerequisites-shared-by-all-three-guides) for the full block): `compileSdkVersion` / `targetSdkVersion` **36**, `minSdkVersion` **26**. ML Kit GenAI needs only minSdk 26, so Android 17's `android-37.0` platform is not required for this module; raise compileSdk once Expo's AGP resolves minor-versioned SDKs.

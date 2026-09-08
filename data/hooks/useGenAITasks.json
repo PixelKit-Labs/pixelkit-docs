@@ -114,6 +114,6 @@
       "output": "Resolves with { description, finishReason, latencyMs, engine, source }, or null on failure."
     }
   ],
-  "example": "import { useGenAITasks } from 'pixelkit';\n\nasync function tidy(dictated: string, tasks) {\n  const fixed = await tasks.proofread(dictated);\n  const short = await tasks.summarize(fixed.correctedText, { outputType: 'two_bullets' });\n  return short.summary;\n}",
+  "example": "import { useGenAITasks } from '@pixelkit-labs/sdk';\n\nasync function tidy(dictated: string, tasks) {\n  const fixed = await tasks.proofread(dictated);\n  const short = await tasks.summarize(fixed.correctedText, { outputType: 'two_bullets' });\n  return short.summary;\n}",
   "agentNote": "Reach for these before prompting a chat model for the same job: they are faster, run offline and give steadier output. Handle the model-not-downloaded error."
 }

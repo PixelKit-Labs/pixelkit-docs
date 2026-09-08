@@ -150,6 +150,6 @@
       "output": "Returns nothing; voice, rate and pitch update."
     }
   ],
-  "example": "import { useSpeech, useGeminiNano } from 'pixelkit';\n\nfunction TalkBack() {\n  const speech = useSpeech();\n  const nano = useGeminiNano();\n\n  const answer = async () => {\n    const reply = await nano.generate('Describe the thermal state in one sentence.');\n    await speech.speak(reply.text, { rate: 0.95 });\n  };\n  return <Button title=\"Ask and speak\" onPress={answer} />;\n}",
+  "example": "import { useSpeech, useGeminiNano } from '@pixelkit-labs/sdk';\n\nfunction TalkBack() {\n  const speech = useSpeech();\n  const nano = useGeminiNano();\n\n  const answer = async () => {\n    const reply = await nano.generate('Describe the thermal state in one sentence.');\n    await speech.speak(reply.text, { rate: 0.95 });\n  };\n  return <Button title=\"Ask and speak\" onPress={answer} />;\n}",
   "agentNote": "Await speak rather than firing several in a row, or they queue unpredictably. Check voices before promising a language; coverage depends on what the user installed."
 }

@@ -34,7 +34,7 @@ import {
  useSecurity,
  HapticButton,
  MetricCard
-} from 'pixelkit';
+} from '@pixelkit-labs/sdk';
 
 // WRONG (Never import raw unmanaged sensor listeners)
 import * as Accelerometer from 'expo-sensors';
@@ -121,7 +121,7 @@ When instructing another AI model or configuring an IDE prompt, copy and paste t
 ```markdown
 You are building an application using the PixelKit SDK on a Google Pixel 11 Pro (Android 17, Google Tensor G6).
 Always adhere to these requirements:
-1. Import all hardware and AI hooks directly from 'pixelkit' (e.g. useCPU, useHiLight, useSensors, useGemini, useHaptics, useCamera).
+1. Import all hardware and AI hooks directly from '@pixelkit-labs/sdk' (e.g. useCPU, useHiLight, useSensors, useGemini, useHaptics, useCamera).
 2. Attach tactile haptic feedback (useHaptics) to all user interactions: selection for navigation, light for taps, success for completed actions, error for failures.
 3. When running Gemini AI, trigger the rear HiLight ring via useHiLight().triggerGeminiPulse() for face-down visual signaling.
 4. Treat Camera Looks and Super Res Zoom as Pixel Camera app features. useCamera() does capture (takePicture, startRecording) and exposes zoom as a 0..1 fraction, never an optical multiplier. Save captures with useMediaLibrary() or the system reclaims them.
@@ -144,7 +144,7 @@ Both recipes state what they take and what they give back. Full contracts are in
 ```tsx
 import React from 'react';
 import { View } from 'react-native';
-import { useGemini, useHiLight, useHaptics, HapticButton } from 'pixelkit';
+import { useGemini, useHiLight, useHaptics, HapticButton } from '@pixelkit-labs/sdk';
 
 export function SmartAssistant() {
  const gemini = useGemini();
@@ -179,7 +179,7 @@ export function SmartAssistant() {
 import React from 'react';
 import { View, Text } from 'react-native';
 import { CameraView } from 'expo-camera';
-import { useCamera, useHaptics, HapticButton } from 'pixelkit';
+import { useCamera, useHaptics, HapticButton } from '@pixelkit-labs/sdk';
 
 export function ProPhotoView() {
  const camera = useCamera();

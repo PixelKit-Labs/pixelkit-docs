@@ -81,7 +81,7 @@ const DIRECTORY_ROUTES = {
 /** The three facts that answer PixelKit's most common support question, rendered above the synced README content at `readme.md`. Generated here, not stored as a second copy of prose that belongs in docs/README.md. */
 const LANDING_CALLOUT = `:::caution[Read this first]
 - **Android only.** There is no iOS build, and none is planned; every hook is written against Android platform APIs.
-- **Requires a development build.** PixelKit cannot run inside Expo Go — it ships two native Expo Modules (\`@pixelkit/native\`, \`@pixelkit/mlkit\`) that Expo Go does not include. Build a dev client with EAS or a local Gradle build.
+- **Requires a development build.** PixelKit cannot run inside Expo Go — it ships two native Expo Modules (\`@pixelkit-labs/native\`, \`@pixelkit-labs/mlkit\`) that Expo Go does not include. Build a dev client with EAS or a local Gradle build.
 - **Most hooks are Pixel-specific by design.** Off a Pixel 11 Pro, a hook that cannot read real hardware reports \`source: 'unavailable'\` and returns \`null\` rather than a fabricated number. In the UI that renders as an em dash ("—"), never a plausible-looking placeholder value.
 :::
 

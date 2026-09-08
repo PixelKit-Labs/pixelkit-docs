@@ -75,6 +75,6 @@
       "output": "'WITHIN_BUDGET' when the work fits the frame, 'BOOST_REQUESTED' when it overran and you should shed work."
     }
   ],
-  "example": "import { useADPF } from 'pixelkit';\n\nasync function runHeavyTask(adpf) {\n  if ((adpf.thermalHeadroom ?? 0) > 0.8) return 'deferred: device is hot';\n  // ... start the work\n}",
+  "example": "import { useADPF } from '@pixelkit-labs/sdk';\n\nasync function runHeavyTask(adpf) {\n  if ((adpf.thermalHeadroom ?? 0) > 0.8) return 'deferred: device is hot';\n  // ... start the work\n}",
   "agentNote": "Gate sustained workloads on thermalHeadroom, not on thermalStatus alone; the number moves before the label does."
 }

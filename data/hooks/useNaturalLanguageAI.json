@@ -109,6 +109,6 @@
       "output": "Resolves with { entities, latencyMs, source }; each entity carries type, text and the start and end offsets into your input. Null on failure."
     }
   ],
-  "example": "import { useNaturalLanguageAI } from 'pixelkit';\n\nasync function localise(text: string, nlp) {\n  const { languageCode } = await nlp.identifyLanguage(text);\n  if (!languageCode || languageCode === 'en') return text;\n  const out = await nlp.translate(text, languageCode, 'en');\n  return out.translatedText;\n}",
+  "example": "import { useNaturalLanguageAI } from '@pixelkit-labs/sdk';\n\nasync function localise(text: string, nlp) {\n  const { languageCode } = await nlp.identifyLanguage(text);\n  if (!languageCode || languageCode === 'en') return text;\n  const out = await nlp.translate(text, languageCode, 'en');\n  return out.translatedText;\n}",
   "agentNote": "Warn the user that a first translation for a new language pair downloads a model. Do not assume identifyLanguage succeeds; languageCode can be null for very short input."
 }

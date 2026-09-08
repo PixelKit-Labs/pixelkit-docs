@@ -76,6 +76,6 @@
     }
   ],
   "actions": [],
-  "example": "import { useCapabilities } from 'pixelkit';\n\nfunction ProFeatures() {\n  const caps = useCapabilities();\n  return (\n    <View>\n      <Text>{caps.modelName} · API {caps.androidApiLevel} · {caps.verification}</Text>\n      {caps.hasHiLight && <HiLightCard />}\n      {caps.hasUWB && <UWBCard />}\n    </View>\n  );\n}",
+  "example": "import { useCapabilities } from '@pixelkit-labs/sdk';\n\nfunction ProFeatures() {\n  const caps = useCapabilities();\n  return (\n    <View>\n      <Text>{caps.modelName} · API {caps.androidApiLevel} · {caps.verification}</Text>\n      {caps.hasHiLight && <HiLightCard />}\n      {caps.hasUWB && <UWBCard />}\n    </View>\n  );\n}",
   "agentNote": "Never hardcode a device assumption; read this first. Treat null as unknown rather than false, and prefer acting once verification is device."
 }

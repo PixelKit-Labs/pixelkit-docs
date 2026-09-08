@@ -47,6 +47,6 @@
     }
   ],
   "actions": [],
-  "example": "import { useSensors } from 'pixelkit';\n\nfunction Level() {\n  const { accelerometer, lightLux } = useSensors(100);\n  return <Text>tilt {accelerometer.x.toFixed(2)} · {lightLux ?? '—'} lux</Text>;\n}",
+  "example": "import { useSensors } from '@pixelkit-labs/sdk';\n\nfunction Level() {\n  const { accelerometer, lightLux } = useSensors(100);\n  return <Text>tilt {accelerometer.x.toFixed(2)} · {lightLux ?? '—'} lux</Text>;\n}",
   "agentNote": "Do not poll at 16 ms unless something is animating from it. relativeAltitude is derived from pressure, so treat it as relative, never as a GPS altitude."
 }

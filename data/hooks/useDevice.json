@@ -144,6 +144,6 @@
       "output": "Promise<void> — Resolves once all battery, electrical, and network states are refreshed."
     }
   ],
-  "example": "import { useDevice } from 'pixelkit';\n\nfunction PowerHUD() {\n  const { batteryPercent, batteryTemperatureC, batteryVoltageMv, batteryPowerWatts, isCharging, refresh } = useDevice();\n  return (\n    <View>\n      <Text>Battery: {batteryPercent}% {isCharging ? '(charging)' : ''}</Text>\n      <Text>Temp: {batteryTemperatureC != null ? `${batteryTemperatureC.toFixed(1)} °C` : '—'}</Text>\n      <Text>Voltage: {batteryVoltageMv ?? '—'} mV</Text>\n      <Text>Rate: {batteryPowerWatts != null ? `${batteryPowerWatts.toFixed(2)} W` : '—'}</Text>\n    </View>\n  );\n}",
+  "example": "import { useDevice } from '@pixelkit-labs/sdk';\n\nfunction PowerHUD() {\n  const { batteryPercent, batteryTemperatureC, batteryVoltageMv, batteryPowerWatts, isCharging, refresh } = useDevice();\n  return (\n    <View>\n      <Text>Battery: {batteryPercent}% {isCharging ? '(charging)' : ''}</Text>\n      <Text>Temp: {batteryTemperatureC != null ? `${batteryTemperatureC.toFixed(1)} °C` : '—'}</Text>\n      <Text>Voltage: {batteryVoltageMv ?? '—'} mV</Text>\n      <Text>Rate: {batteryPowerWatts != null ? `${batteryPowerWatts.toFixed(2)} W` : '—'}</Text>\n    </View>\n  );\n}",
   "agentNote": "Respect lowPowerMode: reduce sensor intervals and defer heavy work when true. Use batteryTemperatureC and batteryVoltageMv for real battery hardware metrics rather than simulating values."
 }

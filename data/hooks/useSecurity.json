@@ -71,6 +71,6 @@
       "output": "Resolves true when the delete completed, false with the reason in error otherwise."
     }
   ],
-  "example": "import { useSecurity } from 'pixelkit';\n\nasync function storeKey(value: string, security) {\n  await security.saveSecureItem('MY_API_KEY', value);\n}",
+  "example": "import { useSecurity } from '@pixelkit-labs/sdk';\n\nasync function storeKey(value: string, security) {\n  await security.saveSecureItem('MY_API_KEY', value);\n}",
   "agentNote": "Never write a secret to plain storage, a log line, or source. Use this hook or saveApiKey, and do not describe the storage as post-quantum."
 }

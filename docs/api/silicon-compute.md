@@ -117,7 +117,7 @@ function useGPU(): {
 
 ## `useTPU`
 
-The Tensor TPU is reachable through AICore (Gemini Nano via ML Kit Prompt API in `@pixelkit/mlkit`) or LiteRT. This hook reports what is verifiably installed; real on-device inference metrics (latency, token counts, TTFT) live in `useGeminiNano()`. `benchmarkTPU()` runs a real 256×256 JS matmul and reports it as **CPU fallback**, clearly labelled.
+The Tensor TPU is reachable through AICore (Gemini Nano via ML Kit Prompt API in `@pixelkit-labs/mlkit`) or LiteRT. This hook reports what is verifiably installed; real on-device inference metrics (latency, token counts, TTFT) live in `useGeminiNano()`. `benchmarkTPU()` runs a real 256×256 JS matmul and reports it as **CPU fallback**, clearly labelled.
 
 Verified on Pixel 11 Pro: AICore `0.release.prod_aicore_20260723.00_RC11`, Private Compute Services `1.0.release.962568596`. Requires the `<queries>` declaration in the module manifest (Android 11+ package visibility). Package and feature detection runs once on mount.
 

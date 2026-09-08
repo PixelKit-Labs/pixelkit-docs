@@ -29,7 +29,7 @@ Documentation for the **PixelKit SDK**: the silicon, sensors, radios and on-devi
 
 ### [Guides & Diagnostics](./guides/)
 * **[Built-in AI, Function Calling & Voice (hub)](./guides/README.md)**: Where inference runs (Gemini Nano 4 on-device vs Gemini cloud), capability matrix, and shared dev-build prerequisites.
-* **[On-Device AI with Gemini Nano](./guides/on-device-ai-gemini-nano.md)**: `@pixelkit/mlkit` Expo Module over the ML Kit GenAI Prompt API, `useGeminiNano`, structured output, thinking mode, hybrid routing.
+* **[On-Device AI with Gemini Nano](./guides/on-device-ai-gemini-nano.md)**: `@pixelkit-labs/mlkit` Expo Module over the ML Kit GenAI Prompt API, `useGeminiNano`, structured output, thinking mode, hybrid routing.
 * **[Function Calling & Hardware Tools](./guides/function-calling.md)**: One tool registry executed by cloud Gemini function calling, Gemini Nano structured output, and Android AppFunctions.
 * **[Voice: Speech In, Speech Out, Live Agents](./guides/voice.md)**: On-device streaming STT (Pixel 10/11 Advanced mode), Gemini Live API voice agents with ephemeral tokens, TTS, HiLight/haptic status.
 * **[Troubleshooting & Diagnostics](./guides/troubleshooting.md)**: Expo SDK 57 specifics, camera permissions, keep-awake tags, Hermes bytecode compilation, and thermal throttling mitigations.
@@ -85,5 +85,5 @@ import {
  useHaptics,
  HapticButton,
  MetricCard
-} from 'pixelkit';
+} from '@pixelkit-labs/sdk';
 ```

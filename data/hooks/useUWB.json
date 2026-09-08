@@ -76,6 +76,6 @@
       "output": "Returns nothing; isRanging becomes false."
     }
   ],
-  "example": "import { useUWB } from 'pixelkit';\n\nfunction Radar() {\n  const { isSupported, isRanging, sessionInfo, startRanging, stopRanging } = useUWB();\n  if (!isSupported) return <Text>No UWB radio</Text>;\n  return (\n    <View>\n      <Text>Session: {sessionInfo?.status ?? 'Inactive'}</Text>\n      <Button\n        title={isRanging ? 'Stop session' : 'Start hardware session'}\n        onPress={() => isRanging ? stopRanging() : startRanging(1001)}\n      />\n    </View>\n  );\n}",
+  "example": "import { useUWB } from '@pixelkit-labs/sdk';\n\nfunction Radar() {\n  const { isSupported, isRanging, sessionInfo, startRanging, stopRanging } = useUWB();\n  if (!isSupported) return <Text>No UWB radio</Text>;\n  return (\n    <View>\n      <Text>Session: {sessionInfo?.status ?? 'Inactive'}</Text>\n      <Button\n        title={isRanging ? 'Stop session' : 'Start hardware session'}\n        onPress={() => isRanging ? stopRanging() : startRanging(1001)}\n      />\n    </View>\n  );\n}",
   "agentNote": "UWB chip status and sessions are backed by physical hardware. Note that this preview build declares android.hardware.uwb but not android.hardware.ranging."
 }

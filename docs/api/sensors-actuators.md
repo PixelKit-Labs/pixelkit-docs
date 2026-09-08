@@ -56,7 +56,7 @@ function useSensors(updateIntervalMs?: number): SensorTelemetry & {
 
 ### Example
 ```tsx
-import { useSensors } from 'pixelkit';
+import { useSensors } from '@pixelkit-labs/sdk';
 
 export function AltitudeHUD() {
  const { barometer, accelerometer, barometerAvailable } = useSensors(100);
@@ -157,7 +157,7 @@ function useCamera(): CameraTelemetry & {
 ### Example
 ```tsx
 import { CameraView } from 'expo-camera';
-import { useCamera, HapticButton } from 'pixelkit';
+import { useCamera, HapticButton } from '@pixelkit-labs/sdk';
 
 export function Capture() {
  const cam = useCamera();

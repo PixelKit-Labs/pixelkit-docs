@@ -145,6 +145,6 @@
       "output": "Returns nothing; isActive flips."
     }
   ],
-  "example": "import { useHiLight } from 'pixelkit';\n\nfunction StatusRing() {\n  const hilight = useHiLight();\n  return (\n    <View>\n      <Text>{hilight.availability} · {hilight.mode}</Text>\n      <Button title=\"Thinking pulse\" onPress={() => hilight.triggerGeminiPulse(4000)} />\n    </View>\n  );\n}",
+  "example": "import { useHiLight } from '@pixelkit-labs/sdk';\n\nfunction StatusRing() {\n  const hilight = useHiLight();\n  return (\n    <View>\n      <Text>{hilight.availability} · {hilight.mode}</Text>\n      <Button title=\"Thinking pulse\" onPress={() => hilight.triggerGeminiPulse(4000)} />\n    </View>\n  );\n}",
   "agentNote": "Read availability before promising light. Only 'hardware' drives the LEDs; 'unavailable' means the daemon is not running and the control functions refuse rather than pretending."
 }

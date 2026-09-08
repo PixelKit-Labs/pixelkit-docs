@@ -50,7 +50,7 @@ import {
  useSensors, useCamera, useTorch, useHaptics,
  useBiometrics, useSecurity, useBLE, useNFC, useRadios, useLocation,
  useAudio, useVideo, useMediaLibrary, useCellular, useCapabilities, useDisplay, useDevice, useNetwork,
-} from 'pixelkit';
+} from '@pixelkit-labs/sdk';
 ```
 
 ---

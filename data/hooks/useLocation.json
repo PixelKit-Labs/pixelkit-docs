@@ -53,6 +53,6 @@
       "output": "Resolves true when a fix arrived, false when permission was denied or the fix failed, with the reason in error. Coordinates never reach the log."
     }
   ],
-  "example": "import { useLocation } from 'pixelkit';\n\nfunction Position() {\n  const { latitude, longitude, accuracy, hasPermission } = useLocation();\n  if (!hasPermission) return <Text>Location permission needed</Text>;\n  return <Text>{latitude.toFixed(5)}, {longitude.toFixed(5)} ±{accuracy ?? '—'} m</Text>;\n}",
+  "example": "import { useLocation } from '@pixelkit-labs/sdk';\n\nfunction Position() {\n  const { latitude, longitude, accuracy, hasPermission } = useLocation();\n  if (!hasPermission) return <Text>Location permission needed</Text>;\n  return <Text>{latitude.toFixed(5)}, {longitude.toFixed(5)} ±{accuracy ?? '—'} m</Text>;\n}",
   "agentNote": "Never present coordinates without their accuracy. Request permission in response to a user action, not on mount."
 }

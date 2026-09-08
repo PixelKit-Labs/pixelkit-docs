@@ -68,6 +68,6 @@
       "output": "Resolves with the run duration in milliseconds, which is also written to lastBenchmarkDurationMs. Lower is faster."
     }
   ],
-  "example": "import { useCPU } from 'pixelkit';\n\nfunction CPUWidget() {\n  const { coreTopology, cpuLoadPercent, cores, benchmarkCPU } = useCPU();\n  return (\n    <View>\n      <Text>{coreTopology}</Text>\n      <Text>{cpuLoadPercent ?? '—'}% · {cores.map(c => c.curMHz).join('/')} MHz</Text>\n      <Button title=\"Run benchmark\" onPress={() => benchmarkCPU()} />\n    </View>\n  );\n}",
+  "example": "import { useCPU } from '@pixelkit-labs/sdk';\n\nfunction CPUWidget() {\n  const { coreTopology, cpuLoadPercent, cores, benchmarkCPU } = useCPU();\n  return (\n    <View>\n      <Text>{coreTopology}</Text>\n      <Text>{cpuLoadPercent ?? '—'}% · {cores.map(c => c.curMHz).join('/')} MHz</Text>\n      <Button title=\"Run benchmark\" onPress={() => benchmarkCPU()} />\n    </View>\n  );\n}",
   "agentNote": "Values are null until the native module answers; never substitute a default. cpuLoadPercent is frequency utilisation, not scheduler load, so do not label it \"CPU usage\"."
 }

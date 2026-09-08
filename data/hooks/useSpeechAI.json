@@ -87,6 +87,6 @@
       "output": "Returns nothing. model updates to name the engine that will be used."
     }
   ],
-  "example": "import { useSpeechAI } from 'pixelkit';\n\nfunction VoiceButton() {\n  const speech = useSpeechAI();\n  const toggle = async () => {\n    if (speech.isListening) {\n      const result = await speech.stopListeningAndTranscribe();\n      console.log(result?.transcript);\n    } else {\n      await speech.startListening();\n    }\n  };\n  return <Button title={speech.isListening ? 'Stop' : 'Speak'} onPress={toggle} />;\n}",
+  "example": "import { useSpeechAI } from '@pixelkit-labs/sdk';\n\nfunction VoiceButton() {\n  const speech = useSpeechAI();\n  const toggle = async () => {\n    if (speech.isListening) {\n      const result = await speech.stopListeningAndTranscribe();\n      console.log(result?.transcript);\n    } else {\n      await speech.startListening();\n    }\n  };\n  return <Button title={speech.isListening ? 'Stop' : 'Speak'} onPress={toggle} />;\n}",
   "agentNote": "Prefer offline mode when isOfflineAvailable is true: it is lower latency and keeps audio on the device. Show streamingPartial so the user knows they are being heard."
 }

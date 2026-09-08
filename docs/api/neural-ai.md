@@ -100,7 +100,7 @@ function useGemini(): {
 ```tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput } from 'react-native';
-import { useGemini, useHiLight, HapticButton } from 'pixelkit';
+import { useGemini, useHiLight, HapticButton } from '@pixelkit-labs/sdk';
 
 export function AssistantChat() {
  const gemini = useGemini();
@@ -239,8 +239,8 @@ Options map onto `GenerateContentRequest.Builder`: `systemInstruction` (a `Syste
 
 ### Example
 ```tsx
-import { HapticButton } from 'pixelkit';
-import { useGeminiNano } from 'pixelkit/mlkit';
+import { HapticButton } from '@pixelkit-labs/sdk';
+import { useGeminiNano } from '@pixelkit-labs/sdk/mlkit';
 
 export function OnDeviceAssistant() {
  const nano = useGeminiNano();
@@ -486,8 +486,8 @@ function useSpeech(): {
 
 ### Example
 ```tsx
-import { useSpeech, HapticButton } from 'pixelkit';
-import { useGeminiNano } from 'pixelkit/mlkit';
+import { useSpeech, HapticButton } from '@pixelkit-labs/sdk';
+import { useGeminiNano } from '@pixelkit-labs/sdk/mlkit';
 
 export function TalkBack() {
  const speech = useSpeech();

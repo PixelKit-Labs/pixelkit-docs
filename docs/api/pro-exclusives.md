@@ -78,7 +78,7 @@ type HiLightMode = 'off' | 'glow' | 'breathing' | 'pulse' | 'gemini_thinking' | 
 
 ### Example
 ```tsx
-import { useHiLight, HapticButton } from 'pixelkit';
+import { useHiLight, HapticButton } from '@pixelkit-labs/sdk';
 
 export function HiLightHUD() {
  const hilight = useHiLight();
@@ -154,7 +154,7 @@ interface UWBSpatialTarget {
 
 ### Example
 ```tsx
-import { useUWB, HapticButton } from 'pixelkit';
+import { useUWB, HapticButton } from '@pixelkit-labs/sdk';
 
 export function RadarHUD() {
  const { activeTargets, isRanging, startRanging, stopRanging, sessionError } = useUWB();

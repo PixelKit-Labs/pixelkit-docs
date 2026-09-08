@@ -74,6 +74,6 @@
       "output": "Resolves true when granted, and refreshes automatically. Generation is readable without it."
     }
   ],
-  "example": "import { useCellular, useNetwork } from 'pixelkit';\n\nfunction ShouldStream() {\n  const net = useNetwork();\n  const cell = useCellular();\n  if (!net.isConnected) return <Text>Offline</Text>;\n  if (net.isMetered && !cell.is5G) return <Text>On {cell.generation}, ask before streaming</Text>;\n  return <Text>Fine to stream</Text>;\n}",
+  "example": "import { useCellular, useNetwork } from '@pixelkit-labs/sdk';\n\nfunction ShouldStream() {\n  const net = useNetwork();\n  const cell = useCellular();\n  if (!net.isConnected) return <Text>Offline</Text>;\n  if (net.isMetered && !cell.is5G) return <Text>On {cell.generation}, ask before streaming</Text>;\n  return <Text>Fine to stream</Text>;\n}",
   "agentNote": "Pair with useNetwork().isMetered: generation tells you how fast, metered tells you who pays. Do not request phone state unless you actually need the carrier."
 }

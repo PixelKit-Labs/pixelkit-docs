@@ -214,6 +214,6 @@
       "output": "Resolves with the extracted frames, or an empty array on failure with the reason in error."
     }
   ],
-  "example": "import { VideoView } from 'expo-video';\nimport { useCamera, useVideo } from 'pixelkit';\n\nfunction Playback() {\n  const cam = useCamera();\n  const video = useVideo();\n\n  return (\n    <View>\n      <VideoView player={video.player} style={{ height: 220 }} />\n      <Button\n        title=\"Play last recording\"\n        disabled={!cam.lastVideoUri}\n        onPress={() => cam.lastVideoUri && video.load(cam.lastVideoUri, { autoplay: true })}\n      />\n      <Text>{video.positionSeconds} / {video.durationSeconds} s</Text>\n    </View>\n  );\n}",
+  "example": "import { VideoView } from 'expo-video';\nimport { useCamera, useVideo } from '@pixelkit-labs/sdk';\n\nfunction Playback() {\n  const cam = useCamera();\n  const video = useVideo();\n\n  return (\n    <View>\n      <VideoView player={video.player} style={{ height: 220 }} />\n      <Button\n        title=\"Play last recording\"\n        disabled={!cam.lastVideoUri}\n        onPress={() => cam.lastVideoUri && video.load(cam.lastVideoUri, { autoplay: true })}\n      />\n      <Text>{video.positionSeconds} / {video.durationSeconds} s</Text>\n    </View>\n  );\n}",
   "agentNote": "The view needs the player object; passing a URI to VideoView does nothing. Turn keepScreenOn off when playback ends or the screen stays lit."
 }

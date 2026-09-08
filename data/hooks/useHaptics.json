@@ -92,6 +92,6 @@
       "output": "Returns nothing."
     }
   ],
-  "example": "import { useHaptics, HapticEnvelopes } from 'pixelkit';\n\nfunction Confirm() {\n  const { success, playEnvelope, envelopeSupported } = useHaptics();\n  const onDone = () => envelopeSupported ? playEnvelope(HapticEnvelopes.thinkingRamp) : success();\n  return <Button title=\"Done\" onPress={onDone} />;\n}",
+  "example": "import { useHaptics, HapticEnvelopes } from '@pixelkit-labs/sdk';\n\nfunction Confirm() {\n  const { success, playEnvelope, envelopeSupported } = useHaptics();\n  const onDone = () => envelopeSupported ? playEnvelope(HapticEnvelopes.thinkingRamp) : success();\n  return <Button title=\"Done\" onPress={onDone} />;\n}",
   "agentNote": "Attach haptics to every touchable, preferably through HapticButton. Check envelopeSupported before using envelopes and fall back to a standard pattern."
 }

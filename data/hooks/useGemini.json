@@ -185,6 +185,6 @@
       "output": "Returns nothing. hasApiKey updates immediately and availableModels is refreshed in the background."
     }
   ],
-  "example": "import { useGemini } from 'pixelkit';\n\nfunction Assistant() {\n  const { messages, sendMessage, isLoading, hasApiKey } = useGemini();\n  if (!hasApiKey) return <Text>Configure a Gemini API key first</Text>;\n  return <Button title=\"Ask\" onPress={() => sendMessage('Analyse current telemetry')} disabled={isLoading} />;\n}",
+  "example": "import { useGemini } from '@pixelkit-labs/sdk';\n\nfunction Assistant() {\n  const { messages, sendMessage, isLoading, hasApiKey } = useGemini();\n  if (!hasApiKey) return <Text>Configure a Gemini API key first</Text>;\n  return <Button title=\"Ask\" onPress={() => sendMessage('Analyse current telemetry')} disabled={isLoading} />;\n}",
   "agentNote": "Keys come from saveApiKey and live in SecureStore. Never hardcode one, and never fabricate a reply when the key is missing."
 }

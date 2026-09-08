@@ -48,6 +48,6 @@
       "output": "Returns nothing; the nfc, bluetooth, uwb, wifiRtt and satellite blocks update. Call it after sending the user to Settings."
     }
   ],
-  "example": "import { useRadios } from 'pixelkit';\n\nfunction RadioPanel() {\n  const radios = useRadios();\n  return <Text>NFC {radios.nfc.enabled ? 'on' : 'off'} · UWB {radios.uwb.enabled ? 'on' : 'off'}</Text>;\n}",
+  "example": "import { useRadios } from '@pixelkit-labs/sdk';\n\nfunction RadioPanel() {\n  const radios = useRadios();\n  return <Text>NFC {radios.nfc.enabled ? 'on' : 'off'} · UWB {radios.uwb.enabled ? 'on' : 'off'}</Text>;\n}",
   "agentNote": "Use this for a status overview and the individual hooks when you need to act. All fields here are real platform reads."
 }
