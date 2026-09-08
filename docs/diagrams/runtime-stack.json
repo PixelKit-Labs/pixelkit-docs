@@ -1,0 +1,132 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "From your JavaScript to the silicon",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "js",
+      "label": "JavaScript"
+    },
+    {
+      "id": "bridge",
+      "label": "Native bridge"
+    },
+    {
+      "id": "silicon",
+      "label": "Silicon"
+    }
+  ],
+  "mainPath": [
+    "app",
+    "hermes",
+    "fabric",
+    "expo",
+    "hal"
+  ],
+  "nodes": [
+    {
+      "id": "app",
+      "lane": "js",
+      "col": 0,
+      "type": "frontend",
+      "label": "Your app",
+      "sublabel": "a hook call",
+      "width": 100
+    },
+    {
+      "id": "hermes",
+      "lane": "js",
+      "col": 1,
+      "type": "frontend",
+      "label": "Hermes",
+      "sublabel": "AOT bytecode",
+      "width": 96
+    },
+    {
+      "id": "fabric",
+      "lane": "bridge",
+      "col": 2,
+      "type": "backend",
+      "label": "TurboModules",
+      "sublabel": "RN 0.86, C++ JSI",
+      "width": 112
+    },
+    {
+      "id": "expo",
+      "lane": "bridge",
+      "col": 3,
+      "type": "backend",
+      "label": "Expo Modules",
+      "sublabel": "the Kotlin modules",
+      "width": 116
+    },
+    {
+      "id": "hal",
+      "lane": "bridge",
+      "col": 4,
+      "type": "security",
+      "label": "Android HAL",
+      "sublabel": "before hardware",
+      "width": 108
+    },
+    {
+      "id": "silicon",
+      "lane": "silicon",
+      "col": 5,
+      "type": "database",
+      "label": "Tensor G6",
+      "sublabel": "CPU, TPU, GPU, sensors",
+      "width": 128
+    }
+  ],
+  "edges": [
+    {
+      "from": "app",
+      "to": "hermes",
+      "label": "compiled"
+    },
+    {
+      "from": "hermes",
+      "to": "fabric",
+      "variant": "emphasis"
+    },
+    {
+      "from": "fabric",
+      "to": "expo",
+      "label": "JSI"
+    },
+    {
+      "from": "expo",
+      "to": "hal",
+      "variant": "emphasis"
+    },
+    {
+      "from": "hal",
+      "to": "silicon",
+      "label": "sysfs, Binder"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Why a hook needs all five layers",
+      "items": [
+        "Nothing in JavaScript can read a thermal sensor; the value has to cross into native code",
+        "Expo Modules is where PixelKit's Kotlin lives, which is why a development build is required and Expo Go can never work",
+        "The HAL is the boundary where a reading either exists or does not, which is what source: 'unavailable' reports"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "What crosses, and how often",
+      "items": [
+        "Hooks poll on an interval you set rather than streaming, so the bridge is not the bottleneck",
+        "Readings cross as plain numbers, not objects, so there is no serialisation cost worth tuning",
+        "A hook that cannot reach its layer returns null instead of retrying, so a missing HAL never blocks a render"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "What useGeminiNano touches",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "js", "label": "JavaScript" },
+    { "id": "native", "label": "Kotlin" },
+    { "id": "system", "label": "Android system" }
+  ],
+  "mainPath": ["hook", "bridge", "module", "mlkit", "aicore", "nano"],
+  "nodes": [
+    { "id": "hook", "lane": "js", "col": 0, "type": "frontend", "label": "useGeminiNano()", "sublabel": "your component", "width": 124 },
+    { "id": "bridge", "lane": "js", "col": 1, "type": "frontend", "label": "TS bridge", "sublabel": "requireNativeModule", "width": 118 },
+    { "id": "module", "lane": "native", "col": 2, "type": "backend", "label": "PixelNanoModule", "sublabel": "Expo Modules, coroutines", "width": 140 },
+    { "id": "mlkit", "lane": "native", "col": 3, "type": "backend", "label": "genai-prompt", "sublabel": "Generation.getClient()", "width": 128 },
+    { "id": "aicore", "lane": "system", "col": 4, "type": "security", "label": "AICore", "sublabel": "models, safety, LoRA, dispatch", "tag": "IPC", "width": 152 },
+    { "id": "nano", "lane": "system", "col": 5, "type": "database", "label": "Gemini Nano 4", "sublabel": "on the Tensor G6 TPU", "width": 132 }
+  ],
+  "edges": [
+    { "from": "hook", "to": "bridge" },
+    { "from": "bridge", "to": "module", "label": "JSI", "variant": "emphasis" },
+    { "from": "module", "to": "mlkit" },
+    { "from": "mlkit", "to": "aicore", "label": "Binder IPC", "variant": "emphasis" },
+    { "from": "aicore", "to": "nano", "label": "TPU dispatch" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Where each failure comes from",
+      "items": [
+        "requireNativeModule returns null in Expo Go, because the Kotlin was never compiled in",
+        "AICore reports UNAVAILABLE while the model is still downloading, which is temporary rather than terminal",
+        "BUSY means another caller holds the single session, not that anything is broken"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "What never leaves the device",
+      "items": [
+        "The prompt, the reply and any image go no further than AICore",
+        "There is no API key on this path, and no request to bill",
+        "Airplane mode changes nothing about whether it works"
+      ]
+    }
+  ]
+}

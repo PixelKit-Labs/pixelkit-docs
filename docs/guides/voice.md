@@ -235,7 +235,7 @@ Confirm the exact option/response property names against the current [Speech Rec
 ### 3.2 `useSpeechToText` hook
 
 ```ts
-// packages/pixelkit/src/ai/useSpeechToText.ts
+// packages/sdk/src/ai/useSpeechToText.ts
 import { useCallback, useEffect, useState } from 'react';
 import PixelNano from '../../packages/mlkit/src';
 
@@ -359,7 +359,7 @@ Store the token only in memory; if you must persist across a cold start, use `us
 ### 4.2 The `useLiveVoiceAgent` hook
 
 ```ts
-// packages/pixelkit/src/ai/useLiveVoiceAgent.ts
+// packages/sdk/src/ai/useLiveVoiceAgent.ts
 import { useCallback, useRef, useState } from 'react';
 import { GoogleGenAI, Modality, StartSensitivity, EndSensitivity, type LiveServerMessage, type Session } from '@google/genai';
 import PixelNano from '../../packages/mlkit/src';

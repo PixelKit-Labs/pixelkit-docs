@@ -64,23 +64,4 @@ Integrated into the camera flash visor, **HiLight** replaces the legacy infrared
 
 ## React Native & Hermes Runtime Bridge
 
-```
-[ JavaScript / TypeScript Application Code ]
- │
- ▼
-[ Hermes Virtual Machine (AOT Bytecode .hbc) ]
- │
- ▼
-[ React Native Fabric Renderer & TurboModules (0.86) ]
- │
- ▼
-[ Expo SDK 57 Android Native Modules & C++ JSI ]
- │
- ▼
-[ Android 15/16 HAL (Hardware Abstraction Layer) ]
- │
- ┌──────────────┬───┴──────────┬──────────────┬──────────────┐
- ▼ ▼ ▼ ▼ ▼
-Tensor G6 PowerVR Keystore CameraX Sensors
-CPU / TPU GPU Keystore Zoom IMU / UWB
-```
+<!-- diagram: runtime-stack -->

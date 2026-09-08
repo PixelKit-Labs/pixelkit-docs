@@ -267,7 +267,7 @@ Practical use: read it before starting something expensive, not during. Above ro
 
 ## Observability & provenance
 
-`packages/pixelkit/src/core/observability.ts` gives every reading a **source**:
+`packages/sdk/src/core/observability.ts` gives every reading a **source**:
 
 | `TelemetrySource` | Meaning |
 | :--- | :--- |

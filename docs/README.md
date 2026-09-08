@@ -56,7 +56,7 @@ Documentation for the **PixelKit SDK**: the silicon, sensors, radios and on-devi
  |
 +-------------------------------------------------------------------------+
 | PIXELKIT SDK |
-| (packages/pixelkit/src/index.ts Re-exports) |
+| (packages/sdk/src/index.ts Re-exports) |
 +-------------------------------------------------------------------------+
  | | | |
 +---------------+ +---------------+ +------------------+ +---------------+

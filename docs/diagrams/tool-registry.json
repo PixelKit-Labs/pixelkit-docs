@@ -1,0 +1,46 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "One tool registry, three callers",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "source", "label": "Defined once" },
+    { "id": "cloud", "label": "Cloud" },
+    { "id": "device", "label": "On device" },
+    { "id": "system", "label": "System assistant" }
+  ],
+  "mainPath": ["registry", "cloud"],
+  "nodes": [
+    { "id": "registry", "lane": "source", "col": 0, "type": "backend", "label": "registry.ts", "sublabel": "defineTool wraps a hook", "tag": "one definition", "width": 140 },
+    { "id": "cloud", "lane": "cloud", "col": 1, "type": "cloud", "label": "Cloud Gemini", "sublabel": "gemini-3.8-flash, functionCalls[]", "width": 168 },
+    { "id": "nano", "lane": "device", "col": 1, "type": "backend", "label": "Gemini Nano 4", "sublabel": "ToolChoice, structured output", "width": 168 },
+    { "id": "appfn", "lane": "system", "col": 1, "type": "external", "label": "Android AppFunctions", "sublabel": "called by the Gemini app", "width": 168 }
+  ],
+  "edges": [
+    { "from": "registry", "to": "cloud", "label": "toFunctionDeclarations()", "variant": "emphasis" },
+    { "from": "registry", "to": "nano", "label": "toNanoToolPrompt()" },
+    { "from": "registry", "to": "appfn", "label": "mirrored in Kotlin", "variant": "dashed" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Why one registry rather than three",
+      "items": [
+        "The three callers want different shapes: a JSON schema, a prompt, and a Kotlin service",
+        "Defining a tool once means a hook cannot be callable from cloud Gemini but missing on device",
+        "execute() is the same function in all three paths, so a tool behaves identically wherever it is invoked"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "What differs between them",
+      "items": [
+        "Cloud returns functionCalls[] the SDK dispatches; Nano returns structured output you parse",
+        "AppFunctions is invoked by the system Gemini app, so it runs without your UI in the foreground",
+        "Only the cloud path does multi-step chains without you writing the loop"
+      ]
+    }
+  ]
+}

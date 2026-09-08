@@ -6,22 +6,7 @@
 
 ## 1. Architecture
 
-```text
- ┌─────────────────────────────────────────────┐
- │ packages/pixelkit/src/ai/tools/registry.ts │
- │ defineTool({ name, description, schema, │
- │ execute }) ← wraps a hook │
- └───────┬───────────────┬───────────────┬─────┘
- │ │ │
- toFunctionDeclarations() toNanoToolPrompt() (mirrored in Kotlin)
- │ │ │
- ▼ ▼ ▼
- ┌────────────────┐ ┌───────────────┐ ┌─────────────────────────┐
- │ Cloud Gemini │ │ Gemini Nano 4 │ │ Android AppFunctions │
- │ gemini-3.8-flash│ │ ToolChoice │ │ @AppFunction service │
- │ functionCalls[]│ │ structured out│ │ called by Gemini app │
- └────────────────┘ └───────────────┘ └─────────────────────────┘
-```
+<!-- diagram: tool-registry -->
 
 | Path | When | Latency | Needs network | Multi-step |
 | :--- | :--- | :--- | :--- | :--- |
@@ -33,7 +18,7 @@
 
 ## 2. The tool registry
 
-`packages/pixelkit/src/ai/tools/registry.ts`
+`packages/sdk/src/ai/tools/registry.ts`
 
 ```ts
 import { z } from 'zod';
@@ -100,7 +85,7 @@ export async function runTool(name: string, rawArgs: unknown) {
 Hooks are React-scoped, so register tools from a component that owns the hooks (e.g. `AILabScreen`) and keep the registry module-level.
 
 ```ts
-// packages/pixelkit/src/ai/tools/hardwareTools.ts
+// packages/sdk/src/ai/tools/hardwareTools.ts
 import { z } from 'zod';
 import { defineTool } from './registry';
 import type { useTorch } from '../../hardware/useTorch';
@@ -194,7 +179,7 @@ The installed SDK exposes `config.tools[].functionDeclarations`, `response.funct
 ### 3.1 One-shot agentic loop
 
 ```ts
-// packages/pixelkit/src/ai/agent/cloudAgent.ts
+// packages/sdk/src/ai/agent/cloudAgent.ts
 import { FunctionCallingConfigMode, type Content, type GoogleGenAI } from '@google/genai';
 import { toFunctionDeclarations, runTool } from '../tools/registry';
 
@@ -306,7 +291,7 @@ Today ML Kit's Prompt API has **no tool-execution path and no function-calling p
 The `ToolChoice` `@Generable` class from the [on-device guide](./on-device-ai-gemini-nano.md#6-structured-output-alpha) is designed for this.
 
 ```ts
-// packages/pixelkit/src/ai/agent/nanoAgent.ts
+// packages/sdk/src/ai/agent/nanoAgent.ts
 import PixelNano from '../../../packages/mlkit/src';
 import { listTools, runTool } from '../tools/registry';
 

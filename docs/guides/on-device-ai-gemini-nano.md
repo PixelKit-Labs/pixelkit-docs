@@ -2,7 +2,7 @@
 
 > The `@pixelkit-labs/mlkit` local Expo Module bridges the **ML Kit GenAI Prompt API** to React Native and `useGeminiNano` wraps it. Target: Pixel 11 / 11 Pro / 11 Pro XL / 11 Pro Fold (Gemini Nano tier `nano-v4`). Works on Pixel 9 and 10 with `nano-v3`.
 
-**Status (1.0.2):** implemented in `packages/mlkit` and `packages/pixelkit/src/ai/useGeminiNano.ts`, wired into the AI Lab as a second conversation engine. The shipped code differs from the sketches below where the beta4 AAR disagrees with the docs:
+**Status (1.0.2):** implemented in `packages/mlkit` and `packages/sdk/src/ai/useGeminiNano.ts`, wired into the AI Lab as a second conversation engine. The shipped code differs from the sketches below where the beta4 AAR disagrees with the docs:
 
 | Guide sketch | What genai-prompt 1.0.0-beta4 actually exposes (from the AAR) |
 | :--- | :--- |
@@ -19,18 +19,7 @@ Structured output (`@Generable`, KSP) and the feature APIs (summarization, proof
 
 ## 1. How the stack fits together
 
-```text
-React Native (Hermes)
- useGeminiNano() ───► packages/mlkit/packages/pixelkit/src/index.ts (requireNativeModule('PixelNano'))
- │ JSI
- PixelNanoModule.kt (Expo Modules API, Kotlin coroutines)
- │
- com.google.mlkit:genai-prompt (Generation.getClient())
- │ IPC
- AICore system service (model mgmt, safety filters, LoRA, TPU dispatch)
- │
- Gemini Nano 4 on Tensor G6 TPU
-```
+<!-- diagram: nano-call-path -->
 
 Facts that drive the design:
 
@@ -290,7 +279,7 @@ Notes:
 
 ## 4. The TypeScript bridge
 
-`packages/mlkit/packages/pixelkit/src/index.ts`
+`packages/mlkit/index.ts`
 
 ```ts
 import { NativeModule, requireNativeModule } from 'expo';
@@ -347,7 +336,7 @@ The result type is `NanoResult`: `text` (the reply), `finishReason` (`STOP` when
 
 ## 5. The `useGeminiNano` hook
 
-`packages/pixelkit/src/ai/useGeminiNano.ts` — mirrors the shape of `useGemini` so screens can swap between them.
+`packages/sdk/src/ai/useGeminiNano.ts` — mirrors the shape of `useGemini` so screens can swap between them.
 
 ```ts
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -563,7 +552,7 @@ Set `thinking: true` in options. The module already forwards `enableThinking` an
 
 Firebase AI Logic offers `InferenceMode.PREFER_ON_DEVICE` natively for Kotlin apps. In React Native, implement the same policy in one place so every feature gets it for free.
 
-`packages/pixelkit/src/ai/router.ts`
+`packages/sdk/src/ai/router.ts`
 
 ```ts
 import { useGeminiNano } from './useGeminiNano';
