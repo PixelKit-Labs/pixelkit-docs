@@ -14,24 +14,7 @@
 
 Every AI feature in PixelKit should be routed through **one decision**, made once per request:
 
-```text
- ┌───────────────────────────────┐
- request ─────────► │ Is the payload ≤ ~4K tokens, │
- │ text + ≤1 image, single turn, │
- │ app in foreground? │
- └──────────────┬────────────────┘
- yes │ no
- ┌───────────────┴────────────┐
- ▼ ▼
- ┌──────────────────────┐ ┌─────────────────────────┐
- │ Gemini Nano 4 (AICore)│ │ Gemini cloud │
- │ ML Kit GenAI Prompt │ │ gemini-3.8-flash │
- │ FeatureStatus.AVAILABLE│ │ (function calling, chat,│
- └──────────┬───────────┘ │ audio, video, PDF) │
- │ UNAVAILABLE / └─────────────────────────┘
- │ BUSY / error ▲
- └────────────────────────────┘ fallback
-```
+<!-- diagram: nano-routing -->
 
 | Capability | Gemini Nano 4 on device (ML Kit Prompt API) | Gemini cloud (`@google/genai` 2.21) |
 | :--- | :--- | :--- |

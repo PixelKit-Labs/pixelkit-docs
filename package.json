@@ -10,7 +10,8 @@
     "start": "npm run sync && astro dev",
     "build": "npm run sync && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "build:diagrams": "node scripts/build-diagrams.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.42.0",

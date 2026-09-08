@@ -65,9 +65,9 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'PixelKit',
-      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/PixelKit-Labs/pixelkit' }],
+      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/PixelKit-Labs/pixelkit-sdk' }],
       sidebar: buildSidebar(),
-      customCss: ['./src/styles/pixelkit.css'],
+      customCss: ['./src/styles/pixelkit.css', './src/styles/archify.css'],
     }),
   ],
 });

@@ -3,3 +3,6 @@ dist/
 .astro/
 src/content/docs/
 .pixelkit-sdk/
+
+# Scratch output from an ad-hoc archify render; scripts/build-diagrams.mjs uses a temp dir
+.diagram-build/

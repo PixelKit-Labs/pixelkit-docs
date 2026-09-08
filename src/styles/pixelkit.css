@@ -141,3 +141,14 @@
 	border: 1px solid var(--sl-color-hairline);
 	border-radius: 4px;
 }
+
+/* Diagram figures. The SVG is inlined by scripts/sync-docs.mjs and coloured by archify.css, which
+   keys off [data-theme] — so it follows the site's light/dark toggle without a second render. */
+.archify-figure {
+  margin: 1.5rem 0;
+}
+.archify-figure svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}

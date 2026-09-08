@@ -1,0 +1,115 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Where inference runs",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "request",
+      "label": "Request"
+    },
+    {
+      "id": "device",
+      "label": "On device"
+    },
+    {
+      "id": "cloud",
+      "label": "Cloud"
+    }
+  ],
+  "mainPath": [
+    "request",
+    "gate",
+    "nano"
+  ],
+  "nodes": [
+    {
+      "id": "request",
+      "lane": "request",
+      "col": 0,
+      "type": "frontend",
+      "label": "Request",
+      "sublabel": "a prompt from your app",
+      "width": 108
+    },
+    {
+      "id": "gate",
+      "lane": "request",
+      "col": 1,
+      "type": "security",
+      "label": "Fits on device?",
+      "sublabel": "under 4K tokens, single turn, foreground",
+      "tag": "all four",
+      "width": 156
+    },
+    {
+      "id": "nano",
+      "lane": "device",
+      "col": 2,
+      "type": "backend",
+      "label": "Gemini Nano 4",
+      "sublabel": "ML Kit Prompt API on AICore",
+      "tag": "no network",
+      "width": 144
+    },
+    {
+      "id": "cloud",
+      "lane": "cloud",
+      "col": 3,
+      "type": "cloud",
+      "label": "Gemini cloud",
+      "sublabel": "gemini-3.8-flash",
+      "tag": "needs a key",
+      "width": 122
+    }
+  ],
+  "edges": [
+    {
+      "from": "request",
+      "to": "gate"
+    },
+    {
+      "from": "gate",
+      "to": "nano",
+      "label": "yes",
+      "variant": "emphasis"
+    },
+    {
+      "from": "gate",
+      "to": "cloud",
+      "label": "no",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "from": "nano",
+      "to": "cloud",
+      "label": "UNAVAILABLE, BUSY or error",
+      "variant": "security",
+      "role": "error"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Why the gate has four conditions",
+      "items": [
+        "AICore rejects payloads over roughly 4K tokens rather than truncating them",
+        "Nano holds one session, so a second concurrent turn returns BUSY",
+        "AICore deprioritises background callers, so a backgrounded app can stall"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "The fallback is not a failure",
+      "items": [
+        "Both paths return the same shape, so callers never branch on where it ran",
+        "FeatureStatus can be UNAVAILABLE while the model downloads, on a device that will support it later",
+        "Falling through to cloud keeps the reply shape identical, so callers do not branch",
+        "Without an API key the cloud path returns a system message saying so, never a fabricated answer"
+      ]
+    }
+  ]
+}

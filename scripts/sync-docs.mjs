@@ -39,6 +39,7 @@ const SOURCE_ROOT = path.resolve(__dirname, '..', 'docs');
 
 /** Generated, gitignored: what Starlight's `docsLoader()` reads. */
 const TARGET_ROOT = path.resolve(__dirname, '..', 'src', 'content', 'docs');
+const DIAGRAM_DIR = path.join(SOURCE_ROOT, 'diagrams');
 
 if (!existsSync(SOURCE_ROOT)) {
   console.error(`sync-docs: source directory not found at ${SOURCE_ROOT}`);
@@ -106,8 +107,43 @@ function hasFrontmatter(markdown) {
   return /^---\r?\n/.test(markdown);
 }
 
+/**
+ * Substitutes `<!-- diagram: name -->` with the committed SVG at `docs/diagrams/name.svg`.
+ *
+ * Markdown carries the placeholder rather than 11 kB of inline SVG so the source stays readable and
+ * a diagram change shows up as a diff of its spec, not of the prose around it. The SVG is coloured
+ * by `src/styles/archify.css` through `[data-theme]`, so it follows the site's light/dark toggle.
+ *
+ * A placeholder naming a diagram that does not exist throws. The alternative — leaving the comment
+ * in place — publishes a page with a silently missing figure, which is exactly how the ASCII
+ * diagrams rotted without anyone noticing.
+ */
+function injectDiagrams(markdown, sourcePath) {
+  return markdown.replace(/^[ \t]*<!--\s*diagram:\s*([a-z0-9-]+)\s*-->[ \t]*$/gm, (_match, name) => {
+    const svgPath = path.join(DIAGRAM_DIR, `${name}.svg`);
+    if (!existsSync(svgPath)) {
+      throw new Error(
+        `${sourcePath}: <!-- diagram: ${name} --> has no docs/diagrams/${name}.svg. ` +
+          'Add the spec and run `npm run build:diagrams`.'
+      );
+    }
+    // The inlined copy is flattened: blank lines removed and every line de-indented. Both matter to
+    // the markdown parser rather than to appearance. A markdown HTML block ends at the first blank
+    // line, and a line indented four spaces or more starts an indented code block - archify indents
+    // its SVG up to twelve. Left as-is, the parser keeps <figure>, <svg>, <title> and <defs>, then
+    // silently drops every lane, node and edge after </defs>, rendering a correctly sized but empty
+    // box. The file on disk keeps its formatting.
+    const svg = readFileSync(svgPath, 'utf8')
+      .split(/\r?\n/)
+      .filter((line) => line.trim() !== '')
+      .map((line) => line.trimStart())
+      .join('\n');
+    return `<figure class="archify-figure">\n${svg}\n</figure>`;
+  });
+}
+
 function copyMarkdownFile(sourcePath, targetPath, { landingCallout = false } = {}) {
-  const raw = readFileSync(sourcePath, 'utf8');
+  const raw = injectDiagrams(readFileSync(sourcePath, 'utf8'), sourcePath);
   let out;
 
   if (hasFrontmatter(raw)) {
