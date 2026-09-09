@@ -5,7 +5,7 @@
   "chipBadge": "PackageManager verified",
   "summary": "What this particular phone actually has.",
   "plain": "The first hook to call. It answers \"does this device have that?\" so your interface can hide features the phone does not support, instead of showing a control that will fail.",
-  "description": "Resolution starts from a model table keyed on the device name, then upgrades to real PackageManager feature checks when the native module is present, at which point verification changes from model-table to device. Fields that can only be answered by the device are null until that upgrade happens. Note two results on this Pixel that are easy to assume wrongly: it does not declare a neural processing unit feature, and it does not declare the ranging feature.",
+  "description": "Resolution starts from a model table keyed on the device name, then upgrades to real PackageManager feature checks when the native module is present, at which point verification changes from model-table to device. Fields that can only be answered by the device are null until that upgrade happens. Evaluates verified platform features including android.hardware.npu, BLE Channel Sounding, and StrongBox KeyStore.",
   "signature": "useCapabilities(): DeviceCapabilities",
   "params": [],
   "returns": [
@@ -57,7 +57,7 @@
     {
       "name": "hasNpuFeature",
       "type": "boolean | null",
-      "desc": "Whether a neural processing unit feature is declared. False on this device."
+      "desc": "Whether a neural processing unit feature is declared (checks both android.hardware.npu and android.hardware.neural_processing_unit)."
     },
     {
       "name": "geminiNanoTier",
