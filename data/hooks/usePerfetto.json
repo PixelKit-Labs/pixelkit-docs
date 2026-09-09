@@ -1,0 +1,120 @@
+{
+  "id": "usePerfetto",
+  "name": "usePerfetto",
+  "category": "compute",
+  "chipBadge": "Perfetto Silicon Tracing",
+  "summary": "System-level kernel and app performance profiling via Perfetto v54.",
+  "plain": "Controls high-precision Linux kernel ftrace and Android atrace performance profiling directly from React Native. Captures Tensor G6 CPU frequency scaling, Choreographer frame rendering, and custom app trace sections into .perfetto-trace files viewable in ui.perfetto.dev.",
+  "description": "Backed by android.os.Trace, the system Perfetto binary (v54), and Android kernel trace categories (sched, freq, idle, gfx, view, am, wm, camera, hal). Emits zero-overhead hardware trace markers and captures system trace buffers without requiring root privileges. Nothing is simulated: operates directly on physical Android tracing infrastructure.",
+  "signature": "usePerfetto(): PerfettoState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether Perfetto and system tracing are available on device."
+    },
+    {
+      "name": "isTracing",
+      "type": "boolean",
+      "desc": "Whether an active system trace session is currently recording."
+    },
+    {
+      "name": "perfettoVersion",
+      "type": "string | null",
+      "desc": "Perfetto daemon version ('v54.0' on Android 17 / Pixel 11 Pro)."
+    },
+    {
+      "name": "availableCategories",
+      "type": "string[]",
+      "desc": "Supported trace categories."
+    },
+    {
+      "name": "activeCategories",
+      "type": "string[]",
+      "desc": "Categories currently being captured in active trace."
+    },
+    {
+      "name": "lastTraceUri",
+      "type": "string | null",
+      "desc": "Local file URI of the last saved .perfetto-trace file."
+    },
+    {
+      "name": "traceDurationMs",
+      "type": "number | null",
+      "desc": "Duration of the last completed trace session in milliseconds."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if tracing failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Telemetry provenance."
+    },
+    {
+      "name": "startTrace",
+      "type": "(categories?: string[], bufferSizeKb?: number) => Promise<boolean>",
+      "desc": "Start a system trace session with specified categories and buffer size."
+    },
+    {
+      "name": "stopTrace",
+      "type": "() => Promise<string | null>",
+      "desc": "Stop the active trace session and write the .perfetto-trace file."
+    },
+    {
+      "name": "beginSection",
+      "type": "(name: string) => void",
+      "desc": "Emit an android.os.Trace beginSection marker."
+    },
+    {
+      "name": "endSection",
+      "type": "() => void",
+      "desc": "Emit an android.os.Trace endSection marker."
+    },
+    {
+      "name": "setCounter",
+      "type": "(name: string, value: number) => void",
+      "desc": "Emit an android.os.Trace setCounter metric."
+    },
+    {
+      "name": "refresh",
+      "type": "() => PerfettoInfo | null",
+      "desc": "Re-probe Perfetto daemon and tracing subsystem."
+    }
+  ],
+  "actions": [
+    {
+      "name": "startTrace(categories?, bufferSizeKb?)",
+      "type": "(categories?: string[], bufferSizeKb?: number) => Promise<boolean>",
+      "desc": "Start a system trace session with specified categories and buffer size."
+    },
+    {
+      "name": "stopTrace()",
+      "type": "() => Promise<string | null>",
+      "desc": "Stop the active trace session and write the .perfetto-trace file."
+    },
+    {
+      "name": "beginSection(name)",
+      "type": "(name: string) => void",
+      "desc": "Emit an android.os.Trace beginSection marker."
+    },
+    {
+      "name": "endSection()",
+      "type": "() => void",
+      "desc": "Emit an android.os.Trace endSection marker."
+    },
+    {
+      "name": "setCounter(name, value)",
+      "type": "(name: string, value: number) => void",
+      "desc": "Emit an android.os.Trace setCounter metric."
+    },
+    {
+      "name": "refresh()",
+      "type": "() => PerfettoInfo | null",
+      "desc": "Re-probe Perfetto daemon and tracing subsystem."
+    }
+  ]
+}

@@ -10,7 +10,7 @@ This document is the consolidated reference for every hook in the PixelKit SDK (
 ## Table of Contents
 
 1. [Architectural Overview](#-architectural-overview)
-2. [Silicon & Compute Hooks](#-silicon--compute-hooks) — [useCPU](#usecpu) · [useGPU](#usegpu) · [useTPU](#usetpu) · [useMemory](#usememory) · [useADPF](#useadpf)
+2. [Silicon & Compute Hooks](#-silicon--compute-hooks) — [useCPU](#usecpu) · [useGPU](#usegpu) · [useTPU](#usetpu) · [useMemory](#usememory) · [useADPF](#useadpf) · [usePerfetto](#useperfetto)
 3. [Pixel Pro Exclusive Silicon](#-pixel-pro-exclusive-silicon) — [useHiLight](#usehilight) · [useUWB](#useuwb)
 4. [Neural & Intelligence Hooks](#-neural--intelligence-hooks) — [useGemini](#usegemini) · [useGeminiNano](#usegemininano) · [useAppFunctions](#useappfunctions) · [useGenAITasks](#usegenaitasks) · [useNaturalLanguageAI](#usenaturallanguageai) · [useSpeechAI](#usespeechai) · [useSpeech](#usespeech) · [useVisionAI](#usevisionai)
 5. [Sensors & Physical Actuators](#-sensors--physical-actuators) — [useSensors](#usesensors) · [useCamera](#usecamera) · [useCameraExtensions](#usecameraextensions) · [useTorch](#usetorch) · [useHaptics](#usehaptics)
@@ -28,7 +28,7 @@ PixelKit exposes Pixel 11 Pro hardware to React Native through Expo modules and 
 Every hook is exported from `./src`:
 ```typescript
 import {
-  useCPU, useGPU, useTPU, useMemory, useADPF,
+  useCPU, useGPU, useTPU, useMemory, useADPF, usePerfetto,
   useHiLight, useUWB,
   useGemini, useGeminiNano, useAppFunctions, useGenAITasks, useNaturalLanguageAI, useSpeechAI, useSpeech, useVisionAI,
   useSensors, useCamera, useCameraExtensions, useTorch, useHaptics,
@@ -140,6 +140,30 @@ targetFps: number | null; currentFps: number | null; source: TelemetrySource;
 | Function | Inputs | Returns | Description |
 | :--- | :--- | :--- | :--- |
 | `reportWorkDuration(actualWorkDurationMs, targetDurationMs?)` | `actualWorkDurationMs: number` — measured work time in ms. `targetDurationMs?: number` — budget, default `1000 / targetFps` (8.33 ms before the rate is known). | `'WITHIN_BUDGET'` or `'BOOST_REQUESTED'` | Pure helper comparing work against the frame budget; it does not call `PerformanceHintManager`. |
+
+---
+
+### `usePerfetto`
+* **File Path**: `packages/sdk/src/hardware/usePerfetto.ts`
+* **Target Hardware**: Android Perfetto system tracing daemon (v54.0) and `android.os.Trace` on Google Tensor G6.
+* **Description**: Microsecond-precision Linux kernel ftrace and Android atrace performance capture directly from React Native. Captures CPU frequency switches, TPU inference dispatch, and Choreographer frame pacing into `.perfetto-trace` files viewable in `ui.perfetto.dev`.
+* **Outputs**: [field table →](api/silicon-compute.md#useperfetto)
+
+```typescript
+isSupported: boolean; isTracing: boolean; perfettoVersion: string | null;
+availableCategories: string[]; activeCategories: string[];
+lastTraceUri: string | null; traceDurationMs: number | null;
+error: string | null; source: TelemetrySource;
+```
+
+| Function | Inputs | Returns | Description |
+| :--- | :--- | :--- | :--- |
+| `startTrace(categories?, bufferSizeKb?)` | `categories?: string[]`, `bufferSizeKb?: number` | `Promise<boolean>` | Starts capturing system trace session. |
+| `stopTrace()` | none | `Promise<string \| null>` | Stops trace and returns `.perfetto-trace` file path. |
+| `beginSection(name)` | `name: string` | `void` | Emits `android.os.Trace.beginSection` marker. |
+| `endSection()` | none | `void` | Emits `android.os.Trace.endSection` marker. |
+| `setCounter(name, value)` | `name: string`, `value: number` | `void` | Emits `android.os.Trace.setCounter` metric. |
+| `refresh()` | none | `PerfettoInfo \| null` | Re-probes Perfetto daemon status. |
 
 ---
 
