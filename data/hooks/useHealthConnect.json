@@ -1,0 +1,70 @@
+{
+  "id": "useHealthConnect",
+  "name": "useHealthConnect",
+  "category": "sensors",
+  "chipBadge": "Health Connect & Sensor Vitals",
+  "summary": "Platform health records, steps, and sensor vitals telemetry.",
+  "plain": "Inspects Android Health Connect framework availability, system step counter hardware, and sensor vitals. Integrates unified health telemetry on Android 14+ without simulation.",
+  "description": "Backed by android.health.connect system framework on Android 14+, PackageManager healthdata provider detection, and hardware Sensor.TYPE_STEP_COUNTER / Sensor.TYPE_HEART_RATE HAL drivers. Nothing is simulated: reports real device health telemetry availability.",
+  "signature": "useHealthConnect(): HealthConnectState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isAvailable",
+      "type": "boolean",
+      "desc": "Whether Health Connect is available on the device."
+    },
+    {
+      "name": "sdkStatus",
+      "type": "'SDK_AVAILABLE' | 'SDK_UNAVAILABLE' | 'SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED'",
+      "desc": "Platform SDK availability status."
+    },
+    {
+      "name": "hasStepCounter",
+      "type": "boolean",
+      "desc": "Whether physical hardware step counter sensor is present."
+    },
+    {
+      "name": "hasHeartRateSensor",
+      "type": "boolean",
+      "desc": "Whether hardware heart rate sensor is present."
+    },
+    {
+      "name": "stepSensorName",
+      "type": "string | null",
+      "desc": "Hardware sensor name (e.g. Google Step Counter)."
+    },
+    {
+      "name": "heartRateSensorName",
+      "type": "string | null",
+      "desc": "Hardware heart rate sensor name."
+    },
+    {
+      "name": "isFrameworkIntegrated",
+      "type": "boolean",
+      "desc": "Whether Health Connect is built into the OS (Android 14+)."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if unavailable."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Telemetry provenance."
+    },
+    {
+      "name": "refresh",
+      "type": "() => HealthConnectInfo | null",
+      "desc": "Re-probe Health Connect framework and hardware sensors."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refresh()",
+      "type": "() => HealthConnectInfo | null",
+      "desc": "Re-probe Health Connect framework and hardware sensors."
+    }
+  ]
+}

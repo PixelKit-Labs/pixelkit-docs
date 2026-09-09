@@ -13,7 +13,7 @@ This document is the consolidated reference for every hook in the PixelKit SDK (
 2. [Silicon & Compute Hooks](#-silicon--compute-hooks) — [useCPU](#usecpu) · [useGPU](#usegpu) · [useTPU](#usetpu) · [useMemory](#usememory) · [useADPF](#useadpf) · [usePerfetto](#useperfetto)
 3. [Pixel Pro Exclusive Silicon](#-pixel-pro-exclusive-silicon) — [useHiLight](#usehilight) · [useUWB](#useuwb)
 4. [Neural & Intelligence Hooks](#-neural--intelligence-hooks) — [useGemini](#usegemini) · [useGeminiNano](#usegemininano) · [useAppFunctions](#useappfunctions) · [useGenAITasks](#usegenaitasks) · [useNaturalLanguageAI](#usenaturallanguageai) · [useSpeechAI](#usespeechai) · [useSpeech](#usespeech) · [useVisionAI](#usevisionai)
-5. [Sensors & Physical Actuators](#-sensors--physical-actuators) — [useSensors](#usesensors) · [useCamera](#usecamera) · [useCameraExtensions](#usecameraextensions) · [useTorch](#usetorch) · [useHaptics](#usehaptics)
+5. [Sensors & Physical Actuators](#-sensors--physical-actuators) — [useSensors](#usesensors) · [useHealthConnect](#usehealthconnect) · [useCamera](#usecamera) · [useCameraExtensions](#usecameraextensions) · [useTorch](#usetorch) · [useHaptics](#usehaptics)
 6. [Radios & Hardware Security](#-radios--hardware-security) — [useBiometrics](#usebiometrics) · [useSecurity](#usesecurity) · [usePlayIntegrity](#useplayintegrity) · [useBLE](#useble) · [useChannelSounding](#usechannelsounding) · [useNFC](#usenfc) · [useRadios](#useradios) · [useLocation](#uselocation)
 7. [System & Media Hooks](#-system--media-hooks) — [useAudio](#useaudio) · [useSpatialAudio](#usespatialaudio) · [useVideo](#usevideo) · [useMediaLibrary](#usemedialibrary) · [useCellular](#usecellular) · [useCapabilities](#usecapabilities) · [useDisplay](#usedisplay) · [useDevice](#usedevice) · [useNetwork](#usenetwork)
 
@@ -31,7 +31,7 @@ import {
   useCPU, useGPU, useTPU, useMemory, useADPF, usePerfetto,
   useHiLight, useUWB,
   useGemini, useGeminiNano, useAppFunctions, useGenAITasks, useNaturalLanguageAI, useSpeechAI, useSpeech, useVisionAI,
-  useSensors, useCamera, useCameraExtensions, useTorch, useHaptics,
+  useSensors, useHealthConnect, useCamera, useCameraExtensions, useTorch, useHaptics,
   useBiometrics, useSecurity, usePlayIntegrity, useBLE, useChannelSounding, useNFC, useRadios, useLocation,
   useAudio, useSpatialAudio, useVideo, useMediaLibrary, useCellular, useCapabilities, useDisplay, useDevice, useNetwork,
 } from '@pixelkit-labs/sdk';
@@ -473,6 +473,26 @@ error: string | null; source: TelemetrySource;
 ```
 
 **Functions**: none — change the rate by passing a different `updateIntervalMs`.
+
+---
+
+### `useHealthConnect`
+* **File Path**: `packages/sdk/src/hardware/useHealthConnect.ts`
+* **Target Hardware**: Android Health Connect framework and hardware sensors (`Sensor.TYPE_STEP_COUNTER`, `Sensor.TYPE_HEART_RATE`).
+* **Description**: Inspects Android Health Connect framework availability, hardware step counter sensor presence, and sensor vitals. Integrates unified health telemetry on Android 14+ without simulation.
+* **Outputs**: [field table →](api/sensors-actuators.md#usehealthconnect)
+
+```typescript
+isAvailable: boolean;
+sdkStatus: 'SDK_AVAILABLE' | 'SDK_UNAVAILABLE' | 'SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED';
+hasStepCounter: boolean; hasHeartRateSensor: boolean;
+stepSensorName: string | null; heartRateSensorName: string | null;
+isFrameworkIntegrated: boolean; error: string | null; source: TelemetrySource;
+```
+
+| Function | Inputs | Returns | Description |
+| :--- | :--- | :--- | :--- |
+| `refresh()` | none | `HealthConnectInfo \| null` | Re-probes Health Connect framework and hardware sensors. |
 
 ---
 
