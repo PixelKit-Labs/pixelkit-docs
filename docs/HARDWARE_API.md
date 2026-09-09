@@ -14,7 +14,7 @@ This document is the consolidated reference for every hook in the PixelKit SDK (
 3. [Pixel Pro Exclusive Silicon](#-pixel-pro-exclusive-silicon) — [useHiLight](#usehilight) · [useUWB](#useuwb)
 4. [Neural & Intelligence Hooks](#-neural--intelligence-hooks) — [useGemini](#usegemini) · [useGeminiNano](#usegemininano) · [useAppFunctions](#useappfunctions) · [useGenAITasks](#usegenaitasks) · [useNaturalLanguageAI](#usenaturallanguageai) · [useSpeechAI](#usespeechai) · [useSpeech](#usespeech) · [useVisionAI](#usevisionai)
 5. [Sensors & Physical Actuators](#-sensors--physical-actuators) — [useSensors](#usesensors) · [useCamera](#usecamera) · [useCameraExtensions](#usecameraextensions) · [useTorch](#usetorch) · [useHaptics](#usehaptics)
-6. [Radios & Hardware Security](#-radios--hardware-security) — [useBiometrics](#usebiometrics) · [useSecurity](#usesecurity) · [useBLE](#useble) · [useNFC](#usenfc) · [useRadios](#useradios) · [useLocation](#uselocation)
+6. [Radios & Hardware Security](#-radios--hardware-security) — [useBiometrics](#usebiometrics) · [useSecurity](#usesecurity) · [useBLE](#useble) · [useChannelSounding](#usechannelsounding) · [useNFC](#usenfc) · [useRadios](#useradios) · [useLocation](#uselocation)
 7. [System & Media Hooks](#-system--media-hooks) — [useAudio](#useaudio) · [useSpatialAudio](#usespatialaudio) · [useVideo](#usevideo) · [useMediaLibrary](#usemedialibrary) · [useCellular](#usecellular) · [useCapabilities](#usecapabilities) · [useDisplay](#usedisplay) · [useDevice](#usedevice) · [useNetwork](#usenetwork)
 
 ---
@@ -32,7 +32,7 @@ import {
   useHiLight, useUWB,
   useGemini, useGeminiNano, useAppFunctions, useGenAITasks, useNaturalLanguageAI, useSpeechAI, useSpeech, useVisionAI,
   useSensors, useCamera, useCameraExtensions, useTorch, useHaptics,
-  useBiometrics, useSecurity, useBLE, useNFC, useRadios, useLocation,
+  useBiometrics, useSecurity, useBLE, useChannelSounding, useNFC, useRadios, useLocation,
   useAudio, useSpatialAudio, useVideo, useMediaLibrary, useCellular, useCapabilities, useDisplay, useDevice, useNetwork,
 } from '@pixelkit-labs/sdk';
 ```
@@ -609,6 +609,28 @@ scanError: string | null; error: string | null; source: TelemetrySource;
 | :--- | :--- | :--- | :--- |
 | `startScan(timeoutMs?)` | `timeoutMs?: number` — auto-stop after this long, default `10000` | `Promise<boolean>` — `false` with `scanError` set when it could not start | Starts `BluetoothLeScanner` discovery. |
 | `stopScan()` | none | `void` | Stops the scan and takes a final results sync. |
+
+---
+
+### `useChannelSounding`
+* **File Path**: `packages/sdk/src/hardware/useChannelSounding.ts`
+* **Target Hardware**: Bluetooth Core 6.0 Channel Sounding transceiver (`android.hardware.bluetooth_le.channel_sounding` and `android.hardware.bluetooth.ranging.IBluetoothChannelSounding`).
+* **Description**: Centimeter-precision Phase-Based Ranging (PBR) and Round-Trip Time (RTT) across 79 Bluetooth channels without line of sight. Reports hardware transceiver support, ranging state, and real-time tracked target distances.
+* **Outputs**: [field table →](api/radios-security.md#usechannelsounding)
+
+```typescript
+isSupported: boolean; isEnabled: boolean; serviceFound: boolean;
+supportsPbr: boolean; supportsRtt: boolean; channelCount: number;
+precision: 'centimeter' | 'decimeter' | 'unsupported';
+isRanging: boolean; targets: ChannelSoundingTarget[];
+error: string | null; source: TelemetrySource;
+```
+
+| Function | Inputs | Returns | Description |
+| :--- | :--- | :--- | :--- |
+| `startRanging(targetAddress?)` | `targetAddress?: string` — optional BLE MAC address | `Promise<boolean>` — `true` if ranging started successfully | Initiates high-precision Channel Sounding session. |
+| `stopRanging()` | none | `boolean` — `true` if session stopped | Stops the active Channel Sounding session. |
+| `refresh()` | none | `ChannelSoundingInfo \| null` | Re-queries the hardware Channel Sounding status. |
 
 ---
 

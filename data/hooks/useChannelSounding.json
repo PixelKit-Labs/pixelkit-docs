@@ -1,0 +1,100 @@
+{
+  "id": "useChannelSounding",
+  "name": "useChannelSounding",
+  "category": "radios",
+  "chipBadge": "BLE 6.0 Channel Sounding",
+  "summary": "Bluetooth Core 6.0 high-accuracy centimeter-precision Phase-Based Ranging (PBR).",
+  "plain": "Inspects hardware Bluetooth Low Energy 6.0 Channel Sounding transceiver state and manages high-precision spatial distance estimation. Uses multi-channel phase-based ranging (PBR) and round-trip time (RTT) across 79 Bluetooth channels without requiring line of sight.",
+  "description": "Backed by android.hardware.bluetooth_le.channel_sounding and the Android 16/17 Ranging HAL service (IBluetoothChannelSounding). Measures distance with sub-decimeter accuracy, complementing UWB for non-line-of-sight spatial positioning. Nothing is simulated: queries actual device hardware capabilities.",
+  "signature": "useChannelSounding(): ChannelSoundingState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether the hardware physically supports BLE 6.0 Channel Sounding."
+    },
+    {
+      "name": "isEnabled",
+      "type": "boolean",
+      "desc": "Whether Channel Sounding is enabled (requires Bluetooth enabled and hardware support)."
+    },
+    {
+      "name": "serviceFound",
+      "type": "boolean",
+      "desc": "Whether the underlying Android Ranging HAL service is active on device."
+    },
+    {
+      "name": "supportsPbr",
+      "type": "boolean",
+      "desc": "Whether Phase-Based Ranging (PBR) is supported."
+    },
+    {
+      "name": "supportsRtt",
+      "type": "boolean",
+      "desc": "Whether Round-Trip Time (RTT) ranging is supported."
+    },
+    {
+      "name": "channelCount",
+      "type": "number",
+      "desc": "Number of BLE channels utilized (79 on Bluetooth 6.0)."
+    },
+    {
+      "name": "precision",
+      "type": "'centimeter' | 'decimeter' | 'unsupported'",
+      "desc": "Distance measurement precision level."
+    },
+    {
+      "name": "isRanging",
+      "type": "boolean",
+      "desc": "Whether an active ranging session is currently underway."
+    },
+    {
+      "name": "targets",
+      "type": "ChannelSoundingTarget[]",
+      "desc": "List of tracked ranging targets."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Latest error message if operation failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Telemetry provenance: 'hardware' when read from physical device."
+    },
+    {
+      "name": "startRanging",
+      "type": "(targetAddress?: string) => Promise<boolean>",
+      "desc": "Starts a Channel Sounding ranging session against paired or discovered BLE devices."
+    },
+    {
+      "name": "stopRanging",
+      "type": "() => boolean",
+      "desc": "Stops an active ranging session."
+    },
+    {
+      "name": "refresh",
+      "type": "() => ChannelSoundingInfo | null",
+      "desc": "Re-probes hardware channel sounding status."
+    }
+  ],
+  "actions": [
+    {
+      "name": "startRanging(targetAddress?)",
+      "type": "(targetAddress?: string) => Promise<boolean>",
+      "desc": "Starts a Channel Sounding ranging session against paired or discovered BLE devices."
+    },
+    {
+      "name": "stopRanging()",
+      "type": "() => boolean",
+      "desc": "Stops an active ranging session."
+    },
+    {
+      "name": "refresh()",
+      "type": "() => ChannelSoundingInfo | null",
+      "desc": "Re-probes hardware channel sounding status."
+    }
+  ]
+}

@@ -10,6 +10,7 @@ This document covers wireless radios, near-field interactions, satellite positio
 * [`useBiometrics`](#usebiometrics) - Ultrasonic In-Screen Fingerprint & Class 3 Face Unlock
 * [`useSecurity`](#usesecurity) - SecureStore on the Android Keystore
 * [`useBLE`](#useble) - Bluetooth Low Energy adapter, bonded devices, live scanning
+* [`useChannelSounding`](#usechannelsounding) - Bluetooth Core 6.0 Phase-Based Ranging (PBR)
 * [`useNFC`](#usenfc) - NDEF reader mode, tag reading and writing
 * [`useRadios`](#useradios) - Unified Hardware Radio Subsystem Telemetry
 * [`useLocation`](#uselocation) - Dual-Frequency Multi-Band GNSS (GPS L1/L5)
@@ -148,6 +149,66 @@ function useBLE(): {
 | :--- | :--- | :--- | :--- |
 | `startScan(timeoutMs?)` | `timeoutMs?: number` — how long to scan before stopping automatically, default `10000` | `Promise<boolean>` — `true` when the scan started, `false` with `scanError` set when it did not | Starts `BluetoothLeScanner` discovery and polls results into `peripherals` every 500 ms. |
 | `stopScan()` | none | `void` | Stops the scan, clears the timers and takes one final results sync so nothing already discovered is lost. |
+
+---
+
+## `useChannelSounding`
+
+Bluetooth Core 6.0 high-accuracy centimeter-precision Phase-Based Ranging (PBR) and Round-Trip Time (RTT).
+
+Backed by `android.hardware.bluetooth_le.channel_sounding` and the Android 16/17 Ranging HAL service (`IBluetoothChannelSounding`). Measures distance with sub-decimeter accuracy across 79 BLE channels, complementing Ultra-Wideband (UWB) for non-line-of-sight spatial positioning. Nothing is simulated: queries actual device hardware capabilities.
+
+### Signature
+```typescript
+function useChannelSounding(): ChannelSoundingState;
+```
+
+### Outputs
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `isSupported` | `boolean` | Whether the hardware physically supports BLE 6.0 Channel Sounding. |
+| `isEnabled` | `boolean` | Whether Channel Sounding is enabled (requires Bluetooth enabled and hardware support). |
+| `serviceFound` | `boolean` | Whether the underlying Android Ranging HAL service (`IBluetoothChannelSounding`) is active on device. |
+| `supportsPbr` | `boolean` | Whether Phase-Based Ranging (PBR) is supported. |
+| `supportsRtt` | `boolean` | Whether Round-Trip Time (RTT) ranging is supported. |
+| `channelCount` | `number` | Number of BLE channels utilized (79 on Bluetooth 6.0). |
+| `precision` | `'centimeter' \| 'decimeter' \| 'unsupported'` | Distance measurement precision level. |
+| `isRanging` | `boolean` | Whether an active ranging session is currently underway. |
+| `targets` | `ChannelSoundingTarget[]` | List of tracked ranging targets (`{ address, distanceMeters, azimuthDegrees, elevationDegrees, pbrConfidence, lastUpdateMs }`). |
+| `error` | `string \| null` | Latest error message if operation failed. |
+| `source` | `TelemetrySource` | `'hardware'` when read from physical device, `'unavailable'` otherwise. |
+
+### Functions
+| Function | Inputs | Returns | Description |
+| :--- | :--- | :--- | :--- |
+| `startRanging(targetAddress?)` | `targetAddress?: string` — optional BLE MAC address | `Promise<boolean>` — `true` if ranging started successfully | Starts a Channel Sounding ranging session against paired or discovered BLE devices. |
+| `stopRanging()` | none | `boolean` — `true` if session stopped | Stops an active ranging session. |
+| `refresh()` | none | `ChannelSoundingInfo \| null` | Re-probes hardware channel sounding status. |
+
+### Example
+```tsx
+import { useChannelSounding, HapticButton } from '@pixelkit-labs/sdk';
+import { View, Text } from 'react-native';
+
+export function PrecisionFinder() {
+  const cs = useChannelSounding();
+
+  return (
+    <View>
+      <Text>BLE 6.0 Channel Sounding: {cs.isSupported ? 'Supported' : 'Unsupported'}</Text>
+      <Text>Precision: {cs.precision} ({cs.channelCount} channels)</Text>
+      <Text>Phase-Based Ranging (PBR): {cs.supportsPbr ? 'Active' : 'No'}</Text>
+      {cs.targets.map(t => (
+        <Text key={t.address}>Target {t.address}: {t.distanceMeters.toFixed(2)}m (conf: {(t.pbrConfidence * 100).toFixed(0)}%)</Text>
+      ))}
+      <HapticButton
+        title={cs.isRanging ? "Stop Ranging" : "Start Precision Ranging"}
+        onPress={() => cs.isRanging ? cs.stopRanging() : cs.startRanging()}
+      />
+    </View>
+  );
+}
+```
 
 ---
 
