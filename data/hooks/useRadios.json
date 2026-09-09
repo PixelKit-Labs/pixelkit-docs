@@ -30,9 +30,14 @@
       "desc": "Wi-Fi round-trip-time ranging, used for indoor positioning."
     },
     {
+      "name": "thread",
+      "type": "{ supported, serviceFound, chipId }",
+      "desc": "Thread 802.15.4 mesh radio (chip0) and Android ThreadNetworkManager state."
+    },
+    {
       "name": "satellite",
-      "type": "{ supported }",
-      "desc": "Whether satellite messaging is available on this device."
+      "type": "{ supported, sosSupported, provider }",
+      "desc": "Satellite radio and Google Satellite SOS provider state."
     },
     {
       "name": "source",

@@ -692,7 +692,8 @@ nfc: { supported; enabled; observeModeSupported; antennaState };
 bluetooth: { supported; bleSupported; enabled; state; channelSounding; bondedDevices };
 uwb: { supported; enabled; chipId; rangingApiSupported };
 wifiRtt: { supported; available };
-satellite: { supported };
+thread: { supported; serviceFound; chipId };
+satellite: { supported; sosSupported; provider };
 source: TelemetrySource;
 ```
 
