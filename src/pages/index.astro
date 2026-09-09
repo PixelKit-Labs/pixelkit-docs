@@ -14,6 +14,20 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { CardGrid, LinkCard, Aside, Code } from '@astrojs/starlight/components';
 import pixelHero from '../assets/pixel-hero.png';
+import { getImage } from 'astro:assets';
+
+/**
+ * Starlight renders hero.image.file through <Image width={400} height={400}>, which squashes a
+ * portrait source into a square and caps it at 400px. The markup is supplied directly instead, but
+ * through getImage() rather than a bare <img> so Astro still optimises, converts to WebP and emits
+ * a srcset - the audit flags a raw <img> here, and it is right to.
+ */
+const heroImage = await getImage({
+	src: pixelHero,
+	widths: [420, 640, 890],
+	sizes: '(min-width: 72rem) 46rem, (min-width: 50rem) 30rem, 80vw',
+	format: 'webp',
+});
 
 const installExample = `npx expo install @pixelkit-labs/sdk @pixelkit-labs/native
 
@@ -47,10 +61,10 @@ function Readout() {
 			tagline:
 				'An SDK for building Expo and React Native applications on Google Pixel devices. Typed React hooks for device sensors, radios, secure hardware, camera and audio, display and power telemetry, haptics, on-device AI, and Cloud AI.',
 			image: {
-				// Starlight renders hero.image to the right of the copy on wide viewports and above it on
-				// narrow ones. Imported rather than referenced by path so Astro optimises and fingerprints it.
-				file: pixelHero,
-				alt: 'A Google Pixel showing the PixelKit shield on screen',
+				// Starlight's Hero renders `file` through <Image width={400} height={400}>, which squashes a
+				// portrait source into a square and caps it at 400px. Supplying the markup directly keeps the
+				// real aspect ratio and lets src/styles/pixelkit.css size it.
+				html: `<img src="${heroImage.src}" srcset="${heroImage.srcSet.attribute}" sizes="${heroImage.attributes.sizes}" width="${heroImage.attributes.width}" height="${heroImage.attributes.height}" alt="A Google Pixel showing the PixelKit shield on screen" loading="eager" decoding="async" class="pixel-hero" />`,
 			},
 			actions: [
 				{ text: 'Get started', link: '/getting-started/quickstart/', variant: 'primary', icon: 'right-arrow' },

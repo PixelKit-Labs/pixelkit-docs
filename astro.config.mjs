@@ -60,8 +60,37 @@ function buildSidebar() {
   }));
 }
 
+/**
+ * Redirects every page's .md URL to the page itself.
+ *
+ * The prose is written to be read on GitHub too, so a reader who follows a link from a repository,
+ * or types the path they saw in the source tree, arrives at /api/silicon-compute.md and gets a 404.
+ * The page exists; only the extension is wrong. Generated from the synced tree rather than
+ * hand-listed, so a new page is covered without touching this file.
+ */
+function buildRedirects() {
+  if (!existsSync(CONTENT_DOCS)) return {};
+  const out = {};
+  const walk = (dir, prefix) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        walk(path.join(dir, entry.name), `${prefix}/${entry.name}`);
+        continue;
+      }
+      if (!/.mdx?$/.test(entry.name)) continue;
+      const base = entry.name.replace(/.mdx?$/, '');
+      if (base === '404') continue;
+      const route = base === 'index' ? `${prefix}/` : `${prefix}/${base}/`;
+      out[`${prefix}/${base}.md`] = route;
+    }
+  };
+  walk(CONTENT_DOCS, '');
+  return out;
+}
+
 // https://astro.build/config
 export default defineConfig({
+  redirects: buildRedirects(),
   integrations: [
     starlight({
       title: 'PixelKit',

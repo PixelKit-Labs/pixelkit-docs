@@ -152,3 +152,74 @@
   height: auto;
   display: block;
 }
+
+/* Hero device image.
+   Starlight renders hero.image.file through <Image width={400} height={400}>, which squashes a
+   portrait source into a square and caps it small, so the landing page supplies its own <img>
+   through hero.image.html and it is sized here instead. The glow is a pseudo-element on the
+   wrapper rather than a filter on the PNG, so it sits behind the device instead of haloing its
+   transparent edges. */
+.hero .pixel-hero {
+  position: relative;
+  z-index: 1;
+  /* `width: auto` matters. With an explicit width the height cap below clamps the height while the
+     width holds, which squashes a 0.79 portrait to nearly square. Leaving both dimensions automatic
+     lets the two maxima apply together and the aspect ratio survive. */
+  width: auto;
+  height: auto;
+  max-width: min(24rem, 100%);
+  /* Height cap so a tall portrait device cannot push the hero copy and buttons below the fold on a
+     short viewport. On a tall screen the width governs; on a short one this does. */
+  max-height: 88vh;
+  margin-inline: auto;
+  filter: drop-shadow(0 1.25rem 2.5rem rgb(0 0 0 / 0.5));
+}
+
+.hero > .hero-html {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* Starlight sizes this wrapper to the 400px its own hero image would have been, which caps the
+     image regardless of its own max-width. Fill the grid column instead. */
+  width: 100%;
+  max-width: none;
+}
+
+.hero > .hero-html::before {
+  content: '';
+  position: absolute;
+  inset: 4% 6%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--sl-color-accent-low), transparent 72%);
+  opacity: 0.75;
+  filter: blur(3.5rem);
+  z-index: 0;
+}
+
+@media (min-width: 50rem) {
+  .hero .pixel-hero {
+    max-width: min(30rem, 100%);
+  }
+}
+
+@media (min-width: 72rem) {
+  /* Give the device more of the row than Starlight's default split allows. */
+  .hero {
+    grid-template-columns: 1fr 1.25fr;
+  }
+  .hero .pixel-hero {
+    max-width: min(37.5rem, 100%);
+  }
+}
+
+/* Starlight's splash hero pads 90px above the title, which on a landing page whose first job is to
+   say what this is pushes the sentence and the device most of the way down the fold. */
+.hero {
+  padding-top: 1.5rem;
+}
+
+@media (min-width: 50rem) {
+  .hero {
+    padding-top: 2.5rem;
+  }
+}
