@@ -515,3 +515,15 @@
     padding-top: 0.5rem;
   }
 }
+
+/* Current page in the sidebar.
+   Starlight tints this link with the accent colour but leaves its label at --sl-color-gray-3. That
+   reads in dark mode, where the accent is a bright cyan, but the light accent is a mid-blue and
+   grey-on-blue measures 1.04:1 — invisible rather than merely low. The inverted text colour is the
+   one guaranteed to contrast with the accent in whichever theme is active. */
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover,
+.sidebar-content a[aria-current='page']:focus {
+  color: var(--sl-color-text-invert);
+  font-weight: 600;
+}
