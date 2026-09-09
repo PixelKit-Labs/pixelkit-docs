@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { satteri } from '@astrojs/markdown-satteri';
 import { SITE, BASE, withBase } from './site.config.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -89,11 +90,48 @@ function buildRedirects() {
   return out;
 }
 
+/**
+ * Wraps every table in a scrolling container.
+ *
+ * A table needs `overflow-x: auto` so a wide one scrolls instead of pushing the page sideways on a
+ * phone. Setting that on the table itself blockifies it: the element then stretches to the content
+ * column and takes the border and radius with it, while the rows inside still shrink to fit their
+ * text. A narrow table drew a full-width rounded box with the header background and row rules
+ * stopping partway across it.
+ *
+ * Moving the overflow to a wrapper lets the table stay `display: table` and fill its width, so the
+ * rows reach the border again.
+ *
+ * This is a Sätteri hast plugin, not a rehype one: Sätteri is Astro 7's default Markdown processor
+ * and does not run the unified pipeline, so `markdown.rehypePlugins` would need
+ * `@astrojs/markdown-remark` and would swap the processor for the whole site — including the raw
+ * HTML the diagram SVGs are injected as. A filtered visitor returning a replacement node does the
+ * same job without changing how anything else is parsed.
+ */
+const wrapTablesPlugin = {
+  name: 'pk-wrap-tables',
+  element: {
+    filter: ['table'],
+    visit(node) {
+      // The replacement contains a table, so without this guard the visitor would match its own
+      // output and wrap forever.
+      if (node.properties?.dataPkWrapped) return;
+      return {
+        type: 'element',
+        tagName: 'div',
+        properties: { className: ['pk-table-scroll'] },
+        children: [{ ...node, properties: { ...node.properties, dataPkWrapped: 'true' } }],
+      };
+    },
+  },
+};
+
 // https://astro.build/config
 export default defineConfig({
   site: SITE,
   base: BASE,
   redirects: buildRedirects(),
+  markdown: { processor: satteri({ hastPlugins: [wrapTablesPlugin] }) },
   integrations: [
     starlight({
       title: 'PixelKit',

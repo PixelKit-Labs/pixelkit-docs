@@ -285,11 +285,16 @@
 .c-frontend   { fill: var(--frontend-fill);   stroke: var(--frontend-stroke); }
 .c-backend    { fill: var(--backend-fill);    stroke: var(--backend-stroke); }
 .c-database   { fill: var(--database-fill);   stroke: var(--database-stroke); }
+.c-cloud      { fill: var(--cloud-fill);      stroke: var(--cloud-stroke); }
 .c-security   { fill: var(--security-fill);   stroke: var(--security-stroke); }
+.c-messagebus { fill: var(--messagebus-fill); stroke: var(--messagebus-stroke); }
+.c-external   { fill: var(--external-fill);   stroke: var(--external-stroke); }
 .t-primary { fill: var(--text); }
 .t-muted   { fill: var(--text-muted); }
 .t-dim     { fill: var(--text-dim); }
 .t-backend    { fill: var(--backend-stroke); }
+.t-database   { fill: var(--database-stroke); }
+.t-cloud      { fill: var(--cloud-stroke); }
 .t-security   { fill: var(--security-stroke); }
 svg .semantic-sigil {
       fill: none;
@@ -305,9 +310,14 @@ svg .semantic-sigil .sigil-fill { fill: currentColor; stroke: none; }
 svg .s-frontend   { color: var(--frontend-stroke); }
 svg .s-backend    { color: var(--backend-stroke); }
 svg .s-database   { color: var(--database-stroke); }
+svg .s-cloud      { color: var(--cloud-stroke); }
 svg .s-security   { color: var(--security-stroke); }
+svg .s-messagebus { color: var(--messagebus-stroke); }
+svg .s-external   { color: var(--external-stroke); }
 .a-default   { stroke: var(--arrow); fill: none; }
 .a-emphasis  { stroke: var(--arrow-emphasis); fill: none; }
+.a-security  { stroke: var(--security-stroke); fill: none; stroke-dasharray: 5,5; }
+.a-dashed    { stroke: var(--database-stroke); fill: none; stroke-dasharray: 4,4; }
 .m-default   { fill: var(--arrow); }
 .m-emphasis  { fill: var(--arrow-emphasis); }
 .m-security  { fill: var(--security-stroke); }

@@ -75,19 +75,24 @@ function stripAtRules(css) {
 }
 
 /**
- * Pulls the rules the SVG actually depends on out of archify's full viewer stylesheet, which is
+ * Pulls the rules the SVGs actually depend on out of archify's full viewer stylesheet, which is
  * ~190 kB and mostly chrome this site does not render — toolbar, search, cards, presentation mode.
- * Kept: the `[data-theme]` custom-property blocks, and any rule whose selector names a class the
- * SVG uses.
+ * Kept: the `[data-theme]` custom-property blocks, and any rule whose selector names a class one of
+ * the SVGs uses.
+ *
+ * `classes` is the union across every diagram, not the classes of one of them. This used to be
+ * built from whichever spec sorted first, so a component type that only appeared in a later diagram
+ * — `cloud`, `external`, `messagebus` — had its rule dropped. An SVG element with no matching rule
+ * does not fall back to something readable: `fill` defaults to black, so those boxes and their
+ * labels rendered black on black.
  */
-function extractCss(html, svg) {
+function extractCss(html, classes) {
   const css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('\n');
   // Comments must go before the rules are split. The naive rule regex treats everything between
   // } and { as the selector, so a /* ... */ above a rule becomes part of it - which silently ate
   // the `:root, [data-theme="dark"]` selector and left only the light-theme blocks valid, so every
   // diagram rendered with light fills on a dark page.
   const stripped = stripAtRules(css.replace(/\/\*[\s\S]*?\*\//g, ''));
-  const classes = [...new Set([...svg.matchAll(/class="([^"]+)"/g)].flatMap((m) => m[1].split(/\s+/)))];
   const rules = [...stripped.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
 
   const keep = rules.filter(([, selector, body]) => {
@@ -121,7 +126,10 @@ function main() {
   const work = path.join(os.tmpdir(), 'pixelkit-diagram-build');
   mkdirSync(work, { recursive: true });
 
-  let sharedCss = null;
+  // The stylesheet is shared by every diagram, so it has to be built from the union of what they
+  // all use. Collected here and extracted once the loop has seen every SVG.
+  const usedClasses = new Set();
+  let viewerHtml = null;
 
   for (const file of specs) {
     const name = path.basename(file, '.json');
@@ -150,8 +158,26 @@ function main() {
     }
 
     writeFileSync(path.join(SPEC_DIR, `${name}.svg`), `${svg}\n`, 'utf8');
-    if (!sharedCss) sharedCss = extractCss(html, svg);
+    for (const m of svg.matchAll(/class="([^"]+)"/g)) {
+      for (const c of m[1].split(/\s+/)) if (c) usedClasses.add(c);
+    }
+    viewerHtml ??= html;
     console.log(`build-diagrams: ${name} -> docs/diagrams/${name}.svg (${(svg.length / 1024).toFixed(1)} kB)`);
+  }
+
+  const sharedCss = extractCss(viewerHtml, [...usedClasses].sort());
+
+  // A class with no rule renders black, which is not a visible-but-ugly failure: on a dark page it
+  // is invisible, and on a light one it is black on black. Fail the build rather than ship it.
+  const undefined_ = [...usedClasses].filter(
+    (c) => !new RegExp(`\\.${c.replace(/-/g, '\\-')}(?![\\w-])`).test(sharedCss)
+  );
+  if (undefined_.length > 0) {
+    console.error(
+      `build-diagrams: ${undefined_.length} class(es) used by a diagram have no rule in the ` +
+        `extracted stylesheet, so they would render black on black:\n  ${undefined_.join(', ')}`
+    );
+    process.exit(1);
   }
 
   mkdirSync(path.dirname(CSS_OUT), { recursive: true });

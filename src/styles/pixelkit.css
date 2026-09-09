@@ -219,13 +219,28 @@
  * Tables: quiet bordered box, header row on the raised surface.
  * ============================================================================================ */
 
-.sl-markdown-content table:not(:where(.not-content *)) {
+/* The border, radius and scrolling live on the wrapper (added by rehypeWrapTables in
+   astro.config.mjs), not on the table. Putting overflow on a table blockifies it, which let the
+   bordered box stretch to the content column while the rows inside stayed at their natural width:
+   a narrow table drew a full-width box with the header background ending partway across it. */
+.sl-markdown-content .pk-table-scroll:not(:where(.not-content *)) {
 	border: var(--pk-border-width) solid var(--pk-border);
 	border-radius: var(--pk-radius-table);
-	border-collapse: separate;
-	border-spacing: 0;
 	overflow-x: auto;
 	overflow-y: hidden;
+}
+.sl-markdown-content .pk-table-scroll > table:not(:where(.not-content *)) {
+	/* Starlight's own rule sets `display: block; overflow: auto` on the table to make it scroll.
+	   That is what blockified it; now the wrapper scrolls instead, so put it back to a real table. */
+	display: table;
+	overflow: visible;
+	border: none;
+	border-collapse: separate;
+	border-spacing: 0;
+	margin: 0;
+	width: 100%;
+	/* Below this the columns are unreadable, so the wrapper scrolls instead of squeezing further. */
+	min-width: 26rem;
 }
 .sl-markdown-content :is(th, td):not(:where(.not-content *)) {
 	border-bottom: var(--pk-border-width) solid var(--pk-border-soft);
