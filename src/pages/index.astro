@@ -15,6 +15,7 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { CardGrid, LinkCard, Aside, Code } from '@astrojs/starlight/components';
 import pixelHero from '../assets/pixel-hero.png';
 import { getImage } from 'astro:assets';
+import { withBase } from '../../site.config.mjs';
 
 /**
  * Starlight renders hero.image.file through <Image width={400} height={400}>, which squashes a
@@ -67,8 +68,8 @@ function Readout() {
 				html: `<img src="${heroImage.src}" srcset="${heroImage.srcSet.attribute}" sizes="${heroImage.attributes.sizes}" width="${heroImage.attributes.width}" height="${heroImage.attributes.height}" alt="A Google Pixel showing the PixelKit shield on screen" loading="eager" decoding="async" class="pixel-hero" />`,
 			},
 			actions: [
-				{ text: 'Get started', link: '/getting-started/quickstart/', variant: 'primary', icon: 'right-arrow' },
-				{ text: 'API reference', link: '/api/hardware-api/', variant: 'secondary' },
+				{ text: 'Get started', link: withBase('/getting-started/quickstart/'), variant: 'primary', icon: 'right-arrow' },
+				{ text: 'API reference', link: withBase('/api/hardware-api/'), variant: 'secondary' },
 			],
 		},
 	}}
@@ -133,22 +134,22 @@ function Readout() {
 		<CardGrid>
 			<LinkCard
 				title="Quickstart"
-				href="/getting-started/quickstart/"
+				href={withBase("/getting-started/quickstart/")}
 				description="Install, build onto a device, and read your first value."
 			/>
 			<LinkCard
 				title="API reference"
-				href="/api/hardware-api/"
+				href={withBase("/api/hardware-api/")}
 				description="Every hook: inputs, outputs, and what failure looks like."
 			/>
 			<LinkCard
 				title="Guides"
-				href="/guides/"
+				href={withBase("/guides/")}
 				description="On-device Gemini Nano, function calling, and voice."
 			/>
 			<LinkCard
 				title="Architecture"
-				href="/getting-started/architecture/"
+				href={withBase("/getting-started/architecture/")}
 				description="How the hooks reach the hardware, layer by layer."
 			/>
 		</CardGrid>

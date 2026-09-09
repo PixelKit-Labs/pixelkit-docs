@@ -19,6 +19,7 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { BASE, withBase } from '../site.config.mjs';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -164,7 +165,7 @@ function docsPathToUrl(relativeFromDocs) {
 
   const withoutExtension = route.replace(/\.mdx?$/, '');
   const asDirectory = withoutExtension.replace(/\/index$/, '');
-  return `/${asDirectory}/`;
+  return withBase(`/${asDirectory}/`);
 }
 
 /**
@@ -181,13 +182,21 @@ function docsPathToUrl(relativeFromDocs) {
 function rewriteLinks(markdown, sourcePath) {
   const fromDir = path.dirname(path.relative(SOURCE_ROOT, sourcePath));
 
+  // Site-absolute links written straight into the prose, like `](/api/)`. They need the base as
+  // much as a generated link does, and neither rule below matches them because they are not file
+  // links and not relative. Already-prefixed links are left alone so this stays idempotent.
+  const withAbsolute = markdown.replace(/\]\((\/[a-z0-9][^)\s#]*)(#[^)\s]*)?\)/g, (match, target, anchor = '') => {
+    if (target.startsWith(`${BASE.replace(/\/$/, '')}/`)) return match;
+    return `](${withBase(target)}${anchor})`;
+  });
+
   // Directory links first. `./api/` is not a file link, so the rule below never sees it, and a
   // browser resolves it against the *current URL* rather than the source tree: from /readme/ it
   // becomes /readme/api/, which 404s. All four section links on the docs landing page were dead
   // this way, including ./ai-guidance/, whose section is served at /for-coding-agents/.
-  const withDirectories = markdown.replace(/\]\((\.{1,2}\/)([a-z0-9-]+)\/\)/g, (match, _prefix, dir) => {
+  const withDirectories = withAbsolute.replace(/\]\((\.{1,2}\/)([a-z0-9-]+)\/\)/g, (match, _prefix, dir) => {
     if (!existsSync(path.join(SOURCE_ROOT, dir))) return match;
-    return `](/${DIRECTORY_ROUTES[dir] ?? dir}/)`;
+    return `](${withBase(`/${DIRECTORY_ROUTES[dir] ?? dir}/`)})`;
   });
 
   return withDirectories.replace(/\]\((\.{1,2}\/[^)\s#]+?\.mdx?|[^)\s#:]+?\.mdx?)(#[^)\s]*)?\)/g, (match, target, anchor = '') => {

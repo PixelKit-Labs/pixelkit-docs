@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { SITE, BASE, withBase } from './site.config.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONTENT_DOCS = path.resolve(__dirname, 'src', 'content', 'docs');
@@ -80,7 +81,7 @@ function buildRedirects() {
       if (!/.mdx?$/.test(entry.name)) continue;
       const base = entry.name.replace(/.mdx?$/, '');
       if (base === '404') continue;
-      const route = base === 'index' ? `${prefix}/` : `${prefix}/${base}/`;
+      const route = withBase(base === 'index' ? `${prefix}/` : `${prefix}/${base}/`);
       out[`${prefix}/${base}.md`] = route;
     }
   };
@@ -90,6 +91,8 @@ function buildRedirects() {
 
 // https://astro.build/config
 export default defineConfig({
+  site: SITE,
+  base: BASE,
   redirects: buildRedirects(),
   integrations: [
     starlight({
