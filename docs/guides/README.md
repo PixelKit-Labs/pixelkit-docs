@@ -1,13 +1,21 @@
-# PixelKit Guides: Built-in AI, Function Calling & Voice
+# PixelKit Guides: Hardware, Built-in AI, Function Calling & DevTools
 
-> Production guides for building on the Pixel 11 Pro's on-device intelligence (Gemini Nano 4 via AICore), Gemini cloud models, and the phone's voice pipeline. Written for Expo SDK 57 / React Native 0.86 / Android 17 (API 37).
+> Production guides for building on the Pixel 11 Pro's hardware sensors, on-device intelligence (Gemini Nano 4 via AICore), Gemini cloud models, and system integrations. Written for Expo SDK 57 / React Native 0.86 / Android 17 (API 37).
 
 | Guide | What you will build |
 | :--- | :--- |
 | **[On-Device AI with Gemini Nano](./on-device-ai-gemini-nano.md)** | A local Expo Module that bridges the ML Kit GenAI Prompt API to React Native, a `useGeminiNano` hook, structured output, thinking mode, multimodal prompts, and a hybrid on-device / cloud router. |
 | **[Function Calling & Tools](./function-calling.md)** | A single hardware tool registry that PixelKit hooks register into, executed by cloud Gemini (native function calling), by Gemini Nano on device (structured output), and exposed to the system Gemini assistant through Android AppFunctions. |
 | **[Voice: Speech In, Speech Out, Live Agents](./voice.md)** | On-device streaming speech recognition (ML Kit GenAI Speech Recognition, Advanced mode on Pixel 10/11), realtime bidirectional voice agents with the Gemini Live API and ephemeral tokens, text-to-speech, and HiLight / haptic status feedback. |
-| **[Autonomous E2E Testing with ARTEMIS](./testing-with-artemis.md)** | Autonomous end-to-end hardware verification on real Pixel devices using Google's ARTEMIS agent framework, testing genuine source: 'hardware' provenance across all 32 hooks. |
+| **[Autonomous E2E Testing with ARTEMIS](./testing-with-artemis.md)** | Autonomous end-to-end hardware verification on real Pixel devices using Google's ARTEMIS agent framework, testing genuine source: 'hardware' provenance across all 39 hooks. |
+| **[Hardware DevTools HUD](./devtools.md)** | Lightweight draggable in-app developer HUD for real-time inspection of Choreographer display FPS, ADPF thermal headroom, and Tensor CPU clusters. |
+| **[Bluetooth 6.0 Channel Sounding](./channel-sounding.md)** | Centimeter-accurate Phase-Based Ranging (PBR) and RTT tone exchange on Pixel 11 Pro dual-antenna BLE 6.0 radio. |
+| **[Spatial Audio & Head Tracking](./spatial-audio.md)** | Immersive 3D binaural sound rendering and 6-DOF dynamic head tracking with Pixel Buds via Android 17 Spatializer. |
+| **[System Profiling with Perfetto](./perfetto-profiling.md)** | Low-overhead kernel ftrace markers, DVFS cluster frequencies, and system scheduling tracing on Tensor G6. |
+| **[CameraX Extensions](./camera-extensions.md)** | Direct hardware access to Pixel Night Sight, Ultra HDR gainmaps, Portrait Bokeh, and Face Retouch computational photography. |
+| **[Android 17 AppFunctions](./app-functions.md)** | Exposing structured app capabilities and tool calling to the system Gemini Assistant via IAppFunctionManager. |
+| **[Play Integrity & Titan M2](./play-integrity.md)** | Hardware-backed security verdicts and StrongBox Keystore 400 EC keypair attestation on Titan M2 security chip. |
+| **[Health Connect & Sensor Bridges](./health-connect.md)** | Unified Android Health Connect storage combined with direct hardware step counter and PPG heart rate sensor streams. |
 
 ---
 
