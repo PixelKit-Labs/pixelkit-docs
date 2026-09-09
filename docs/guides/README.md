@@ -7,6 +7,7 @@
 | **[On-Device AI with Gemini Nano](./on-device-ai-gemini-nano.md)** | A local Expo Module that bridges the ML Kit GenAI Prompt API to React Native, a `useGeminiNano` hook, structured output, thinking mode, multimodal prompts, and a hybrid on-device / cloud router. |
 | **[Function Calling & Tools](./function-calling.md)** | A single hardware tool registry that PixelKit hooks register into, executed by cloud Gemini (native function calling), by Gemini Nano on device (structured output), and exposed to the system Gemini assistant through Android AppFunctions. |
 | **[Voice: Speech In, Speech Out, Live Agents](./voice.md)** | On-device streaming speech recognition (ML Kit GenAI Speech Recognition, Advanced mode on Pixel 10/11), realtime bidirectional voice agents with the Gemini Live API and ephemeral tokens, text-to-speech, and HiLight / haptic status feedback. |
+| **[Autonomous E2E Testing with ARTEMIS](./testing-with-artemis.md)** | Autonomous end-to-end hardware verification on real Pixel devices using Google's ARTEMIS agent framework, testing genuine source: 'hardware' provenance across all 32 hooks. |
 
 ---
 
