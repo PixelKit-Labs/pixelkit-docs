@@ -1,5 +1,5 @@
 # PixelKit Hardware API Reference
-> **Hook-by-hook reference for the Google Pixel 11 Pro build**
+> **Hook-by-hook reference for all 39 hardware hooks on Google Pixel 11 Pro (Tensor G6, Android 17 API 37)**
 
 This document is the consolidated reference for every hook in the PixelKit SDK (React Native, Expo SDK 57) on the **Google Pixel 11 Pro** (Android 17, Google Tensor G6). Figures described as verified were read from the device with `adb` and `dumpsys`.
 
