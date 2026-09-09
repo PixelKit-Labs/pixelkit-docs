@@ -13,7 +13,7 @@ This document is the consolidated reference for every hook in the PixelKit SDK (
 2. [Silicon & Compute Hooks](#-silicon--compute-hooks) — [useCPU](#usecpu) · [useGPU](#usegpu) · [useTPU](#usetpu) · [useMemory](#usememory) · [useADPF](#useadpf)
 3. [Pixel Pro Exclusive Silicon](#-pixel-pro-exclusive-silicon) — [useHiLight](#usehilight) · [useUWB](#useuwb)
 4. [Neural & Intelligence Hooks](#-neural--intelligence-hooks) — [useGemini](#usegemini) · [useGeminiNano](#usegemininano) · [useGenAITasks](#usegenaitasks) · [useNaturalLanguageAI](#usenaturallanguageai) · [useSpeechAI](#usespeechai) · [useSpeech](#usespeech) · [useVisionAI](#usevisionai)
-5. [Sensors & Physical Actuators](#-sensors--physical-actuators) — [useSensors](#usesensors) · [useCamera](#usecamera) · [useTorch](#usetorch) · [useHaptics](#usehaptics)
+5. [Sensors & Physical Actuators](#-sensors--physical-actuators) — [useSensors](#usesensors) · [useCamera](#usecamera) · [useCameraExtensions](#usecameraextensions) · [useTorch](#usetorch) · [useHaptics](#usehaptics)
 6. [Radios & Hardware Security](#-radios--hardware-security) — [useBiometrics](#usebiometrics) · [useSecurity](#usesecurity) · [useBLE](#useble) · [useNFC](#usenfc) · [useRadios](#useradios) · [useLocation](#uselocation)
 7. [System & Media Hooks](#-system--media-hooks) — [useAudio](#useaudio) · [useVideo](#usevideo) · [useMediaLibrary](#usemedialibrary) · [useCellular](#usecellular) · [useCapabilities](#usecapabilities) · [useDisplay](#usedisplay) · [useDevice](#usedevice) · [useNetwork](#usenetwork)
 
@@ -31,7 +31,7 @@ import {
  useCPU, useGPU, useTPU, useMemory, useADPF,
  useHiLight, useUWB,
  useGemini, useGeminiNano, useGenAITasks, useNaturalLanguageAI, useSpeechAI, useSpeech, useVisionAI,
- useSensors, useCamera, useTorch, useHaptics,
+ useSensors, useCamera, useCameraExtensions, useTorch, useHaptics,
  useBiometrics, useSecurity, useBLE, useNFC, useRadios, useLocation,
  useAudio, useVideo, useMediaLibrary, useCellular, useCapabilities, useDisplay, useDevice, useNetwork,
 } from '@pixelkit-labs/sdk';
@@ -464,6 +464,24 @@ error: string | null; source: TelemetrySource;
 | `setMode(mode)` | `mode: 'picture' \| 'video'` | `void` | Recording requires `'video'`. |
 | `setLook(look)` / `toggleUltraLowLightVideo()` | `look: CameraLook` / none | `void` | Interface labels only; they do not change the image. |
 | `pausePreview()` / `resumePreview()` | none | `Promise<void>` | Freeze or restart the preview. |
+
+---
+
+### `useCameraExtensions`
+* **File Path**: `packages/sdk/src/hardware/useCameraExtensions.ts`
+* **Target Hardware**: Android Camera2 / CameraX `CameraExtensionCharacteristics` (API 31+). Verified on Pixel 11 Pro (`grizzly`): queries vendor extensions (Night Sight `EXTENSION_NIGHT`, Ultra HDR `EXTENSION_HDR`, Portrait Bokeh `EXTENSION_BOKEH`, Face Retouch `EXTENSION_FACE_RETOUCH`, Auto `EXTENSION_AUTOMATIC`).
+* **Description**: Queries real camera HAL computational photography extension modes across all physical front and back camera sensors. Reports whether low-light Night Sight, HDR+ exposure stacking, and portrait blur are physically supported by the camera hardware.
+* **Outputs**: [field table →](api/sensors-actuators.md#usecameraextensions)
+
+```typescript
+available: boolean; cameras: CameraExtensionInfo[];
+hasNightSight: boolean; hasUltraHdr: boolean; hasPortraitBokeh: boolean;
+error: string | null; source: TelemetrySource;
+```
+
+| Function | Inputs | Returns | Description |
+| :--- | :--- | :--- | :--- |
+| `refresh()` | none | `CameraExtensionsResult \| null` | Re-reads extension capabilities directly from the camera HAL. |
 
 ---
 

@@ -1,0 +1,55 @@
+{
+  "id": "useCameraExtensions",
+  "name": "useCameraExtensions",
+  "category": "sensors",
+  "chipBadge": "Camera2 extensions",
+  "summary": "Google computational photography vendor extensions (Night Sight, Ultra HDR, Portrait Bokeh).",
+  "plain": "Queries real camera hardware extensions from the Android Camera2 HAL on Google Pixel devices. Detects whether Night Sight, Ultra HDR exposure stacking, and Portrait mode bokeh blur are supported by the camera sensors.",
+  "description": "Backed by Android CameraExtensionCharacteristics (API 31+). Queries vendor-specific image processing modes for back and front cameras. Nothing is simulated: reads directly from the camera HAL and reports source: 'hardware' on genuine devices.",
+  "signature": "useCameraExtensions(): CameraExtensionsState",
+  "params": [],
+  "returns": [
+    {
+      "name": "available",
+      "type": "boolean",
+      "desc": "Whether CameraExtensionCharacteristics is supported and accessible on the device."
+    },
+    {
+      "name": "cameras",
+      "type": "CameraExtensionInfo[]",
+      "desc": "List of available cameras and their supported vendor extension modes."
+    },
+    {
+      "name": "hasNightSight",
+      "type": "boolean",
+      "desc": "True if any back or front camera supports Google Night Sight."
+    },
+    {
+      "name": "hasUltraHdr",
+      "type": "boolean",
+      "desc": "True if any camera supports Ultra HDR / HDR+ exposure stacking."
+    },
+    {
+      "name": "hasPortraitBokeh",
+      "type": "boolean",
+      "desc": "True if any camera supports hardware-assisted Portrait mode bokeh blur."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Latest error message if the HAL query failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the readings came from. Real hardware reports 'hardware', emulators or unsupported devices report 'unavailable'."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refresh()",
+      "type": "() => CameraExtensionsResult | null",
+      "desc": "Manually re-reads camera HAL extension characteristics."
+    }
+  ]
+}
