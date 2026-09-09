@@ -170,7 +170,7 @@
   max-width: min(16rem, 100%);
   /* Height cap so a tall portrait device cannot push the hero copy and buttons below the fold on a
      short viewport. On a tall screen the width governs; on a short one this does. */
-  max-height: 72vh;
+  max-height: 62vh;
   margin-inline: auto;
   filter: drop-shadow(0 1.25rem 2.5rem rgb(0 0 0 / 0.5));
 }
@@ -188,10 +188,10 @@
 .hero > .hero-html::before {
   content: '';
   position: absolute;
-  inset: 4% 6%;
+  inset: 2% -8%;
   border-radius: 50%;
   background: radial-gradient(closest-side, var(--sl-color-accent-low), transparent 72%);
-  opacity: 0.75;
+  opacity: 0.9;
   filter: blur(3.5rem);
   z-index: 0;
 }
@@ -205,7 +205,7 @@
 @media (min-width: 72rem) {
   /* Give the device more of the row than Starlight's default split allows. */
   .hero {
-    grid-template-columns: 1fr 1.25fr;
+    grid-template-columns: 1fr 0.62fr;
   }
   .hero .pixel-hero {
     max-width: min(24rem, 100%);
@@ -229,7 +229,7 @@
    padding but is not. Align the columns to the top instead, and let the image hang below. */
 @media (min-width: 50rem) {
   .hero {
-    align-items: start;
+    align-items: center;
   }
   .hero > .hero-html {
     /* Nudge the device down slightly so its top edge does not sit dead level with the title. */
