@@ -167,10 +167,10 @@
      lets the two maxima apply together and the aspect ratio survive. */
   width: auto;
   height: auto;
-  max-width: min(24rem, 100%);
+  max-width: min(16rem, 100%);
   /* Height cap so a tall portrait device cannot push the hero copy and buttons below the fold on a
      short viewport. On a tall screen the width governs; on a short one this does. */
-  max-height: 88vh;
+  max-height: 72vh;
   margin-inline: auto;
   filter: drop-shadow(0 1.25rem 2.5rem rgb(0 0 0 / 0.5));
 }
@@ -198,7 +198,7 @@
 
 @media (min-width: 50rem) {
   .hero .pixel-hero {
-    max-width: min(30rem, 100%);
+    max-width: min(20rem, 100%);
   }
 }
 
@@ -208,7 +208,7 @@
     grid-template-columns: 1fr 1.25fr;
   }
   .hero .pixel-hero {
-    max-width: min(37.5rem, 100%);
+    max-width: min(24rem, 100%);
   }
 }
 
@@ -233,6 +233,6 @@
   }
   .hero > .hero-html {
     /* Nudge the device down slightly so its top edge does not sit dead level with the title. */
-    padding-top: 1rem;
+    padding-top: 0.5rem;
   }
 }
