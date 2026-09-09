@@ -13,6 +13,7 @@
  */
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { CardGrid, LinkCard, Aside, Code } from '@astrojs/starlight/components';
+import pixelHero from '../assets/pixel-hero.png';
 
 const installExample = `npx expo install @pixelkit-labs/sdk @pixelkit-labs/native
 
@@ -39,12 +40,18 @@ function Readout() {
 	frontmatter={{
 		title: 'PixelKit',
 		description:
-			'An on-device AI development kit for the Google Pixel. Gemini Nano, ML Kit vision, offline translation and speech as typed React hooks for Expo and React Native.',
+			'PixelKit is an SDK for building Expo and React Native applications on Google Pixel devices. Typed React hooks for device sensors, radios, secure hardware, camera and audio, display and power telemetry, haptics, on-device AI, and Cloud AI.',
 		template: 'splash',
 		hero: {
-			title: 'On-device AI, as React hooks.',
+			title: 'PixelKit',
 			tagline:
-				'Gemini Nano running on the phone itself, with no network at all. Document scanning, barcode, face and text recognition. Translation across 58 languages offline. Speech in both directions. Summarize, proofread and rewrite on the Tensor chip. And because on-device inference is thermally expensive and capability-gated, the same kit tells you what AICore actually exposes, which Nano tier this device serves, and how much thermal headroom is left before you should fall back to cloud.',
+				'An SDK for building Expo and React Native applications on Google Pixel devices. Typed React hooks for device sensors, radios, secure hardware, camera and audio, display and power telemetry, haptics, on-device AI, and Cloud AI.',
+			image: {
+				// Starlight renders hero.image to the right of the copy on wide viewports and above it on
+				// narrow ones. Imported rather than referenced by path so Astro optimises and fingerprints it.
+				file: pixelHero,
+				alt: 'A Google Pixel showing the PixelKit shield on screen',
+			},
 			actions: [
 				{ text: 'Get started', link: '/getting-started/quickstart/', variant: 'primary', icon: 'right-arrow' },
 				{ text: 'API reference', link: '/api/hardware-api/', variant: 'secondary' },
