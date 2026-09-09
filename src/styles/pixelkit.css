@@ -1,37 +1,56 @@
 /**
  * PixelKit theme for Starlight.
  *
- * This overrides Starlight's CSS custom properties only (per Starlight's documented theming
- * mechanism: https://starlight.astro.build/guides/css-and-tailwind/#custom-css-styles) — the
- * component templates and layout are untouched, so upgrading `@astrojs/starlight` does not require
- * re-forking anything here.
+ * Structure and density are matched to docs.expo.dev (measured with DevTools on the live site:
+ * colour, type scale, spacing, card/table/code-block treatment); the accent stays PixelKit's own
+ * cyan rather than Expo's blue. Everything here goes through Starlight's documented theming
+ * mechanism (https://starlight.astro.build/guides/css-and-tailwind/#custom-css-styles): CSS custom
+ * properties first, and a handful of plain selectors targeting Starlight's own (unlayered-beats-
+ * layered) component class names where a measurement — a border width, a radius, a padding — has
+ * no corresponding custom property. No component is forked; `@astrojs/starlight` upgrades without
+ * re-patching anything here. The two font packages are wired in via `customCss` in
+ * `astro.config.mjs` (`@fontsource-variable/inter` and `@fontsource-variable/jetbrains-mono`), so
+ * the build has no runtime dependency on a font CDN.
  *
  * Values are taken from PixelKit's own design tokens (`packages/pixelkit/src/theme/colors.ts` in
- * the SDK repo): a near-black field with a blue cast, cyan as the one interactive accent, and green
- * / red / amber / violet reserved for well / wrong / needs-action / model-and-external meanings —
- * the same semantics Starlight already assigns to its tip / note / caution / danger asides, which is
- * why those four hues map directly onto that set below.
+ * the SDK repo) for the accent and the aside semantics: cyan as the one interactive colour, and
+ * green / red / amber / violet reserved for well / wrong / needs-action / model-and-external
+ * meanings — the same semantics Starlight already assigns to its tip / note / caution / danger
+ * asides, which is why those four hues map directly onto that set below.
  */
 
 :root {
 	/* ---- Base palette (dark is the primary theme) ---- */
-	--sl-color-black: #0e1119; /* page field: near-black, blue cast */
-	--sl-color-gray-7: #10141c;
-	--sl-color-gray-6: #151925; /* panel face: nav + sidebar background */
-	--sl-color-gray-5: rgba(255, 255, 255, 0.16); /* hairline / border */
-	--sl-color-gray-4: #7c8290;
-	--sl-color-gray-3: #a8adb8; /* muted text: captions, metadata */
-	--sl-color-gray-2: #c7cbd6; /* body text */
-	--sl-color-gray-1: #f4f5f8; /* headings, emphasis */
-	--sl-color-white: #f4f5f8;
+	/* Measured off docs.expo.dev: page background, raised/subtle surface, card surface, default
+	   border, softer border, primary text, secondary text. */
+	--sl-color-black: #111113; /* page field */
+	--sl-color-gray-7: #18191b; /* raised/subtle surface: nav + sidebar background */
+	--sl-color-gray-6: #212225; /* card surface: panels, cards, table header, code UI chrome */
+	--sl-color-gray-5: #363a3f; /* default border */
+	--sl-color-gray-4: #53575e;
+	--sl-color-gray-3: #b0b4ba; /* secondary text: captions, metadata, sidebar links */
+	--sl-color-gray-2: #cdd0d5; /* body text */
+	--sl-color-gray-1: #edeef0; /* headings, emphasis: primary text */
+	--sl-color-white: #edeef0;
 
 	--sl-color-bg: var(--sl-color-black);
 	--sl-color-bg-nav: var(--sl-color-gray-7);
-	--sl-color-bg-sidebar: var(--sl-color-black);
-	--sl-color-bg-inline-code: rgba(255, 255, 255, 0.08);
-	--sl-color-hairline: rgba(255, 255, 255, 0.1);
-	--sl-color-hairline-light: rgba(255, 255, 255, 0.16);
-	--sl-color-hairline-shade: #05070c;
+	--sl-color-bg-sidebar: var(--sl-color-gray-7);
+	--sl-color-bg-inline-code: var(--sl-color-gray-7);
+	--sl-color-hairline: var(--sl-color-gray-5);
+	--sl-color-hairline-light: #2e3135; /* softer border */
+	--sl-color-hairline-shade: var(--sl-color-gray-5);
+
+	/* Non-Starlight tokens used below for things Starlight has no variable for. */
+	--pk-border: var(--sl-color-gray-5);
+	--pk-border-soft: var(--sl-color-hairline-light);
+	--pk-border-width: 0.8px; /* Expo's hairlines render at 0.8px, not 1px */
+	--pk-surface-raised: var(--sl-color-gray-7);
+	--pk-surface-card: var(--sl-color-gray-6);
+	--pk-radius-card: 1.5rem; /* 24px */
+	--pk-radius-table: 0.75rem; /* 12px */
+	--pk-radius-pill: 9999px;
+	--pk-radius-inline-code: 6px;
 
 	/* ---- Accent: cyan, the one interactive colour ---- */
 	--sl-color-accent-low: #123842;
@@ -63,13 +82,18 @@
 	--pk-color-green-high: #b9f3d3;
 
 	/* ---- Type ---- */
-	--sl-font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-		sans-serif;
-	--sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono',
-		monospace;
+	/* Self-hosted via @fontsource-variable, wired in through `customCss` in astro.config.mjs. */
+	--sl-font: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+		'Helvetica Neue', Arial, sans-serif;
+	--sl-font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas,
+		'Liberation Mono', monospace;
 
-	/* Slightly wider content column: hardware API tables and code samples are wide. */
-	--sl-content-width: 50rem;
+	/* ---- Layout ---- */
+	/* Left sidebar and right "On this page" TOC both measure 280px on docs.expo.dev; Starlight
+	   drives both from this single variable (see TwoColumnContent.astro / PageSidebar.astro). */
+	--sl-sidebar-width: 17.5rem; /* 280px */
+	/* Prose column ~850px. */
+	--sl-content-width: 53.125rem; /* 850px */
 }
 
 :root[data-theme='light'] {
@@ -77,22 +101,27 @@
 	   colour names — e.g. Hero title colour is `var(--sl-color-white)` in both themes, so in light
 	   mode that has to resolve to a dark, readable colour, not literal white. */
 	--sl-color-black: #ffffff;
-	--sl-color-white: #171a22;
-	--sl-color-gray-7: #f5f6f9;
-	--sl-color-gray-6: #eceef3;
-	--sl-color-gray-5: rgba(14, 17, 25, 0.14);
-	--sl-color-gray-4: #6b7180;
-	--sl-color-gray-3: #5e6472;
-	--sl-color-gray-2: #333743;
-	--sl-color-gray-1: #171a22;
+	--sl-color-white: #1c1e22;
+	--sl-color-gray-7: #f7f7f8;
+	--sl-color-gray-6: #eef0f2;
+	--sl-color-gray-5: #d8dade;
+	--sl-color-gray-4: #aeb2b8;
+	--sl-color-gray-3: #6b6f76;
+	--sl-color-gray-2: #43474e;
+	--sl-color-gray-1: #1c1e22;
 
 	--sl-color-bg: #ffffff;
 	--sl-color-bg-nav: var(--sl-color-gray-7);
 	--sl-color-bg-sidebar: var(--sl-color-gray-7);
-	--sl-color-bg-inline-code: rgba(14, 17, 25, 0.06);
-	--sl-color-hairline: rgba(14, 17, 25, 0.12);
-	--sl-color-hairline-light: rgba(14, 17, 25, 0.08);
-	--sl-color-hairline-shade: rgba(14, 17, 25, 0.12);
+	--sl-color-bg-inline-code: var(--sl-color-gray-7);
+	--sl-color-hairline: var(--sl-color-gray-5);
+	--sl-color-hairline-light: #e4e6e9;
+	--sl-color-hairline-shade: var(--sl-color-gray-5);
+
+	--pk-border: var(--sl-color-gray-5);
+	--pk-border-soft: var(--sl-color-hairline-light);
+	--pk-surface-raised: var(--sl-color-gray-7);
+	--pk-surface-card: var(--sl-color-gray-6);
 
 	--sl-color-accent-low: #d7eef6;
 	--sl-color-accent: #1f7a9c;
@@ -117,29 +146,279 @@
 	--pk-color-green-high: #0f4a29;
 }
 
-/* Tighten heading tracking slightly; the system sans stack renders a touch loose at these sizes. */
-.sl-markdown-content :is(h1, h2, h3, h4) {
-	letter-spacing: -0.01em;
+/* ============================================================================================
+ * Type: heading scale, measured off docs.expo.dev.
+ * ============================================================================================ */
+
+.sl-markdown-content h1:not(:where(.not-content *)) {
+	font-size: 1.9375rem; /* 31px */
+	font-weight: 700;
+	line-height: 2.5rem; /* 40px */
+	letter-spacing: -0.022em; /* -0.352px at 16px base */
+}
+.sl-markdown-content h2:not(:where(.not-content *)) {
+	font-size: 1.5625rem; /* 25px */
+	font-weight: 700;
+	line-height: 2.1875rem; /* 35px */
+	margin-top: 2rem !important; /* 32px */
+	margin-bottom: 0.875rem !important; /* 14px */
+}
+.sl-markdown-content h3:not(:where(.not-content *)) {
+	font-size: 1.25rem; /* 20px */
+	font-weight: 600;
+	line-height: 1.875rem; /* 30px */
+	margin-top: 1.75rem !important; /* 28px */
+	margin-bottom: 0.75rem !important; /* 12px */
 }
 
-/* Table treatment: precise, quiet grid rather than the default alternating shade. */
-.sl-markdown-content table {
-	font-size: var(--sl-text-sm);
+/* ============================================================================================
+ * Layout: content padding, measured 40px 56px 0 at desktop widths.
+ * ============================================================================================ */
+
+@media (min-width: 72rem) {
+	.content-panel {
+		padding: 2.5rem 3.5rem 0;
+	}
 }
-.sl-markdown-content th {
+
+/* ============================================================================================
+ * Chrome hairlines at Expo's 0.8px, not Starlight's default 1px.
+ * ============================================================================================ */
+
+.header {
+	border-bottom-width: var(--pk-border-width);
+}
+@media (min-width: 50rem) {
+	.sidebar-pane {
+		border-inline-end-width: var(--pk-border-width);
+	}
+}
+.right-sidebar {
+	border-inline-start-width: var(--pk-border-width);
+}
+.content-panel + .content-panel {
+	border-top-width: var(--pk-border-width);
+}
+
+/* ============================================================================================
+ * Sidebar navigation links.
+ * ============================================================================================ */
+
+.sidebar-content a:not(.sl-badge) {
+	font-size: 0.875rem; /* 14px */
+	font-weight: 400;
+	line-height: 1.6; /* 22.4px */
+	color: var(--sl-color-gray-3);
+	padding: 0.25rem 0 0.25rem 0.25rem; /* 4px 0 4px 4px */
+}
+.sidebar-content [aria-current='page'] {
+	font-weight: 600;
+}
+
+/* ============================================================================================
+ * Tables: quiet bordered box, header row on the raised surface.
+ * ============================================================================================ */
+
+.sl-markdown-content table:not(:where(.not-content *)) {
+	border: var(--pk-border-width) solid var(--pk-border);
+	border-radius: var(--pk-radius-table);
+	border-collapse: separate;
+	border-spacing: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.sl-markdown-content :is(th, td):not(:where(.not-content *)) {
+	border-bottom: var(--pk-border-width) solid var(--pk-border-soft);
+	padding: 1rem; /* 16px */
+}
+.sl-markdown-content :is(th:first-child, td:first-child):not(:where(.not-content *)) {
+	padding-inline-start: 1rem;
+}
+.sl-markdown-content :is(th:last-child, td:last-child):not(:where(.not-content *)) {
+	padding-inline-end: 1rem;
+}
+.sl-markdown-content tr:last-child :is(th, td):not(:where(.not-content *)) {
+	border-bottom: none;
+}
+.sl-markdown-content th:not(:where(.not-content *)) {
+	font-size: 0.75rem; /* 12px */
+	font-weight: 500;
+	padding-block: 0.875rem; /* 14px */
+	background: var(--pk-surface-raised);
 	color: var(--sl-color-gray-1);
-	border-bottom-width: 2px;
 }
-.sl-markdown-content td,
-.sl-markdown-content th {
-	border: 1px solid var(--sl-color-hairline);
-	padding: 0.4rem 0.75rem;
+.sl-markdown-content td:not(:where(.not-content *)) {
+	font-size: 0.875rem; /* 14px */
 }
 
-/* Inline code: a hairline rather than a flat fill, so it reads as a value, not a highlight. */
+/* ============================================================================================
+ * Inline code: a hairline chip, not a flat highlight.
+ * ============================================================================================ */
+
 .sl-markdown-content code:not(:where(.not-content *)) {
-	border: 1px solid var(--sl-color-hairline);
-	border-radius: 4px;
+	font-size: 0.75rem; /* 12px */
+	background: var(--pk-surface-raised);
+	border: var(--pk-border-width) solid var(--pk-border-soft);
+	border-radius: var(--pk-radius-inline-code);
+	padding: 0.125rem 0.25rem; /* 2px 4px */
+}
+
+/* ============================================================================================
+ * Code blocks (Expressive Code): header strip, 24px outer radius, body visually distinct
+ * from prose. Variables are Expressive Code's own (see @expressive-code/core + plugin-frames);
+ * this is the customCss-documented way to theme it, not a component fork.
+ * ============================================================================================ */
+
+:root {
+	--ec-brdWd: 0.8px;
+	--ec-brdRad: 23.2px; /* + brdWd = 24px */
+	--ec-brdCol: var(--pk-border);
+	--ec-codeFontFml: var(--sl-font-mono);
+	--ec-codePadBlk: 1rem;
+	--ec-codePadInl: 1.25rem;
+	--ec-uiFontFml: var(--sl-font);
+
+	--ec-frm-frameBoxShdCssVal: none; /* panels use wash + hairline, not shadows */
+	--ec-frm-edBg: var(--pk-surface-card);
+	--ec-frm-trmBg: var(--pk-surface-card);
+	--ec-codeBg: var(--pk-surface-card);
+
+	--ec-frm-edTabBarBg: var(--pk-surface-raised);
+	--ec-frm-trmTtbBg: var(--pk-surface-raised);
+	--ec-frm-edTabBarBrdCol: var(--pk-border);
+	--ec-frm-edTabBarBrdBtmCol: var(--pk-border);
+	--ec-frm-edActTabBg: var(--pk-surface-card);
+	--ec-frm-edActTabIndTopCol: var(--sl-color-accent);
+	--ec-frm-edActTabIndBtmCol: transparent;
+
+	--ec-frm-inlBtnFg: var(--sl-color-gray-2);
+	--ec-frm-inlBtnBg: var(--sl-color-gray-2);
+	--ec-frm-inlBtnBrd: var(--sl-color-gray-2);
+}
+
+/* Expressive Code only renders a header when a code fence carries a title, or renders it as a
+ * terminal frame for shell/bash (those already get Expo-style traffic-light chrome and a
+ * "Terminal window" label for free — untouched here). The docs' fences (`docs/` in the SDK repo,
+ * out of scope for this pass) set a language but never a title, so give every other frame a
+ * header strip too. The label can't be read with `content: attr(...)` because the language lives
+ * on the sibling <pre data-language="...">, not on the header itself, and cross-element attr()
+ * isn't part of CSS — so this keys off `:has()` instead, one rule per language that actually
+ * appears in the docs corpus (checked via `grep -rhoE '^\`\`\`[a-zA-Z0-9_+-]*'`). It repeats the
+ * exact string already in each fence, capitalised for display; no new content, no component
+ * override. */
+.expressive-code .frame:not(.has-title):not(.is-terminal) .header {
+	display: flex;
+	align-items: center;
+	height: 2.25rem;
+	padding-inline: 1.25rem;
+	background: var(--pk-surface-raised);
+	border: var(--pk-border-width) solid var(--pk-border);
+	border-bottom-color: var(--pk-border);
+	border-radius: calc(var(--ec-brdRad) + var(--ec-brdWd))
+		calc(var(--ec-brdRad) + var(--ec-brdWd)) 0 0;
+}
+.expressive-code .frame:not(.has-title):not(.is-terminal) .header::before {
+	font-family: var(--sl-font-mono);
+	font-size: 0.75rem;
+	color: var(--sl-color-gray-3);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+.expressive-code .frame:not(.has-title):not(.is-terminal) pre {
+	border-top: none;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+}
+.expressive-code .frame:has(pre[data-language='ts']) .header::before,
+.expressive-code .frame:has(pre[data-language='typescript']) .header::before {
+	content: 'TypeScript';
+}
+.expressive-code .frame:has(pre[data-language='tsx']) .header::before {
+	content: 'TSX';
+}
+.expressive-code .frame:has(pre[data-language='json']) .header::before {
+	content: 'JSON';
+}
+.expressive-code .frame:has(pre[data-language='jsonc']) .header::before {
+	content: 'JSONC';
+}
+.expressive-code .frame:has(pre[data-language='kotlin']) .header::before {
+	content: 'Kotlin';
+}
+.expressive-code .frame:has(pre[data-language='groovy']) .header::before {
+	content: 'Groovy';
+}
+.expressive-code .frame:has(pre[data-language='markdown']) .header::before {
+	content: 'Markdown';
+}
+.expressive-code .frame:has(pre[data-language='proguard']) .header::before {
+	content: 'ProGuard';
+}
+.expressive-code .frame:has(pre[data-language='xml']) .header::before {
+	content: 'XML';
+}
+.expressive-code .frame:has(pre[data-language='text']) .header::before {
+	content: 'Text';
+}
+
+/* ============================================================================================
+ * Cards, link cards, badges: Expo's landing-card treatment.
+ * ============================================================================================ */
+
+.sl-link-card {
+	border-radius: var(--pk-radius-card);
+	border: var(--pk-border-width) solid var(--pk-border);
+	background: var(--pk-surface-card);
+	padding: 1.25rem 1.5rem; /* 20px 24px */
+	box-shadow: none;
+}
+.sl-link-card:hover {
+	background: var(--pk-surface-card);
+	border-color: var(--sl-color-accent);
+}
+
+.card {
+	border-radius: var(--pk-radius-card) !important;
+	border-width: var(--pk-border-width) !important;
+	padding: 1.25rem 1.5rem !important;
+}
+
+.sl-badge {
+	border-radius: var(--pk-radius-pill);
+	border-width: var(--pk-border-width);
+	padding: 0.375rem 0.625rem; /* 6px 10px */
+	font-family: var(--sl-font-mono);
+}
+.sl-badge.default {
+	--sl-badge-default-text: var(--sl-color-accent-high);
+}
+.sl-badge.note {
+	--sl-badge-note-text: var(--sl-color-blue-high);
+}
+.sl-badge.tip {
+	--sl-badge-tip-text: var(--sl-color-purple-high);
+}
+.sl-badge.caution {
+	--sl-badge-caution-text: var(--sl-color-orange-high);
+}
+.sl-badge.danger {
+	--sl-badge-danger-text: var(--sl-color-red-high);
+}
+.sl-badge.success {
+	--sl-badge-success-text: var(--pk-color-green-high);
+	--sl-badge-success-border: var(--pk-color-green);
+}
+
+/* ============================================================================================
+ * Asides: tinted card, not a left accent bar — matches the pill/card tint convention measured
+ * above (background and border share the hue, text is the "high" variant of the same hue).
+ * ============================================================================================ */
+
+.starlight-aside {
+	border: var(--pk-border-width) solid var(--sl-color-asides-border);
+	border-inline-start-width: var(--pk-border-width);
+	border-radius: var(--pk-radius-table);
+	padding: 1rem 1.25rem;
 }
 
 /* Diagram figures. The SVG is inlined by scripts/sync-docs.mjs and coloured by archify.css, which

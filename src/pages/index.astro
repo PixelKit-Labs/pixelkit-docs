@@ -89,7 +89,7 @@ function Readout() {
 		<Code code={usageExample} lang="tsx" />
 
 		<h2>What you can read</h2>
-		<table>
+		<table class="hook-table">
 			<thead>
 				<tr><th>Area</th><th>Hooks</th></tr>
 			</thead>
@@ -162,3 +162,21 @@ function Readout() {
 		</p>
 	</div>
 </StarlightPage>
+
+<style>
+	/*
+	 * The hook table is the landing page's own equivalent of Expo's landing-card grid, so it gets
+	 * that treatment specifically (24px radius, 0.8px border, raised surface) rather than the
+	 * smaller 12px radius `src/styles/pixelkit.css` gives ordinary API-reference tables — see
+	 * GOAL item 5. Astro scopes this block to elements rendered in this file, so it cannot leak
+	 * onto tables rendered from `docs/` content.
+	 */
+	.hook-table {
+		border-radius: 1.5rem !important; /* 24px */
+		background: var(--pk-surface-raised) !important;
+	}
+	.hook-table th {
+		background: transparent !important;
+	}
+</style>
+
