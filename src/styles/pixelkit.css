@@ -223,3 +223,16 @@
     padding-top: 2.5rem;
   }
 }
+
+/* The hero row is as tall as the device image, and Starlight centres its columns. That centred the
+   copy against a much taller neighbour, leaving ~200px of dead space above the title that reads as
+   padding but is not. Align the columns to the top instead, and let the image hang below. */
+@media (min-width: 50rem) {
+  .hero {
+    align-items: start;
+  }
+  .hero > .hero-html {
+    /* Nudge the device down slightly so its top edge does not sit dead level with the title. */
+    padding-top: 1rem;
+  }
+}
