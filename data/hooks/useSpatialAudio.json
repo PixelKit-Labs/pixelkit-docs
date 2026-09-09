@@ -1,0 +1,70 @@
+{
+  "id": "useSpatialAudio",
+  "name": "useSpatialAudio",
+  "category": "system",
+  "chipBadge": "Android Spatializer",
+  "summary": "Android Spatializer status, binaural rendering, and dynamic head tracking telemetry.",
+  "plain": "Queries Android's Spatializer audio subsystem (API 32+). Detects whether spatial audio processing is active for the current output routing, whether binaural / transaural mode is enabled, and whether dynamic head tracking sensors (such as Pixel Buds Pro) are actively tracking.",
+  "description": "Backed by android.media.Spatializer from the platform AudioManager. Queries audio DSP spatialization effects and checks whether the dynamic head tracker sensor is physically reporting. Nothing is simulated: reads directly from the audio HAL and reports source: 'hardware' on genuine devices.",
+  "signature": "useSpatialAudio(): SpatialAudioState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether the platform supports the Android Spatializer API (API 32+)."
+    },
+    {
+      "name": "isAvailable",
+      "type": "boolean",
+      "desc": "Whether spatial audio processing is available for the current audio routing path (e.g. A2DP headphones vs earpiece)."
+    },
+    {
+      "name": "isEnabled",
+      "type": "boolean",
+      "desc": "Whether spatial audio is enabled in user system sound settings."
+    },
+    {
+      "name": "hasHeadTracker",
+      "type": "boolean",
+      "desc": "Whether a dynamic head tracker sensor (e.g. Pixel Buds Pro) is currently paired and reporting orientation."
+    },
+    {
+      "name": "headTrackingMode",
+      "type": "'unsupported' | 'disabled' | 'relative_world' | 'relative_device'",
+      "desc": "Active head tracking coordinate mode reported by the audio HAL."
+    },
+    {
+      "name": "immersiveAudioLevel",
+      "type": "number",
+      "desc": "Level of immersive spatialization applied by the audio DSP (0: none, 1: multichannel, 2: other)."
+    },
+    {
+      "name": "hasDynamicHeadTrackerFeature",
+      "type": "boolean",
+      "desc": "Whether the device declares feature:android.hardware.sensor.dynamic.head_tracker."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Latest error message if the Spatializer query failed."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the readings came from. Genuine hardware reports 'hardware', unsupported platforms report 'unavailable'."
+    },
+    {
+      "name": "refresh",
+      "type": "() => SpatialAudioInfo | null",
+      "desc": "Manually re-reads spatial audio status from the system AudioManager."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refresh()",
+      "type": "() => SpatialAudioInfo | null",
+      "desc": "Manually re-reads spatial audio status from the system AudioManager."
+    }
+  ]
+}

@@ -15,7 +15,7 @@ This document is the consolidated reference for every hook in the PixelKit SDK (
 4. [Neural & Intelligence Hooks](#-neural--intelligence-hooks) — [useGemini](#usegemini) · [useGeminiNano](#usegemininano) · [useAppFunctions](#useappfunctions) · [useGenAITasks](#usegenaitasks) · [useNaturalLanguageAI](#usenaturallanguageai) · [useSpeechAI](#usespeechai) · [useSpeech](#usespeech) · [useVisionAI](#usevisionai)
 5. [Sensors & Physical Actuators](#-sensors--physical-actuators) — [useSensors](#usesensors) · [useCamera](#usecamera) · [useCameraExtensions](#usecameraextensions) · [useTorch](#usetorch) · [useHaptics](#usehaptics)
 6. [Radios & Hardware Security](#-radios--hardware-security) — [useBiometrics](#usebiometrics) · [useSecurity](#usesecurity) · [useBLE](#useble) · [useNFC](#usenfc) · [useRadios](#useradios) · [useLocation](#uselocation)
-7. [System & Media Hooks](#-system--media-hooks) — [useAudio](#useaudio) · [useVideo](#usevideo) · [useMediaLibrary](#usemedialibrary) · [useCellular](#usecellular) · [useCapabilities](#usecapabilities) · [useDisplay](#usedisplay) · [useDevice](#usedevice) · [useNetwork](#usenetwork)
+7. [System & Media Hooks](#-system--media-hooks) — [useAudio](#useaudio) · [useSpatialAudio](#usespatialaudio) · [useVideo](#usevideo) · [useMediaLibrary](#usemedialibrary) · [useCellular](#usecellular) · [useCapabilities](#usecapabilities) · [useDisplay](#usedisplay) · [useDevice](#usedevice) · [useNetwork](#usenetwork)
 
 ---
 
@@ -32,8 +32,8 @@ import {
   useHiLight, useUWB,
   useGemini, useGeminiNano, useAppFunctions, useGenAITasks, useNaturalLanguageAI, useSpeechAI, useSpeech, useVisionAI,
   useSensors, useCamera, useCameraExtensions, useTorch, useHaptics,
- useBiometrics, useSecurity, useBLE, useNFC, useRadios, useLocation,
- useAudio, useVideo, useMediaLibrary, useCellular, useCapabilities, useDisplay, useDevice, useNetwork,
+  useBiometrics, useSecurity, useBLE, useNFC, useRadios, useLocation,
+  useAudio, useSpatialAudio, useVideo, useMediaLibrary, useCellular, useCapabilities, useDisplay, useDevice, useNetwork,
 } from '@pixelkit-labs/sdk';
 ```
 
@@ -714,6 +714,25 @@ source: TelemetrySource; error: string | null;
 | `stopPlayback()` | none | `Promise<void>` | Pauses and seeks to 0. |
 | `seekPlayback(seconds)` | `seconds: number` — absolute, negatives clamped to 0 | `Promise<void>` | Jumps within the file. |
 | `setSilenceThresholdDbfs(dbfs)` | `dbfs: number` — speech/silence boundary, default `-45` | `void` | Tunes what counts as silence. |
+
+---
+
+### `useSpatialAudio`
+* **File Path**: `packages/sdk/src/hardware/useSpatialAudio.ts`
+* **Target Hardware**: Android `Spatializer` audio HAL subsystem & dynamic head tracking sensors (`feature:android.hardware.sensor.dynamic.head_tracker`). Verified on Pixel 11 Pro (`grizzly`): `mHasSpatializerEffect: true`, binaural/transaural support, `HEAD_TRACKING_MODE_RELATIVE_WORLD`.
+* **Description**: Live spatial audio routing availability, binaural spatialization state, immersive audio DSP level, and dynamic head tracking sensor detection (e.g. paired Pixel Buds Pro).
+* **Outputs**: [field table →](api/system-media.md#usespatialaudio)
+
+```typescript
+isSupported: boolean; isAvailable: boolean; isEnabled: boolean;
+hasHeadTracker: boolean; headTrackingMode: HeadTrackingMode;
+immersiveAudioLevel: number; hasDynamicHeadTrackerFeature: boolean;
+error: string | null; source: TelemetrySource;
+```
+
+| Function | Inputs | Returns | Description |
+| :--- | :--- | :--- | :--- |
+| `refresh()` | none | `SpatialAudioInfo \| null` | Manually re-reads spatial audio status from the system AudioManager. |
 
 ---
 
