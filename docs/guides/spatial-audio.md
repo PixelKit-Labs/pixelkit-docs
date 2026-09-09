@@ -61,22 +61,7 @@ export function SpatialAudioController() {
 
 ## Spatial Audio Pipeline
 
-```text
- ┌─────────────────────────┐
- │   Multichannel Audio    │ (5.1, 7.1, or Virtualized Stereo)
- └────────────┬────────────┘
-              │
-              ▼
- ┌─────────────────────────┐       ┌────────────────────────┐
- │ Android Spatializer HAL │ <──── │ Pixel Buds Pro 2 IMU   │
- │ (Tensor G6 Audio DSP)   │       │ Dynamic Head Tracking  │
- └────────────┬────────────┘       └────────────────────────┘
-              │ (HRTF Filters + Reverb Convolution)
-              ▼
- ┌─────────────────────────┐
- │ Binaural Stereo Stream  │
- └─────────────────────────┘
-```
+<!-- diagram: spatial-audio -->
 
 ### 1. Head-Related Transfer Function (HRTF)
 The Tensor G6 Audio DSP convolves spatialized audio streams with customized Head-Related Transfer Functions. Sound sources positioned behind or above the listener are shaped with pinna reflections and interaural time differences (ITD) and interaural level differences (ILD).

@@ -1,0 +1,109 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "How the assistant reaches your app",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "agent",
+      "label": "Agent"
+    },
+    {
+      "id": "system",
+      "label": "Android 17"
+    },
+    {
+      "id": "app",
+      "label": "Your app"
+    }
+  ],
+  "mainPath": [
+    "assistant",
+    "manager",
+    "service",
+    "handler"
+  ],
+  "nodes": [
+    {
+      "id": "assistant",
+      "lane": "agent",
+      "col": 0,
+      "type": "external",
+      "label": "Gemini assistant",
+      "sublabel": "or another AI agent",
+      "width": 124
+    },
+    {
+      "id": "manager",
+      "lane": "system",
+      "col": 1,
+      "type": "security",
+      "label": "AppFunctionManager",
+      "sublabel": "EXECUTE_APP_FUNCTIONS",
+      "width": 152
+    },
+    {
+      "id": "service",
+      "lane": "system",
+      "col": 2,
+      "type": "backend",
+      "label": "AppSearch registry",
+      "sublabel": "declared schemas",
+      "width": 136
+    },
+    {
+      "id": "handler",
+      "lane": "app",
+      "col": 3,
+      "type": "frontend",
+      "label": "useAppFunctions",
+      "sublabel": "your handlers",
+      "width": 132
+    }
+  ],
+  "edges": [
+    {
+      "from": "assistant",
+      "to": "manager",
+      "label": "discover"
+    },
+    {
+      "from": "manager",
+      "to": "service",
+      "variant": "emphasis"
+    },
+    {
+      "from": "service",
+      "to": "handler",
+      "label": "AppFunctionService IPC"
+    },
+    {
+      "from": "handler",
+      "to": "assistant",
+      "label": "result, within 5s",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Why registration is not just a manifest entry",
+      "items": [
+        "AppFunctions replaces App Actions and static Shortcuts: the assistant reads the schema at runtime rather than at install time",
+        "A function the assistant cannot find is a function you declared but never registered, which is what the functions array reports",
+        "Requires API 37, so useAppFunctions reports unsupported on anything older rather than failing at the call"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "What the system checks before your handler runs",
+      "items": [
+        "Only a system assistant package holding the EXECUTE_APP_FUNCTIONS signature permission can invoke a registered function",
+        "Arguments are validated against your declared JSON Schema before execution starts, so a handler never sees a malformed call",
+        "Invocations carry a 5 second deadline, so a slow handler returns a timeout to the assistant rather than blocking it"
+      ]
+    }
+  ]
+}

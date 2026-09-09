@@ -25,21 +25,7 @@ Synthetic UI mocks cannot verify genuine silicon registers, camera sensors, or A
 
 ARTEMIS operates on real Android devices via ADB, combining multimodal vision, accessibility hierarchy parsing, and autonomous test execution:
 
-```text
- ┌──────────────────────────────────────────────────────────────┐
- │                      ARTEMIS Agent Loop                      │
- │                                                              │
- │   ┌───────────────┐     Screenshot & UI Tree    ┌────────┐   │
- │   │ Physical Pixel│ ──────────────────────────► │ Vision │   │
- │   │ (or Emulator) │                             │ & LLM  │   │
- │   │               │ ◄────────────────────────── │ Model  │   │
- │   └───────────────┘       ADB Action Bursts     └────────┘   │
- │           │                                                  │
- │           ▼                                                  │
- │   adb logcat monitoring                                      │
- │   (assert zero FATAL crashes in @pixelkit-labs/*)            │
- └──────────────────────────────────────────────────────────────┘
-```
+<!-- diagram: artemis-loop -->
 
 ARTEMIS supports two execution engines depending on the verification goal:
 

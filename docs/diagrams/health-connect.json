@@ -1,0 +1,116 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Two sources behind one hook",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "store",
+      "label": "Stored records"
+    },
+    {
+      "id": "sdk",
+      "label": "PixelKit"
+    },
+    {
+      "id": "live",
+      "label": "Live sensors"
+    }
+  ],
+  "mainPath": [
+    "hook",
+    "hc",
+    "records"
+  ],
+  "nodes": [
+    {
+      "id": "hook",
+      "lane": "sdk",
+      "col": 0,
+      "type": "frontend",
+      "label": "useHealthConnect",
+      "sublabel": "one hook, two feeds",
+      "width": 140
+    },
+    {
+      "id": "hc",
+      "lane": "store",
+      "col": 1,
+      "type": "backend",
+      "label": "Health Connect",
+      "sublabel": "AndroidX client",
+      "width": 128
+    },
+    {
+      "id": "records",
+      "lane": "store",
+      "col": 2,
+      "type": "database",
+      "label": "Encrypted store",
+      "sublabel": "on-device SQLite",
+      "width": 132
+    },
+    {
+      "id": "hal",
+      "lane": "live",
+      "col": 1,
+      "type": "security",
+      "label": "SensorManager",
+      "sublabel": "hardware interrupts",
+      "width": 136
+    },
+    {
+      "id": "sensors",
+      "lane": "live",
+      "col": 2,
+      "type": "database",
+      "label": "Step counter, PPG",
+      "sublabel": "TYPE_STEP_COUNTER",
+      "width": 148
+    }
+  ],
+  "edges": [
+    {
+      "from": "hook",
+      "to": "hc",
+      "label": "history"
+    },
+    {
+      "from": "hc",
+      "to": "records",
+      "variant": "emphasis"
+    },
+    {
+      "from": "hook",
+      "to": "hal",
+      "label": "live readings"
+    },
+    {
+      "from": "hal",
+      "to": "sensors",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Why the hook reads from both",
+      "items": [
+        "Health Connect holds aggregated history written by any app, so it answers what the day totalled, not what the sensor says now",
+        "The HAL feed is zero latency and unaggregated, which is the only way to show a step or heart rate reading as it happens",
+        "hasStepCounter and hasHeartRateSensor report the live side separately, because a device can have the store without the sensor"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "What the user controls",
+      "items": [
+        "Health data sits behind individual permissions such as READ_STEPS and READ_HEART_RATE, not one blanket grant",
+        "The system privacy dashboard lets a user audit and revoke access per app, so a granted permission is not permanent",
+        "sdkStatus reports whether Health Connect is present and usable, so an unavailable store is a state rather than a thrown error"
+      ]
+    }
+  ]
+}

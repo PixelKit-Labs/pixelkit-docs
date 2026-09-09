@@ -1,0 +1,108 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "The ARTEMIS agent loop",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "device",
+      "label": "Device"
+    },
+    {
+      "id": "agent",
+      "label": "Agent"
+    },
+    {
+      "id": "assert",
+      "label": "Assertion"
+    }
+  ],
+  "mainPath": [
+    "phone",
+    "model",
+    "action"
+  ],
+  "nodes": [
+    {
+      "id": "phone",
+      "lane": "device",
+      "col": 0,
+      "type": "frontend",
+      "label": "Pixel 11 Pro",
+      "sublabel": "or an emulator",
+      "width": 128
+    },
+    {
+      "id": "model",
+      "lane": "agent",
+      "col": 1,
+      "type": "backend",
+      "label": "Vision and LLM",
+      "sublabel": "screenshot and UI tree",
+      "width": 156
+    },
+    {
+      "id": "action",
+      "lane": "agent",
+      "col": 2,
+      "type": "backend",
+      "label": "ADB action burst",
+      "sublabel": "taps and gestures",
+      "width": 144
+    },
+    {
+      "id": "logcat",
+      "lane": "assert",
+      "col": 1,
+      "type": "security",
+      "label": "logcat monitor",
+      "sublabel": "zero FATAL crashes",
+      "width": 148
+    }
+  ],
+  "edges": [
+    {
+      "from": "phone",
+      "to": "model",
+      "label": "observe"
+    },
+    {
+      "from": "model",
+      "to": "action",
+      "variant": "emphasis"
+    },
+    {
+      "from": "action",
+      "to": "phone",
+      "label": "act, then observe again",
+      "variant": "dashed"
+    },
+    {
+      "from": "phone",
+      "to": "logcat",
+      "label": "stream"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Why the loop reads two things",
+      "items": [
+        "The screenshot carries what a person would see; the accessibility tree carries what is actually there, including the ids a test can target",
+        "Reading both is what lets a recipe be written against a real screen rather than against a guess about one",
+        "The loop runs on a physical device over ADB, so what it verifies is the hardware path, not a simulator's approximation of it"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Two engines, chosen by the goal",
+      "items": [
+        "Flash is a reactive loop at roughly 3 to 5 seconds per step, for smoke tests and button and tab checks",
+        "Pro adds a Planner, Operator and Checker with checkpoint audits, for multi-branch flows and crash investigation",
+        "Either way the run asserts zero FATAL crashes in the PixelKit packages, so a silent native failure fails the test"
+      ]
+    }
+  ]
+}

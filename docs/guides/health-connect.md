@@ -54,18 +54,7 @@ export function FitnessDashboard() {
 
 ## Dual Architecture: Health Connect + Direct Hardware Sensors
 
-```text
- ┌────────────────────────────────────────────────────────┐
- │                 PixelKit useHealthConnect              │
- └──────────────┬──────────────────────────┬──────────────┘
-                │                          │
-                ▼                          ▼
- ┌─────────────────────────────┐ ┌─────────────────────────────┐
- │ AndroidX Health Connect API │ │ Android SensorManager HAL   │
- │ Encrypted On-Device SQLite  │ │ Direct Hardware Interrupts  │
- │ (Historical Step Aggregates)│ │ (Sensor.TYPE_STEP_COUNTER)  │
- └─────────────────────────────┘ └─────────────────────────────┘
-```
+<!-- diagram: health-connect -->
 
 ---
 

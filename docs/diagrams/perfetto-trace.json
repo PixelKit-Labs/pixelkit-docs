@@ -1,0 +1,103 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Where a trace marker ends up",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "app",
+      "label": "Your app"
+    },
+    {
+      "id": "kernel",
+      "label": "Kernel"
+    },
+    {
+      "id": "perfetto",
+      "label": "Perfetto"
+    }
+  ],
+  "mainPath": [
+    "marker",
+    "ftrace",
+    "daemon",
+    "file"
+  ],
+  "nodes": [
+    {
+      "id": "marker",
+      "lane": "app",
+      "col": 0,
+      "type": "frontend",
+      "label": "usePerfetto",
+      "sublabel": "addTraceMarker()",
+      "width": 128
+    },
+    {
+      "id": "ftrace",
+      "lane": "kernel",
+      "col": 1,
+      "type": "security",
+      "label": "Ftrace ring buffer",
+      "sublabel": "sched, freq, markers",
+      "width": 148
+    },
+    {
+      "id": "daemon",
+      "lane": "perfetto",
+      "col": 2,
+      "type": "backend",
+      "label": "traced",
+      "sublabel": "with traced_probes",
+      "width": 128
+    },
+    {
+      "id": "file",
+      "lane": "perfetto",
+      "col": 3,
+      "type": "database",
+      "label": "Trace file",
+      "sublabel": "perfetto-trace",
+      "width": 120
+    }
+  ],
+  "edges": [
+    {
+      "from": "marker",
+      "to": "ftrace",
+      "label": "os.Trace.beginSection"
+    },
+    {
+      "from": "ftrace",
+      "to": "daemon",
+      "variant": "emphasis"
+    },
+    {
+      "from": "daemon",
+      "to": "file",
+      "label": "pull with adb"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Why a marker has to leave JavaScript",
+      "items": [
+        "The marker is written into the kernel ring buffer, so it lands on the same timeline as scheduling and clock events rather than in a separate log",
+        "That is what lets a dropped frame be read against the CPU cluster that was running at the time, instead of guessing",
+        "The Tensor G6 TPU and GPU emit their own hardware trace events into the same buffer"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "What tracing costs",
+      "items": [
+        "sched costs under 0.5% and freq under 0.1%, so both can stay on for a normal profiling run",
+        "binder is the expensive one at roughly 1%, so enable it when IPC is the thing under investigation",
+        "The buffer is fixed size and overwrites, so a long capture keeps the end of the run rather than the start"
+      ]
+    }
+  ]
+}

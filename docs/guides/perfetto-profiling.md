@@ -63,27 +63,7 @@ export function TraceRecorder() {
 
 ## Hardware Trace Architecture
 
-```text
- ┌────────────────────────────────────────────────────────┐
- │                   PixelKit Application                 │
- │         usePerfetto.addTraceMarker('RenderFrame')      │
- └──────────────────────────┬─────────────────────────────┘
-                            │ (android.os.Trace.beginSection)
-                            ▼
- ┌────────────────────────────────────────────────────────┐
- │                Linux Kernel Ftrace Buffer              │
- │  [ sched_switch ] [ cpu_frequency ] [ app_markers ]   │
- └──────────────────────────┬─────────────────────────────┘
-                            │
-                            ▼
- ┌────────────────────────────────────────────────────────┐
- │           Perfetto Daemon (traced / traced_probes)     │
- │            Tensor G6 TPU / GPU Hardware Tracing        │
- └──────────────────────────┬─────────────────────────────┘
-                            │
-                            ▼
-               /data/local/tmp/trace_*.perfetto-trace
-```
+<!-- diagram: perfetto-trace -->
 
 ---
 

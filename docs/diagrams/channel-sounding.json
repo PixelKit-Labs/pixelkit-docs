@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "One ranging exchange",
+    "viewBox": [
+      860,
+      560
+    ],
+    "quality_profile": "showcase",
+    "column_fit": "spread"
+  },
+  "participants": [
+    {
+      "id": "hook",
+      "type": "frontend",
+      "label": "useChannelSounding",
+      "sublabel": "your app"
+    },
+    {
+      "id": "radio",
+      "type": "backend",
+      "label": "Tensor G6 radio",
+      "sublabel": "baseband and HAL"
+    },
+    {
+      "id": "peer",
+      "type": "external",
+      "label": "BLE 6.0 accessory",
+      "sublabel": "reflector"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 288,
+      "label": "Negotiate"
+    },
+    {
+      "from": 304,
+      "to": 400,
+      "label": "Step across the band"
+    },
+    {
+      "from": 416,
+      "to": 500,
+      "label": "Resolve"
+    }
+  ],
+  "messages": [
+    {
+      "from": "hook",
+      "to": "radio",
+      "y": 180,
+      "label": "startRanging(mac)",
+      "variant": "emphasis"
+    },
+    {
+      "from": "radio",
+      "to": "peer",
+      "y": 222,
+      "label": "capability exchange",
+      "variant": "emphasis"
+    },
+    {
+      "from": "peer",
+      "to": "radio",
+      "y": 264,
+      "label": "configuration handshake",
+      "variant": "return"
+    },
+    {
+      "from": "radio",
+      "to": "peer",
+      "y": 326,
+      "label": "tones, Ch 0 to Ch 71",
+      "variant": "emphasis"
+    },
+    {
+      "from": "peer",
+      "to": "radio",
+      "y": 368,
+      "label": "phase-shifted response",
+      "variant": "return"
+    },
+    {
+      "from": "radio",
+      "to": "hook",
+      "y": 452,
+      "label": "distance, confidence, mode",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "radio",
+      "from": 174,
+      "to": 470,
+      "type": "backend"
+    },
+    {
+      "participant": "peer",
+      "from": 216,
+      "to": 384,
+      "type": "external"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Where the distance comes from",
+      "items": [
+        "Phase-based ranging reads the phase rotation across scheduled carrier frequencies, resolving to ±1 to 3 cm in line of sight",
+        "When multipath obscures the carrier phase the radio supplements it with round-trip timing, which is why rangingMode reports pbr, rtt or hybrid",
+        "A multipath impulse-response filter runs before a target is reported, so confidence is a measured value rather than a constant"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Why this resists a relay attack",
+      "items": [
+        "Every subevent carries cryptographic nonce sequencing, so a recorded exchange cannot be replayed",
+        "A relayed signal cannot preserve phase-path integrity, which is what distinguishes this from classic BLE keyless entry",
+        "securityLevel reports whether the exchange ran in high_security mode rather than assuming it did"
+      ]
+    }
+  ]
+}

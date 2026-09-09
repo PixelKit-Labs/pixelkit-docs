@@ -1,0 +1,98 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Multichannel in, binaural out",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "head",
+      "label": "Head tracking"
+    },
+    {
+      "id": "audio",
+      "label": "Audio path"
+    }
+  ],
+  "mainPath": [
+    "source",
+    "spatializer",
+    "binaural"
+  ],
+  "nodes": [
+    {
+      "id": "source",
+      "lane": "audio",
+      "col": 0,
+      "type": "frontend",
+      "label": "Multichannel audio",
+      "sublabel": "5.1, 7.1 or stereo",
+      "width": 148
+    },
+    {
+      "id": "spatializer",
+      "lane": "audio",
+      "col": 1,
+      "type": "backend",
+      "label": "Spatializer",
+      "sublabel": "Tensor G6 audio DSP",
+      "width": 148
+    },
+    {
+      "id": "binaural",
+      "lane": "audio",
+      "col": 2,
+      "type": "database",
+      "label": "Binaural stereo",
+      "sublabel": "to the headphones",
+      "width": 140
+    },
+    {
+      "id": "imu",
+      "lane": "head",
+      "col": 0,
+      "type": "external",
+      "label": "Pixel Buds IMU",
+      "sublabel": "quaternions at 100 Hz",
+      "width": 152
+    }
+  ],
+  "edges": [
+    {
+      "from": "source",
+      "to": "spatializer",
+      "variant": "emphasis"
+    },
+    {
+      "from": "spatializer",
+      "to": "binaural",
+      "label": "HRTF and reverb"
+    },
+    {
+      "from": "imu",
+      "to": "spatializer",
+      "label": "head pose"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "What the DSP is actually doing",
+      "items": [
+        "Each stream is convolved with a head-related transfer function, so a source behind you is shaped by pinna reflections rather than just panned",
+        "Interaural time and level differences carry the rest of the position, which is why the output is two channels and not a downmix",
+        "This runs on the Tensor G6 audio DSP rather than the CPU, so it does not compete with your app for frame budget"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Why head tracking needs its own feed",
+      "items": [
+        "The earbud IMU streams pitch, yaw and roll at 100 Hz over LE Audio or AAC, independently of the audio stream itself",
+        "The Spatializer rotates the virtual speaker array opposite to your head, which is what keeps the speakers fixed in the room",
+        "Without a tracking-capable headset the pipeline still spatialises, it just stops compensating for head movement"
+      ]
+    }
+  ]
+}

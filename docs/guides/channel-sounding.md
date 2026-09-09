@@ -50,26 +50,7 @@ export function ProximityLocator({ beaconMac }: { beaconMac: string }) {
 
 Bluetooth Channel Sounding operates by coordinating tone exchanges between two BLE devices across multiple radio frequency channels (typically up to 72 channels across the 2.4 GHz ISM band).
 
-```text
- ┌────────────────────────┐                   ┌────────────────────────┐
- │ Pixel 11 Pro (Initiator)│                  │    BLE 6.0 Accessory   │
- │ Tensor G6 + Radio HAL  │                   │      (Reflector)       │
- └───────────┬────────────┘                   └───────────┬────────────┘
-             │                                            │
-             │─────── 1. CS Capability Exchange ─────────>│
-             │<────── CS Configuration Handshake ─────────│
-             │                                            │
-   [ Multi-Channel Frequency Stepping: Ch 0 → Ch 71 ]      │
-             │                                            │
-             │─────── 2. CS Tone Transmission ───────────>│
-             │<────── 3. Phase Shifted Response ──────────│
-             │                                            │
-  [ Phase Difference Evaluation (Δθ = 4π * Δf * d / c) ]   │
-  [ Multipath Channel Impulse Response (CIR) Filter ]     │
-             │                                            │
-             │<====== Centimeter-Accurate Distance ======>│
-             ▼                                            ▼
-```
+<!-- diagram: channel-sounding -->
 
 ### 1. Phase-Based Ranging (PBR)
 In PBR mode, the initiator and reflector transmit unmodulated carrier tones across scheduled frequencies. By measuring the phase rotation across different carrier frequencies, the Tensor G6 baseband resolves distance using the phase-slope relationship:

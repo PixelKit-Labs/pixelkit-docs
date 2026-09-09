@@ -46,23 +46,7 @@ export function AssistantFunctionsList() {
 
 ## AppFunctions Architecture
 
-```text
- ┌────────────────────────────────────────────────────────┐
- │           System Gemini Assistant / AI Agent           │
- └──────────────────────────┬─────────────────────────────┘
-                            │ (Query capabilities via IAppFunctionManager)
-                            ▼
- ┌────────────────────────────────────────────────────────┐
- │           Android 17 AppSearch / AppFunctionManager     │
- │            Capability Registry & Permissions            │
- └──────────────────────────┬─────────────────────────────┘
-                            │ (AppFunctionService IPC)
-                            ▼
- ┌────────────────────────────────────────────────────────┐
- │               PixelKit useAppFunctions                 │
- │            Registered Schemas & Handlers               │
- └────────────────────────────────────────────────────────┘
-```
+<!-- diagram: app-functions -->
 
 ---
 
