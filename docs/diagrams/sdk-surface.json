@@ -13,7 +13,7 @@
   "mainPath": ["rn", "sdk", "tpu"],
   "nodes": [
     { "id": "rn", "lane": "runtime", "col": 0, "type": "frontend", "label": "React Native", "sublabel": "Expo, Hermes bytecode", "width": 132 },
-    { "id": "sdk", "lane": "sdk", "col": 0, "type": "backend", "label": "@pixelkit-labs/sdk", "sublabel": "32 hooks from one barrel", "tag": "src/index.ts", "width": 146 },
+    { "id": "sdk", "lane": "sdk", "col": 0, "type": "backend", "label": "@pixelkit-labs/sdk", "sublabel": "39 hooks from one barrel", "tag": "src/index.ts", "width": 146 },
     { "id": "cpu", "lane": "silicon", "col": 0, "type": "database", "label": "CPU and GPU", "sublabel": "Tensor G6, real cpufreq", "width": 134 },
     { "id": "tpu", "lane": "silicon", "col": 1, "type": "cloud", "label": "Tensor TPU", "sublabel": "AICore, Nano, ML Kit", "width": 128 },
     { "id": "pro", "lane": "silicon", "col": 2, "type": "messagebus", "label": "Pro exclusives", "sublabel": "HiLight array, UWB", "width": 130 },
@@ -42,7 +42,7 @@
       "items": [
         "CPU frequencies are read per core from cpufreq, not estimated from a model name",
         "The TPU is only reachable through AICore, so useTPU reports what AICore exposes rather than claiming the chip directly",
-        "13 of the 32 hooks need no Kotlin at all and work on any Android device"
+        "13 of the 39 hooks need no Kotlin at all and work on any Android device"
       ]
     }
   ]

@@ -41,7 +41,7 @@ Documentation for the **PixelKit SDK**: the silicon, sensors, radios and on-devi
 
 
 ### Consolidated Single-File Manuals
-* **[HARDWARE_API.md](./HARDWARE_API.md)**: All 32 hooks in one document, each with its inputs, outputs and function contracts.
+* **[HARDWARE_API.md](./HARDWARE_API.md)**: All 39 hooks in one document, each with its inputs, outputs and function contracts.
 * **[AI_PRIMER.md](./AI_PRIMER.md)**: Complete AI agent operational manual in a single document.
 
 ---

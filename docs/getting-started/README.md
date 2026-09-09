@@ -24,9 +24,9 @@ only contains the native code Expo shipped.
 
 **Android only.** Both Kotlin modules declare `platforms: ["android"]`.
 
-**It degrades rather than fails on other hardware.** 13 of the 32 hooks are pure Expo and
+**It degrades rather than fails on other hardware.** 13 of the 39 hooks are pure Expo and
 JavaScript — camera, audio, sensors, location, biometrics, the keystore, cloud Gemini — and work on
-any Android device. The other 19 report `unsupported` where the silicon is not there.
+any Android device. The other 26 report `unsupported` where the silicon is not there.
 
 If readings come back empty and you are not sure why, `npx @pixelkit-labs/cli doctor` checks adb,
 the device, the development build, the installed packages and AICore, and tells you which case you

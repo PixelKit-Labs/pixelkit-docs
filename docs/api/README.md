@@ -10,13 +10,13 @@ on the hook's declared type.
 
 | Page | Hooks |
 | :--- | :--- |
-| [Silicon and compute](./silicon-compute.md) | `useCPU`, `useGPU`, `useTPU`, `useMemory`, `useADPF` |
-| [Neural and AI](./neural-ai.md) | `useGemini`, `useGeminiNano`, `useGenAITasks`, `useVisionAI`, `useNaturalLanguageAI`, `useSpeechAI`, `useSpeech` |
-| [Sensors and actuators](./sensors-actuators.md) | `useSensors`, `useCamera`, `useVideo`, `useMediaLibrary`, `useTorch`, `useHaptics` |
-| [Radios and security](./radios-security.md) | `useBLE`, `useNFC`, `useUWB`, `useRadios`, `useBiometrics`, `useSecurity` |
-| [System and media](./system-media.md) | `useAudio`, `useDisplay`, `useDevice`, `useNetwork`, `useCellular` |
+| [Silicon and compute](./silicon-compute.md) | `useCPU`, `useGPU`, `useTPU`, `useMemory`, `useADPF`, `usePerfetto` |
+| [Neural and AI](./neural-ai.md) | `useGemini`, `useGeminiNano`, `useAppFunctions`, `useGenAITasks`, `useVisionAI`, `useNaturalLanguageAI`, `useSpeechAI`, `useSpeech` |
+| [Sensors and actuators](./sensors-actuators.md) | `useSensors`, `useCamera`, `useCameraExtensions`, `useHealthConnect`, `useVideo`, `useMediaLibrary`, `useTorch`, `useHaptics` |
+| [Radios and security](./radios-security.md) | `useBLE`, `useChannelSounding`, `useNFC`, `useUWB`, `useRadios`, `useBiometrics`, `useSecurity`, `usePlayIntegrity` |
+| [System and media](./system-media.md) | `useAudio`, `useSpatialAudio`, `useCapabilities`, `useDisplay`, `useDevice`, `useNetwork`, `useCellular` |
 | [Pixel Pro exclusives](./pro-exclusives.md) | `useHiLight`, `useUWB` |
-| [Complete hardware API](../HARDWARE_API.md) | All 32 in one page |
+| [Complete hardware API](../HARDWARE_API.md) | All 39 in one page |
 
 ## Reading a hook's `source`
 
