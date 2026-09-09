@@ -1,0 +1,85 @@
+{
+  "id": "useAppFunctions",
+  "name": "useAppFunctions",
+  "category": "ai",
+  "chipBadge": "Android 17 AppFunctions",
+  "summary": "Exposes on-device actions and hardware capabilities to system AI and Gemini Assistant.",
+  "plain": "Bridges Android 16/17 AppFunctions (API 36+). Allows Gemini and local agents to discover and execute in-app functions, query Tensor silicon thermals, and register custom agentic tool handlers.",
+  "description": "Backed by android.app.appfunctions.IAppFunctionManager (system service 133 on Pixel 11 Pro). Exposes built-in hardware actions ('check_phone_thermals', 'purge_memory_cache', 'get_device_silicon_info') and enables developers to register custom AppFunction schemas and handlers dynamically. Reports source: 'hardware' when backed by the real system service.",
+  "signature": "useAppFunctions(): AppFunctionsState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether AppFunctions subsystem is supported on this Android OS version (API 36+ / Android 16 QPR & Android 17)."
+    },
+    {
+      "name": "serviceFound",
+      "type": "boolean",
+      "desc": "Whether the android.app.appfunctions.IAppFunctionManager system service is active and discoverable on device."
+    },
+    {
+      "name": "apiLevel",
+      "type": "number | null",
+      "desc": "Android platform API level reported by the device (37 on Pixel 11 Pro)."
+    },
+    {
+      "name": "serviceName",
+      "type": "string | null",
+      "desc": "System service name ('app_function')."
+    },
+    {
+      "name": "functions",
+      "type": "AppFunctionSchema[]",
+      "desc": "All registered AppFunction schemas available to Gemini, agents, or local invocation."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Latest execution or system service error."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Provenance of AppFunctions state. Real hardware with active app_function service reports 'hardware'."
+    },
+    {
+      "name": "refresh",
+      "type": "() => void",
+      "desc": "Manually re-checks system service status."
+    },
+    {
+      "name": "executeFunction",
+      "type": "(functionId: string, params?: Record<string, any>) => Promise<AppFunctionExecutionResult>",
+      "desc": "Executes a registered AppFunction or built-in hardware action."
+    },
+    {
+      "name": "registerFunction",
+      "type": "(schema: AppFunctionSchema, handler: (params: Record<string, any>) => Promise<any> | any) => void",
+      "desc": "Registers a custom AppFunction handler accessible to on-device agents."
+    },
+    {
+      "name": "unregisterFunction",
+      "type": "(functionId: string) => boolean",
+      "desc": "Unregisters an AppFunction handler."
+    }
+  ],
+  "actions": [
+    {
+      "name": "executeFunction(functionId, params?)",
+      "type": "(functionId: string, params?: Record<string, any>) => Promise<AppFunctionExecutionResult>",
+      "desc": "Executes a registered AppFunction or built-in hardware action."
+    },
+    {
+      "name": "registerFunction(schema, handler)",
+      "type": "(schema: AppFunctionSchema, handler: Function) => void",
+      "desc": "Registers a custom AppFunction handler accessible to on-device agents."
+    },
+    {
+      "name": "unregisterFunction(functionId)",
+      "type": "(functionId: string) => boolean",
+      "desc": "Unregisters an AppFunction handler."
+    }
+  ]
+}

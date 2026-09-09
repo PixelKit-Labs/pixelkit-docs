@@ -12,7 +12,7 @@ This document is the consolidated reference for every hook in the PixelKit SDK (
 1. [Architectural Overview](#-architectural-overview)
 2. [Silicon & Compute Hooks](#-silicon--compute-hooks) — [useCPU](#usecpu) · [useGPU](#usegpu) · [useTPU](#usetpu) · [useMemory](#usememory) · [useADPF](#useadpf)
 3. [Pixel Pro Exclusive Silicon](#-pixel-pro-exclusive-silicon) — [useHiLight](#usehilight) · [useUWB](#useuwb)
-4. [Neural & Intelligence Hooks](#-neural--intelligence-hooks) — [useGemini](#usegemini) · [useGeminiNano](#usegemininano) · [useGenAITasks](#usegenaitasks) · [useNaturalLanguageAI](#usenaturallanguageai) · [useSpeechAI](#usespeechai) · [useSpeech](#usespeech) · [useVisionAI](#usevisionai)
+4. [Neural & Intelligence Hooks](#-neural--intelligence-hooks) — [useGemini](#usegemini) · [useGeminiNano](#usegemininano) · [useAppFunctions](#useappfunctions) · [useGenAITasks](#usegenaitasks) · [useNaturalLanguageAI](#usenaturallanguageai) · [useSpeechAI](#usespeechai) · [useSpeech](#usespeech) · [useVisionAI](#usevisionai)
 5. [Sensors & Physical Actuators](#-sensors--physical-actuators) — [useSensors](#usesensors) · [useCamera](#usecamera) · [useCameraExtensions](#usecameraextensions) · [useTorch](#usetorch) · [useHaptics](#usehaptics)
 6. [Radios & Hardware Security](#-radios--hardware-security) — [useBiometrics](#usebiometrics) · [useSecurity](#usesecurity) · [useBLE](#useble) · [useNFC](#usenfc) · [useRadios](#useradios) · [useLocation](#uselocation)
 7. [System & Media Hooks](#-system--media-hooks) — [useAudio](#useaudio) · [useVideo](#usevideo) · [useMediaLibrary](#usemedialibrary) · [useCellular](#usecellular) · [useCapabilities](#usecapabilities) · [useDisplay](#usedisplay) · [useDevice](#usedevice) · [useNetwork](#usenetwork)
@@ -28,10 +28,10 @@ PixelKit exposes Pixel 11 Pro hardware to React Native through Expo modules and 
 Every hook is exported from `./src`:
 ```typescript
 import {
- useCPU, useGPU, useTPU, useMemory, useADPF,
- useHiLight, useUWB,
- useGemini, useGeminiNano, useGenAITasks, useNaturalLanguageAI, useSpeechAI, useSpeech, useVisionAI,
- useSensors, useCamera, useCameraExtensions, useTorch, useHaptics,
+  useCPU, useGPU, useTPU, useMemory, useADPF,
+  useHiLight, useUWB,
+  useGemini, useGeminiNano, useAppFunctions, useGenAITasks, useNaturalLanguageAI, useSpeechAI, useSpeech, useVisionAI,
+  useSensors, useCamera, useCameraExtensions, useTorch, useHaptics,
  useBiometrics, useSecurity, useBLE, useNFC, useRadios, useLocation,
  useAudio, useVideo, useMediaLibrary, useCellular, useCapabilities, useDisplay, useDevice, useNetwork,
 } from '@pixelkit-labs/sdk';
@@ -400,6 +400,27 @@ error: string | null; source: TelemetrySource;
 | `detectPose(imageInput)` | `imageInput: string` | `Promise<PoseDetectionResult \| null>` | 33 skeletal landmarks. |
 | `segmentSelfie(imageInput)` / `segmentSubject(imageInput)` | `imageInput: string` | `Promise<SelfieSegmentationResult \| null>` / `Promise<SubjectSegmentationResult \| null>` | Foreground and subject masks. |
 | `recognizeDigitalInk(strokes, languageTag?)` | `strokes: Array<Array<{ x, y, t? }>>` — one array per stroke. `languageTag?: string` — e.g. `'en-US'`. | `Promise<DigitalInkResult \| null>` | Handwriting recognition, best candidate first. |
+
+---
+
+### `useAppFunctions`
+* **File Path**: `packages/sdk/src/hardware/useAppFunctions.ts`
+* **Target Architecture**: Android 16/17 (API 36+) AppFunctions subsystem. Verified on Pixel 11 Pro (`grizzly`): bound to `android.app.appfunctions.IAppFunctionManager` (system service 133).
+* **Description**: Exposes on-device actions and hardware capabilities directly to Google Gemini Assistant and local coding agents. Includes built-in hardware actions (`check_phone_thermals`, `purge_memory_cache`, `get_device_silicon_info`) and supports dynamic registration of custom AppFunction schemas and handlers.
+* **Outputs**: [field table →](api/neural-ai.md#useappfunctions)
+
+```typescript
+isSupported: boolean; serviceFound: boolean; apiLevel: number | null;
+serviceName: string | null; functions: AppFunctionSchema[]; error: string | null;
+source: TelemetrySource;
+```
+
+| Function | Inputs | Returns | Description |
+| :--- | :--- | :--- | :--- |
+| `executeFunction(functionId, params?)` | `functionId: string`. `params?: Record<string, any>`. | `Promise<AppFunctionExecutionResult>` | Executes a registered AppFunction or hardware action and measures execution time. |
+| `registerFunction(schema, handler)` | `schema: AppFunctionSchema`. `handler: (params: Record<string, any>) => Promise<any> \| any`. | `void` | Registers a custom AppFunction handler accessible to on-device agents and Gemini. |
+| `unregisterFunction(functionId)` | `functionId: string` | `boolean` | Unregisters an AppFunction handler. |
+| `refresh()` | none | `void` | Manually re-checks system service status. |
 
 ---
 
