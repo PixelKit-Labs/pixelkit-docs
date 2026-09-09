@@ -14,7 +14,7 @@ This document is the consolidated reference for every hook in the PixelKit SDK (
 3. [Pixel Pro Exclusive Silicon](#-pixel-pro-exclusive-silicon) — [useHiLight](#usehilight) · [useUWB](#useuwb)
 4. [Neural & Intelligence Hooks](#-neural--intelligence-hooks) — [useGemini](#usegemini) · [useGeminiNano](#usegemininano) · [useAppFunctions](#useappfunctions) · [useGenAITasks](#usegenaitasks) · [useNaturalLanguageAI](#usenaturallanguageai) · [useSpeechAI](#usespeechai) · [useSpeech](#usespeech) · [useVisionAI](#usevisionai)
 5. [Sensors & Physical Actuators](#-sensors--physical-actuators) — [useSensors](#usesensors) · [useCamera](#usecamera) · [useCameraExtensions](#usecameraextensions) · [useTorch](#usetorch) · [useHaptics](#usehaptics)
-6. [Radios & Hardware Security](#-radios--hardware-security) — [useBiometrics](#usebiometrics) · [useSecurity](#usesecurity) · [useBLE](#useble) · [useChannelSounding](#usechannelsounding) · [useNFC](#usenfc) · [useRadios](#useradios) · [useLocation](#uselocation)
+6. [Radios & Hardware Security](#-radios--hardware-security) — [useBiometrics](#usebiometrics) · [useSecurity](#usesecurity) · [usePlayIntegrity](#useplayintegrity) · [useBLE](#useble) · [useChannelSounding](#usechannelsounding) · [useNFC](#usenfc) · [useRadios](#useradios) · [useLocation](#uselocation)
 7. [System & Media Hooks](#-system--media-hooks) — [useAudio](#useaudio) · [useSpatialAudio](#usespatialaudio) · [useVideo](#usevideo) · [useMediaLibrary](#usemedialibrary) · [useCellular](#usecellular) · [useCapabilities](#usecapabilities) · [useDisplay](#usedisplay) · [useDevice](#usedevice) · [useNetwork](#usenetwork)
 
 ---
@@ -32,7 +32,7 @@ import {
   useHiLight, useUWB,
   useGemini, useGeminiNano, useAppFunctions, useGenAITasks, useNaturalLanguageAI, useSpeechAI, useSpeech, useVisionAI,
   useSensors, useCamera, useCameraExtensions, useTorch, useHaptics,
-  useBiometrics, useSecurity, useBLE, useChannelSounding, useNFC, useRadios, useLocation,
+  useBiometrics, useSecurity, usePlayIntegrity, useBLE, useChannelSounding, useNFC, useRadios, useLocation,
   useAudio, useSpatialAudio, useVideo, useMediaLibrary, useCellular, useCapabilities, useDisplay, useDevice, useNetwork,
 } from '@pixelkit-labs/sdk';
 ```
@@ -588,6 +588,29 @@ error: string | null; lastOperation: string | null; source: TelemetrySource;
 | `saveSecureItem(key, value)` | `key: string` — storage key. `value: string` — the secret; never logged. | `Promise<boolean>` — `false` with `error` set on failure | Encrypts and stores it. |
 | `getSecureItem(key)` | `key: string` | `Promise<string \| null>` — `null` when absent or the read failed | Decrypts and returns the value. |
 | `deleteSecureItem(key)` | `key: string` | `Promise<boolean>` | Removes the value. |
+
+---
+
+### `usePlayIntegrity`
+* **File Path**: `packages/sdk/src/hardware/usePlayIntegrity.ts`
+* **Target Hardware**: Titan M2 Hardware Security Module (`android.hardware.strongbox_keystore` KeyMint 400, `android.hardware.hardware_keystore` 500), `android.hardware.keystore.app_attest_key`, and Google Play Integrity.
+* **Description**: Hardware-backed cryptographic key attestation and Play Integrity verdicts. Generates EC keys within the Titan M2 StrongBox enclave, extracts the signed X.509 certificate chain, and evaluates device integrity tiers (`MEETS_STRONG_INTEGRITY`).
+* **Outputs**: [field table →](api/radios-security.md#useplayintegrity)
+
+```typescript
+isSupported: boolean; hasStrongBox: boolean; strongBoxVersion: number | null;
+hardwareKeystoreVersion: number | null; hasAppAttestKey: boolean;
+securityModelCompatible: boolean; playServicesAvailable: boolean;
+playServicesVersion: string | null;
+deviceIntegrity: 'MEETS_STRONG_INTEGRITY' | 'MEETS_DEVICE_INTEGRITY' | 'MEETS_BASIC_INTEGRITY' | 'UNVERIFIED';
+isAttesting: boolean; lastAttestation: HardwareAttestationResult | null;
+error: string | null; source: TelemetrySource;
+```
+
+| Function | Inputs | Returns | Description |
+| :--- | :--- | :--- | :--- |
+| `requestAttestation(challenge?)` | `challenge?: string` — cryptographic nonce | `Promise<HardwareAttestationResult \| null>` | Generates a key in Titan M2 StrongBox and returns signed certificate attestation. |
+| `refresh()` | none | `PlayIntegrityInfo \| null` | Re-probes hardware security features and Play Integrity state. |
 
 ---
 
