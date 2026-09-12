@@ -1,5 +1,7 @@
 # Getting started
 
+> **Installing PixelKit, and the three constraints that catch people out.**
+
 ```bash
 npx expo install @pixelkit-labs/sdk @pixelkit-labs/native
 ```

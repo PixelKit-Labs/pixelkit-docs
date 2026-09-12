@@ -194,6 +194,51 @@ if (existsSync(PRIMER)) {
   }
 }
 
+/**
+ * Every page needs a description, because every link to it shows one as a tooltip.
+ *
+ * A hook page gets its `summary`. Everything else falls back to the page's own opening line, which
+ * only reads well when that line is a tagline. `docs/getting-started/README.md` opened straight
+ * into an install command, so the first prose it had was a sentence about ML Kit being a separate
+ * install — and that became the tooltip on every "Getting started" link in the sidebar.
+ *
+ * So what is checked is not "has a tagline" — a plain opening paragraph describes a page perfectly
+ * well — but that the page *opens with prose at all*. A page whose first block after the title is a
+ * code fence, a table or raw HTML has no opening line to take, and whatever is found instead is a
+ * sentence written to follow something the reader of a tooltip cannot see.
+ */
+const docsRoot = path.join(ROOT, 'docs');
+const describedByHook = new Set(hooks.map((h) => `${h.name.toLowerCase()}.md`));
+
+const walkDocs = (dir) => {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      walkDocs(full);
+      continue;
+    }
+    if (!entry.name.endsWith('.md')) continue;
+    if (describedByHook.has(entry.name.toLowerCase())) continue;
+
+    const body = readFileSync(full, 'utf8').replace(/^#[^\r\n]*\r?\n/, '');
+    const firstBlock = body
+      .split(/\r?\n\s*\r?\n/)
+      .map((b) => b.trim())
+      .find(Boolean);
+    if (!firstBlock) continue;
+
+    const opensWithProse = !/^(```|~~~|\||<|#)/.test(firstBlock);
+    if (opensWithProse) continue;
+
+    failures.push(
+      `${path.relative(ROOT, full).split(path.sep).join('/')} opens with a ${
+        firstBlock.startsWith('|') ? 'table' : firstBlock.startsWith('<') ? 'raw HTML block' : 'code block'
+      } rather than a line of prose, so every link to it takes its tooltip from a sentence written to follow something else. Add a "> **…**" line under the title.`
+    );
+  }
+};
+if (existsSync(docsRoot)) walkDocs(docsRoot);
+
 // A leaf with no hook behind it is either a renamed hook or a page for something that no longer
 // exists. The three known non-hook pages are listed so they do not read as orphans.
 const NON_HOOK_PAGES = new Set(['geminiclient.md', 'observability-provenance.md', 'pixelnative-module.md']);

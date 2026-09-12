@@ -6,6 +6,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import { satteri } from '@astrojs/markdown-satteri';
 import { SITE, BASE, withBase } from './site.config.mjs';
+import { buildLinkDescriptions } from './link-descriptions.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONTENT_DOCS = path.resolve(__dirname, 'src', 'content', 'docs');
@@ -188,18 +189,99 @@ const wrapTablesPlugin = {
   },
 };
 
+/**
+ * Gives every internal link a tooltip saying where it goes.
+ *
+ * The description is the target page's own first line — or, for a hook page, the same one-line
+ * summary the API index shows — so a tooltip can never describe a page differently from the page
+ * itself. `src/styles/pixelkit.css` renders `[data-tip]` on hover and on focus.
+ *
+ * Skipped: links that already carry a tooltip, same-page anchors (the heading is visible on the way
+ * there), and anything external. There is no honest description available for an external target,
+ * and repeating its domain back at the reader tells them nothing they cannot see in the status bar.
+ */
+const linkDescriptions = buildLinkDescriptions();
+
+/**
+ * Describes the links the Markdown pipeline never sees.
+ *
+ * The hast plugin below only rewrites page content. The sidebar, the previous/next pagination and
+ * the header are Starlight components rendered outside it, and they hold most of the links on the
+ * site — about 40 per page in the sidebar alone. This runs once on load and fills them in from the
+ * same map, so a reader scanning the sidebar can tell what `useChannelSounding` is without opening
+ * it.
+ *
+ * Two mechanisms on purpose. In the prose column it sets `data-tip`, styled by pixelkit.css. In the
+ * chrome it sets `title` and lets the browser draw it: the sidebar is a scroll container, and a CSS
+ * tooltip positioned inside one is clipped at its edge. A native tooltip cannot be clipped.
+ *
+ * Serialised into the page by `toString()`, so it must stay self-contained — no imports, no
+ * closure over anything in this file.
+ */
+function describeChromeLinks(descriptions) {
+  function apply() {
+    var links = document.querySelectorAll('a[href]');
+    for (var i = 0; i < links.length; i += 1) {
+      var link = links[i];
+      if (link.dataset.tip || link.title) continue;
+
+      var href = link.getAttribute('href');
+      if (!href || href.charAt(0) !== '/') continue;
+
+      var pathname = href.split('#')[0];
+      var text =
+        descriptions[pathname] || descriptions[pathname.replace(/\/$/, '') + '/'];
+      if (!text) continue;
+
+      if (link.closest('.sl-markdown-content')) link.dataset.tip = text;
+      else link.title = text;
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply);
+  else apply();
+}
+
+const describeLinksPlugin = {
+  name: 'pk-describe-links',
+  element: {
+    filter: ['a'],
+    visit(node) {
+      const href = node.properties?.href;
+      if (typeof href !== 'string' || node.properties?.dataTip) return;
+      if (!href.startsWith('/') || href.startsWith('//')) return;
+
+      // Match the page, ignoring any fragment, and tolerate a missing trailing slash.
+      const [pathname] = href.split('#');
+      const description =
+        linkDescriptions.get(pathname) ?? linkDescriptions.get(`${pathname.replace(/\/$/, '')}/`);
+      if (!description) return;
+
+      return { ...node, properties: { ...node.properties, dataTip: description } };
+    },
+  },
+};
+
 // https://astro.build/config
 export default defineConfig({
   site: SITE,
   base: BASE,
   redirects: buildRedirects(),
-  markdown: { processor: satteri({ hastPlugins: [wrapTablesPlugin] }) },
+  markdown: { processor: satteri({ hastPlugins: [wrapTablesPlugin, describeLinksPlugin] }) },
   integrations: [
     starlight({
       title: 'PixelKit',
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/PixelKit-Labs/pixelkit-sdk' }],
       sidebar: buildSidebar(),
       customCss: ['./src/styles/pixelkit.css', './src/styles/archify.css'],
+      head: [
+        {
+          tag: 'script',
+          content: `(${describeChromeLinks.toString()})(${JSON.stringify(
+            Object.fromEntries(linkDescriptions)
+          )});`,
+        },
+      ],
     }),
   ],
 });

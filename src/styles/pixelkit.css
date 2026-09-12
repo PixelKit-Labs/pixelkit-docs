@@ -542,3 +542,70 @@
   color: var(--sl-color-text-invert);
   font-weight: 600;
 }
+
+/* ============================================================================================
+ * Link tooltips.
+ *
+ * Every internal link in page content carries `data-tip`, added by the describeLinks hast plugin
+ * in astro.config.mjs. The text is the target page's own first line, or a hook's one-line summary,
+ * so what the tooltip says and what the page says cannot diverge.
+ *
+ * Shown on focus as well as hover, so it is reachable without a pointer. Nothing is hidden behind
+ * it: the link text and destination are unchanged, and the tooltip only adds what the page is
+ * about.
+ * ============================================================================================ */
+
+.sl-markdown-content a[data-tip] {
+	position: relative;
+}
+
+.sl-markdown-content a[data-tip]::after {
+	content: attr(data-tip);
+	position: absolute;
+	bottom: calc(100% + 0.5rem);
+	left: 0;
+	z-index: 20;
+	width: max-content;
+	max-width: 20rem;
+	padding: 0.5rem 0.625rem;
+	border: var(--pk-border-width) solid var(--pk-border);
+	border-radius: 0.5rem;
+	background: var(--sl-color-black);
+	color: var(--sl-color-white);
+	font-size: 0.75rem; /* 12px */
+	font-weight: 400;
+	line-height: 1.45;
+	white-space: normal;
+	text-align: left;
+	box-shadow: 0 6px 24px rgb(0 0 0 / 0.35);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 120ms ease;
+	pointer-events: none;
+}
+
+.sl-markdown-content a[data-tip]:hover::after,
+.sl-markdown-content a[data-tip]:focus-visible::after {
+	opacity: 1;
+	visibility: visible;
+}
+
+/* A link in the last table column, or late in a row, would push its tooltip off the right edge. */
+.sl-markdown-content td:last-child a[data-tip]::after,
+.sl-markdown-content th:last-child a[data-tip]::after {
+	left: auto;
+	right: 0;
+}
+
+/* A table is a scroll container, so a tooltip drawn above the first row would be clipped by it.
+   Dropping below the link keeps it inside the box. */
+.pk-table-scroll a[data-tip]::after {
+	bottom: auto;
+	top: calc(100% + 0.5rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sl-markdown-content a[data-tip]::after {
+		transition: none;
+	}
+}

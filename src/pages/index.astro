@@ -134,11 +134,17 @@ function Readout() {
 					<tr>
 						<td><strong>{area.label}</strong></td>
 						<td>
-							{area.hooks.map((hook) => (
-								<a href={withBase(`/api/${SECTION_OF[hook.category]}/${hook.name.toLowerCase()}/`)}>
-									<code>{hook.name}</code>
-								</a>
-							))}
+							<span class="hook-list">
+								{area.hooks.map((hook) => (
+									<a
+										class="hook-link"
+										href={withBase(`/api/${SECTION_OF[hook.category]}/${hook.name.toLowerCase()}/`)}
+										data-tip={hook.summary}
+									>
+										<code>{hook.name}</code>
+									</a>
+								))}
+							</span>
 						</td>
 					</tr>
 				))}
@@ -194,6 +200,28 @@ function Readout() {
 	.hook-table {
 		border-radius: 1.5rem !important; /* 24px */
 		background: var(--pk-surface-raised) !important;
+		/* Starlight blockifies markdown tables and gives them `overflow: auto` so a wide one can
+		   scroll. This table never needs to — it wraps — and the clipping that comes with it would
+		   cut the hook tooltips off at the cell edge. */
+		display: table !important;
+		overflow: visible !important;
+		width: 100% !important;
+	}
+
+	/* Gap rather than whitespace between the links: adjacent JSX elements render with none, so the
+	   names ran together as one unreadable string. */
+	.hook-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem 0.5rem; /* 6px 8px */
+	}
+
+	.hook-link {
+		/* Positioning context only. The tooltip itself is styled once, site-wide, by the
+		   `a[data-tip]` rules in src/styles/pixelkit.css - these links carry data-tip like any
+		   other, so duplicating the block here would be a second thing to keep in step. */
+		position: relative;
+		text-decoration: none;
 	}
 	.hook-table th {
 		background: transparent !important;
