@@ -140,7 +140,16 @@ for (const [section, list] of bySection) {
   if (replaceBlock(file, table(['Hook', 'What it reads'], rows), `the ${section} index`)) indexes += 1;
 }
 
-const hubBlock = Object.entries(SECTION_LABEL)
+// The count lives inside the generated block for the same reason the tables do: written as prose it
+// said 39 while the index below it listed 51.
+const hubIntro = [
+  `${hooks.length} hooks across ${Object.keys(SECTION_LABEL).length} sections. This index is generated from \`data/hooks\`, so a hook`,
+  'cannot be listed in the wrong section or listed twice.',
+  '',
+  '',
+].join('\n');
+
+const hubBlock = hubIntro + Object.entries(SECTION_LABEL)
   .map(([slug, label]) => {
     const rows = bySection.get(slug)
       .map((h) => `| [\`${h.name}\`](./${slug}/${h.name.toLowerCase()}.md) | ${cell(h.summary)} |`);

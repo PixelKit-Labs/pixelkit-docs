@@ -46,7 +46,7 @@ The test recipes live in [`test/artemis/recipes/`](https://github.com/PixelKit-L
 | **Actuators & Haptics** | `02-actuators-and-haptics.md` | `useHaptics`, `useTorch`, `useHiLight` | Flashlight toggle responds, haptic presets fire without native errors, HiLight status is reported correctly. |
 | **Sensors & Capture** | `03-sensors-and-capture.md` | `useSensors`, `useLocation`, `useCamera` | Accelerometer / Gyroscope / Magnetometer update live streams; camera viewfinder renders without frame drops. |
 | **On-Device AI** | `04-ai-gemini-nano.md` | `useGeminiNano` via `@pixelkit-labs/mlkit` | AICore loads Gemini Nano model, inference streams tokens to UI without exceeding context limit or throwing memory warnings. |
-| **Full Sanity Suite** | `05-full-sanity-suite.md` | All 39 hooks across all 4 template tabs | Traverses Silicon, Sensors, Actuators, and AI tabs; continuously audits Logcat for native `FATAL` exceptions. |
+| **Full Sanity Suite** | `05-full-sanity-suite.md` | Every hook the template exercises, across all 4 tabs | Traverses Silicon, Sensors, Actuators, and AI tabs; continuously audits Logcat for native `FATAL` exceptions. |
 | **Pixel 11 Pro Extensions** | `06-pixel-11-pro-hardware.md` | `usePerfetto`, `useCameraExtensions`, `useSpatialAudio`, `useChannelSounding`, `usePlayIntegrity`, `useHealthConnect`, `useAppFunctions` | Verifies CameraX Extensions, Spatial Audio, BLE 6.0 Channel Sounding, Titan M2 Attestation, Perfetto, and Health Connect. |
 
 ---

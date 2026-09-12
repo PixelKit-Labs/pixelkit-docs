@@ -8,11 +8,11 @@ CI, which clones this repository and fails the build if a hook it exports has no
 entry describes a hook it no longer exports, or if an entry documents a returned field that is not
 on the hook's declared type.
 
-39 hooks across 6 sections. The index below is generated from `data/hooks`, so a hook
-cannot be listed in the wrong section or listed twice.
-
 ## Hooks by section
 <!-- hooks:start -->
+51 hooks across 6 sections. This index is generated from `data/hooks`, so a hook
+cannot be listed in the wrong section or listed twice.
+
 ### [Silicon and compute](./silicon-compute/)
 
 | Hook | What it reads |
