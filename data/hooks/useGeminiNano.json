@@ -55,6 +55,11 @@
       "desc": "True during download."
     },
     {
+      "name": "isWarmingUp",
+      "type": "boolean",
+      "desc": "Whether a warm-up is running. Pairs with `warmupMs`, which reports how long the last one took."
+    },
+    {
       "name": "warmupMs",
       "type": "number | null",
       "desc": "How long the last warm-up took to load the model into memory."
@@ -250,6 +255,24 @@
       "type": "() => Promise<void>",
       "desc": "Re-reads status and model facts from AICore.",
       "output": "Resolves once status and info have been updated. On failure status becomes unavailable and error is set."
+    },
+    {
+      "name": "summarize(text, options?)",
+      "type": "(text: string, options?: SummarizeOptions) => Promise<SummarizeResult>",
+      "desc": "On-device summarization through ML Kit GenAI.",
+      "output": "`Promise<SummarizeResult>` — `{ summary, latencyMs, engine, source }`; **throws** on failure"
+    },
+    {
+      "name": "proofread(text, options?)",
+      "type": "(text: string, options?: Record<string, any>) => Promise<ProofreadResult>",
+      "desc": "On-device grammar and wording correction.",
+      "output": "`Promise<ProofreadResult>` — `{ correctedText, suggestions, latencyMs, engine, source }`"
+    },
+    {
+      "name": "rewrite(text, tone?)",
+      "type": "(text: string, tone?: TaskTone) => Promise<RewriteResult>",
+      "desc": "On-device tone and style transformation.",
+      "output": "`Promise<RewriteResult>` — `{ rewrittenText, suggestions, latencyMs, engine, source }`"
     }
   ],
   "example": "import { useGeminiNano } from '@pixelkit-labs/sdk';\n\nfunction OnDeviceChat() {\n  const nano = useGeminiNano();\n  if (nano.status === 'downloadable') return <Button title=\"Download model\" onPress={() => nano.download()} />;\n  return (\n    <View>\n      <Button title=\"Ask\" onPress={() => nano.sendMessage('Summarise the thermal state')} disabled={!nano.isAvailable} />\n      <Text>{nano.partial || nano.messages.at(-1)?.content}</Text>\n      <Text>{nano.lastLatencyMs ?? '—'} ms · {nano.lastDecodeTokensPerSec ?? '—'} tok/s</Text>\n    </View>\n  );\n}",

@@ -33,6 +33,26 @@
       "name": "isAirplaneMode",
       "type": "boolean",
       "desc": "Whether airplane mode is on."
+    },
+    {
+      "name": "hasRead",
+      "type": "boolean",
+      "desc": "Whether a read has completed. Before it, the values above are defaults."
+    },
+    {
+      "name": "isChecking",
+      "type": "boolean",
+      "desc": "`true` while a check is running."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last read failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "`'hardware'` once a read has completed, `'unavailable'` before that."
     }
   ],
   "actions": [

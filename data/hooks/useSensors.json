@@ -44,6 +44,31 @@
       "name": "isAvailable",
       "type": "boolean",
       "desc": "Whether the sensors are present and streaming."
+    },
+    {
+      "name": "hasMotionSample",
+      "type": "boolean",
+      "desc": "`true` once a real accelerometer sample has arrived. Until then the vectors are zeroed, so use this to distinguish \"still\" from \"not started\"."
+    },
+    {
+      "name": "barometerAvailable",
+      "type": "boolean | null",
+      "desc": "Whether this device has a barometer. `null` until probed."
+    },
+    {
+      "name": "lightAvailable",
+      "type": "boolean | null",
+      "desc": "Whether this device has an ambient light sensor. `null` until probed."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why subscribing failed, if it did. `null` when healthy."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "`'hardware'` once a motion sample has arrived, `'unavailable'` before that."
     }
   ],
   "actions": [],

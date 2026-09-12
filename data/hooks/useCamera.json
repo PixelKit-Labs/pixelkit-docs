@@ -103,6 +103,16 @@
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
       "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    },
+    {
+      "name": "maxZoomFactor",
+      "type": "number",
+      "desc": "App-side ceiling for that fraction; `1`."
+    },
+    {
+      "name": "isUltraLowLightVideoActive",
+      "type": "boolean",
+      "desc": "UI flag only, for the same reason."
     }
   ],
   "actions": [
@@ -256,6 +266,12 @@
       "type": "() => Promise<void>",
       "desc": "Freezes or restarts the preview without tearing the camera down.",
       "output": "Resolves once applied. Silently no-ops when the view has been unmounted."
+    },
+    {
+      "name": "toggleUltraLowLightVideo()",
+      "type": "() => void",
+      "desc": "Flips the UI flag only, for the same reason.",
+      "output": "void"
     }
   ],
   "example": "import { CameraView } from 'expo-camera';\nimport { useCamera } from '@pixelkit-labs/sdk';\n\nfunction Capture() {\n  const cam = useCamera();\n  if (!cam.hasPermission) return <Text>Camera permission needed</Text>;\n  return (\n    <View>\n      <CameraView ref={cam.cameraRef} onCameraReady={cam.handleCameraReady} {...cam.viewProps} style={{ flex: 1 }} />\n      <Button title=\"Photo\" onPress={() => cam.takePicture({ base64: true })} />\n      <Button\n        title={cam.isRecording ? `Stop (${cam.recordingSeconds}s)` : 'Record'}\n        onPress={() => cam.isRecording ? cam.stopRecording() : cam.startRecording({ maxDurationSeconds: 60 })}\n      />\n    </View>\n  );\n}",

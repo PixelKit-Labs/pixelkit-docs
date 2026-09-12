@@ -87,6 +87,9 @@ function useGeminiNano(): {
 | `summarize(text, options?)` | `text: string` — article or transcript. `options.inputType?: 'article' \| 'conversation'`. `options.outputType?: 'one_bullet' \| 'two_bullets' \| 'three_bullets'`. | `Promise<SummarizeResult>` — `{ summary, latencyMs, engine, source }`; **throws** on failure | On-device summarization through ML Kit GenAI. |
 | `proofread(text, options?)` | `text: string` — the text to correct. `options?: Record<string, any>` — passed through to ML Kit. | `Promise<ProofreadResult>` — `{ correctedText, suggestions, latencyMs, engine, source }` | On-device grammar and wording correction. |
 | `rewrite(text, tone?)` | `text: string`. `tone?: 'elaborate' \| 'emojify' \| 'shorten' \| 'friendly' \| 'professional' \| 'rephrase'`. | `Promise<RewriteResult>` — `{ rewrittenText, suggestions, latencyMs, engine, source }` | On-device tone and style transformation. |
+| `setSystemInstruction(text)` | `text: string` — How the model should behave. It counts against info.tokenLimit on every turn, so keep it short. | Returns nothing; the next sendMessage uses it. | Sets the standing instruction used by every later turn. |
+| `setThinkingMode(on)` | `on: boolean` — Whether to ask the model to think before answering. | Returns nothing. | Requests thinking mode. Check info.thinkingModeAvailable first; where it is false the request is dropped and thoughts stays empty. |
+| `setTemperature(n)` `setTopK(n)` `setCandidateCount(n)` `setMaxOutputTokens(n)` | `value: number` — Temperature 0 to 1, top-k a positive integer, candidate count how many replies to generate, max output tokens the reply ceiling within info.tokenLimit. | Returns nothing; the values are read on the next call. | Generation parameters applied to every later turn. |
 
 ## Helper
 | Function | Inputs | Returns | Description |

@@ -43,6 +43,31 @@
       "name": "hasPermission",
       "type": "boolean",
       "desc": "Whether fine location permission was granted."
+    },
+    {
+      "name": "isLocating",
+      "type": "boolean",
+      "desc": "`true` while a fix is being acquired, which can take seconds on a cold start."
+    },
+    {
+      "name": "hasFix",
+      "type": "boolean",
+      "desc": "Whether a position has been obtained this session. This, not `latitude`, is the \"do I have a location\" flag."
+    },
+    {
+      "name": "lastFixAt",
+      "type": "number | null",
+      "desc": "Epoch milliseconds when the last fix arrived, for showing how stale it is."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why the last attempt failed, including `'Location permission denied'`."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "`'hardware'` once a fix exists, `'unavailable'` before that."
     }
   ],
   "actions": [

@@ -93,6 +93,11 @@
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
       "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    },
+    {
+      "name": "selectedImageBase64",
+      "type": "string | null",
+      "desc": "The same image as base64, which is what the model calls consume."
     }
   ],
   "actions": [
@@ -199,6 +204,30 @@
         }
       ],
       "output": "Resolves with { subjectsCount, foregroundConfidence, latencyMs, source }. Null on failure."
+    },
+    {
+      "name": "detectFaceMesh(imageInput)",
+      "type": "(imageInput: string) => Promise<FaceMeshResult | null>",
+      "desc": "468-point 3D mesh; needs a close-range face.",
+      "output": "Promise<FaceMeshResult | null>"
+    },
+    {
+      "name": "labelImage(imageInput)",
+      "type": "(imageInput: string) => Promise<ImageLabelResult | null>",
+      "desc": "Classifies entities and scenes with confidences.",
+      "output": "Promise<ImageLabelResult | null>"
+    },
+    {
+      "name": "segmentSelfie(imageInput)",
+      "type": "(imageInput: string) => Promise<SelfieSegmentationResult | null>",
+      "desc": "Foreground portrait mask.",
+      "output": "Promise<SelfieSegmentationResult | null>"
+    },
+    {
+      "name": "recognizeDigitalInk(strokes, languageTag?)",
+      "type": "(strokes: Array<Array<{ x: number; y: number; t?: number }>>, languageTag?: string) => Promise<DigitalInkResult | null>",
+      "desc": "Recognises handwriting from stroke data, best candidate first.",
+      "output": "Promise<DigitalInkResult | null>"
     }
   ],
   "example": "import { useVisionAI } from '@pixelkit-labs/sdk';\n\nasync function readLabel(uri: string, vision) {\n  const ocr = await vision.recognizeText(uri);   // stays on the device\n  return ocr.text;\n}",

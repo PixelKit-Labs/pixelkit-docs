@@ -23,6 +23,26 @@
       "name": "supportedTypes",
       "type": "string[]",
       "desc": "Which modalities are available, such as fingerprint or face."
+    },
+    {
+      "name": "hasChecked",
+      "type": "boolean",
+      "desc": "Whether the capability read has completed. Before it, treat the other flags as unknown rather than false."
+    },
+    {
+      "name": "lastResult",
+      "type": "'success' | 'failed' | 'cancelled' | null",
+      "desc": "Outcome of the last prompt. `null` before the first attempt. Distinguishes a deliberate cancel from a rejected credential."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Set only when a call itself failed — not when the user cancelled or was not recognised."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "`'hardware'` once capabilities have been read, `'unavailable'` before that."
     }
   ],
   "actions": [
@@ -38,6 +58,12 @@
         }
       ],
       "output": "Resolves true only on success. A cancel or a mismatch resolves false without setting error; missing hardware or no enrolment resolves false and sets error. lastResult tells the three apart."
+    },
+    {
+      "name": "refresh()",
+      "type": "() => Promise<void>",
+      "desc": "Re-reads sensor presence and enrolment. Call it when returning from Settings, where the user may have just enrolled a finger.",
+      "output": "`Promise<void>` — updates `hasHardware`, `isEnrolled`, `supportedTypes`"
     }
   ],
   "example": "import { useBiometrics } from '@pixelkit-labs/sdk';\n\nfunction Unlock() {\n  const { hasHardware, isEnrolled, authenticate } = useBiometrics();\n  if (!hasHardware || !isEnrolled) return <Text>Use a passcode instead</Text>;\n  return <Button title=\"Unlock\" onPress={() => authenticate('Confirm your identity')} />;\n}",

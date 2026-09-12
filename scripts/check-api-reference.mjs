@@ -36,17 +36,20 @@ const SECTION_OF = {
 };
 
 /**
- * Field-level differences that already existed when this check was written, recorded so the build
- * passes today and any *new* difference fails.
+ * Optional list of field differences to tolerate, for recording a gap that cannot be closed in the
+ * same change that introduces it.
  *
- * Every entry is a field that exists on the hook's real type and is documented on its page, but is
- * absent from `data/hooks`. That direction matters: the SDK's `check-docs` proves every field in
- * the JSON exists on the type, but not that every field on the type is in the JSON, so these are
- * documented for readers and checked by nothing. Spot-checked against the source when the baseline
- * was taken: `useTPU.throughputTokensPerSec` and `useBiometrics.hasChecked` are both really there.
+ * It is currently absent, because there are none: the 81 differences this check found when it was
+ * written have all been closed. 51 were fields that existed on the type and were documented on the
+ * page but had never reached `data/hooks`, so the SDK's own check-docs — which proves every field
+ * in the JSON is on the type, but never the reverse — could not see them; they were added, with the
+ * page's wording, which is the better of the two. 8 were callables declared in the JSON that no
+ * table on the page listed, so the rows were added. The remaining 22 were this script's own fault:
+ * its parser only accepted a cell holding exactly one backticked name, so rows naming several at
+ * once were skipped entirely.
  *
- * The file is a debt list, not a permanent exemption. An entry that is no longer needed fails the
- * check too, so it can only shrink.
+ * If an entry is ever added here it is debt, not an exemption: an entry that stops describing a
+ * real difference fails the check too, so the file can only shrink.
  */
 const BASELINE_PATH = path.join(__dirname, 'api-reference-gaps.json');
 const baseline = existsSync(BASELINE_PATH) ? JSON.parse(readFileSync(BASELINE_PATH, 'utf8')) : {};
@@ -58,7 +61,14 @@ const hooks = readdirSync(HOOKS_DIR)
   .filter((f) => f.endsWith('.json'))
   .map((f) => JSON.parse(readFileSync(path.join(HOOKS_DIR, f), 'utf8')));
 
-/** Collects the first-column identifiers of the table under a given `## Heading`. */
+/**
+ * Collects the first-column identifiers of the table under a given `## Heading`.
+ *
+ * One row often names several fields, and does it two different ways: `` `isMuted` / `isLooping` ``
+ * and `` `selection()` `light()` `medium()` ``. Every backticked token in the cell is taken, rather
+ * than requiring the cell to hold exactly one — which skipped those rows entirely and reported all
+ * of their fields as undocumented.
+ */
 function tableFieldsUnder(markdown, heading) {
   const lines = markdown.split(/\r?\n/);
   const start = lines.findIndex((l) => new RegExp(`^##\\s+${heading}\\s*$`).test(l));
@@ -67,8 +77,11 @@ function tableFieldsUnder(markdown, heading) {
   const fields = [];
   for (const line of lines.slice(start + 1)) {
     if (/^##\s/.test(line)) break;
-    const cell = line.match(/^\|\s*`([^`]+)`\s*\|/);
-    if (cell) fields.push(cell[1].trim());
+    if (!/^\|/.test(line)) continue;
+    if (/^\|\s*:?-+/.test(line)) continue;
+    const firstCell = line.split(/(?<!\\)\|/)[1];
+    if (!firstCell) continue;
+    for (const token of firstCell.matchAll(/`([^`]+)`/g)) fields.push(token[1].trim());
   }
   return fields;
 }

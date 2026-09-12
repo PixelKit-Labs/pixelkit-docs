@@ -53,6 +53,11 @@
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
       "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Latest failure message, or `null`. Failures are also logged and counted."
     }
   ],
   "actions": [

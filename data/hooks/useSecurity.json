@@ -23,6 +23,21 @@
       "name": "isPostQuantumProtected",
       "type": "boolean",
       "desc": "Always false. SecureStore uses classical AES; do not claim otherwise."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Message from the last failed operation."
+    },
+    {
+      "name": "lastOperation",
+      "type": "string | null",
+      "desc": "Description of the last operation for a diagnostics panel, e.g. `\"saved PIXELKIT_GEMINI_API_KEY\"`. Never contains the value."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "`'hardware'` on Android, `'unavailable'` elsewhere."
     }
   ],
   "actions": [

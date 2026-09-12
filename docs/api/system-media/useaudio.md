@@ -67,6 +67,7 @@ function useAudio(): {
 | `pausePlayback()` | none | `void` | Pauses where it is. |
 | `stopPlayback()` | none | `Promise<void>` | Pauses and seeks back to the start. |
 | `seekPlayback(seconds)` | `seconds: number` — absolute position, negatives clamped to 0 | `Promise<void>` | Jumps within the playing file. |
+| `setSilenceThresholdDbfs(dbfs)` | `dbfs: number` — Threshold in dBFS, -45 by default. A quiet room sits near -50, so raising it makes isSilent stricter. | Returns nothing; isSilent re-evaluates on the next metering sample. | Moves the boundary between silence and speech that isSilent reports against. |
 
 ## Example
 ```tsx

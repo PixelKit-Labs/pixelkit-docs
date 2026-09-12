@@ -58,6 +58,51 @@
       "name": "searchGrounding",
       "type": "boolean",
       "desc": "Whether the googleSearch tool is attached to the session."
+    },
+    {
+      "name": "availableModels",
+      "type": "string[]",
+      "desc": "Models the API lists for this key, filtered to Gemini text models. Falls back to a curated default list when offline or unconfigured."
+    },
+    {
+      "name": "temperature",
+      "type": "number",
+      "desc": "Sampling temperature sent with the session, default `0.4`."
+    },
+    {
+      "name": "topP",
+      "type": "number",
+      "desc": "Nucleus sampling cutoff, default `0.95`."
+    },
+    {
+      "name": "topK",
+      "type": "number",
+      "desc": "Top-k sampling cutoff, default `40`."
+    },
+    {
+      "name": "maxOutputTokens",
+      "type": "number",
+      "desc": "Ceiling on reply length, default `2048`."
+    },
+    {
+      "name": "systemInstruction",
+      "type": "string",
+      "desc": "The instruction the session was created with. Defaults to the PixelKit assistant instruction."
+    },
+    {
+      "name": "thinkingBudget",
+      "type": "number",
+      "desc": "Thinking tokens requested, default `0` (off). Above zero, `thinkingConfig` is sent with the session."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Latest failure message, or `null`. Failures are also logged and counted."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Cloud model: reachable only with a key and a network route."
     }
   ],
   "actions": [

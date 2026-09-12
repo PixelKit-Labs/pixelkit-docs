@@ -58,6 +58,11 @@
       "name": "model",
       "type": "string",
       "desc": "Engine used for the last cloud transcription."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Provenance of the transcript: on-device or cloud; `'unavailable'` before either is ready."
     }
   ],
   "actions": [

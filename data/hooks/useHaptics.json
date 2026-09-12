@@ -90,6 +90,12 @@
       "type": "() => void",
       "desc": "Stops any vibration immediately, including an envelope or composition in progress.",
       "output": "Returns nothing."
+    },
+    {
+      "name": "triggerHaptic(type?)",
+      "type": "(type?: HapticType) => Promise<void>",
+      "desc": "Plays a standard platform pattern. No-op on web.",
+      "output": "`Promise<void>` — resolves when dispatched; failures are logged, not thrown"
     }
   ],
   "example": "import { useHaptics, HapticEnvelopes } from '@pixelkit-labs/sdk';\n\nfunction Confirm() {\n  const { success, playEnvelope, envelopeSupported } = useHaptics();\n  const onDone = () => envelopeSupported ? playEnvelope(HapticEnvelopes.thinkingRamp) : success();\n  return <Button title=\"Done\" onPress={onDone} />;\n}",

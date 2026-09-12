@@ -73,6 +73,16 @@
       "name": "supportsRangingApi / supportsHapticEnvelopes / supportsAppFunctions / supportsAndroid17Apis",
       "type": "boolean",
       "desc": "Platform API availability gates."
+    },
+    {
+      "name": "isPhysicalDevice",
+      "type": "boolean",
+      "desc": "`false` on an emulator or on web, where hardware claims cannot be trusted."
+    },
+    {
+      "name": "hasTitanM3",
+      "type": "boolean",
+      "desc": "Whether the Titan M3 security chip is expected, per Google's specification. It is not readable from the device."
     }
   ],
   "actions": [],

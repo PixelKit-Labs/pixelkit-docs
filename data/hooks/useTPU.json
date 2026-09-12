@@ -58,6 +58,16 @@
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
       "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+    },
+    {
+      "name": "throughputTokensPerSec",
+      "type": "number | null",
+      "desc": "Always `null` here. See `useGeminiNano().lastDecodeTokensPerSec`."
+    },
+    {
+      "name": "memoryFootprintMB",
+      "type": "number | null",
+      "desc": "Always `null`: AICore does not report model memory to apps."
     }
   ],
   "actions": [

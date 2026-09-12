@@ -46,6 +46,7 @@ function useSpeechAI(): {
 | :--- | :--- | :--- | :--- |
 | `startListening()` | none | `Promise<boolean>` — `true` when the microphone opened, `false` with `error` set on permission denial or a recognizer failure | On-device: starts `SpeechRecognizer` and streams partials. Cloud: starts recording through `useAudio`. |
 | `stopListeningAndTranscribe()` | none | `Promise<SpeechTranscriptionResult \| null>` — the transcript, or `null` when nothing was captured or transcription failed | On-device: stops the recognizer and returns the last result. Cloud: stops recording, uploads the audio and returns the Gemini transcript. |
+| `setRecognitionMode(mode)` | `mode: 'on-device' \| 'cloud'` — On-device keeps audio on the phone and streams partials; cloud records first and needs an API key. | Returns nothing. model updates to name the engine that will be used. | Chooses the engine for the next run. |
 
 ## Example
 ```tsx
