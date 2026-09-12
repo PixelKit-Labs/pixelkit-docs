@@ -11,13 +11,13 @@ When generating code or architecting features, AI models must adhere strictly to
 
 ---
 
-## The 5 Golden Rules for AI Agents
+## The 7 Golden Rules for AI Agents
 
 ### 1. The Single Import Rule
-**NEVER** re-implement hardware wrappers, camera pickers, or sensor listeners from raw third-party packages. Always import directly from `./src`:
+**NEVER** re-implement hardware wrappers, camera pickers, or sensor listeners from raw third-party packages. Import from the package, not from its internals:
 
 ```typescript
-// CORRECT (Centralized, typed, hardware-accelerated)
+// CORRECT (centralised, typed, hardware-accelerated)
 import {
  useCPU,
  useGPU,
@@ -29,16 +29,27 @@ import {
  useHiLight,
  useSpeechAI,
  useGemini,
- useVisionAI,
  useUWB,
- useSecurity,
- HapticButton,
- MetricCard
+ useSecurity
 } from '@pixelkit-labs/sdk';
 
-// WRONG (Never import raw unmanaged sensor listeners)
+// Five hooks live behind the ML Kit subpath, because @pixelkit-labs/mlkit is an opt-in install
+// that adds 19 artifacts to the APK. Importing them from the main barrel does not resolve.
+import {
+ useGeminiNano,
+ useGenAITasks,
+ useNaturalLanguageAI,
+ useVisionAI,
+ useEmbeddings
+} from '@pixelkit-labs/sdk/mlkit';
+
+// WRONG (never import raw unmanaged sensor listeners)
 import * as Accelerometer from 'expo-sensors';
 ```
+
+`PixelKitDevTools` is the only component the SDK ships. `HapticButton`, `MetricCard` and the rest of
+the interface belong to [the template](https://github.com/PixelKit-Labs/pixelkit-template), so
+import those from your own `src/components/` — not from `@pixelkit-labs/sdk`.
 
 ### 2. The Physical Sensation Rule (Tactile Haptics)
 Every touchable element or significant state change **MUST** provide physical feedback via the Pixel's Linear Resonant Actuator (LRA):
@@ -56,7 +67,7 @@ The Pixel 11 Pro runs a 1-120 Hz LTPO display; at 120 Hz that is an **8.33 ms fr
 * When `thermalStatus === 'severe'` or `'critical'`, dynamically downscale background AI batch sizes and reduce sensor update intervals to 200ms or higher.
 
 ### 4. The True OLED Black Rule
-Pixels utilize self-emissive Super Actua OLED panels. Always style dark backgrounds with the signature OLED true-black `#0E1119` from `Colors.dark.background`. True black turns individual OLED pixels completely off, saving battery.
+Pixels utilize self-emissive Super Actua OLED panels. Always style dark backgrounds with the signature OLED true-black `#0E1119`. True black turns individual OLED pixels completely off, saving battery. The SDK exports no palette — the template holds this as `Colors.dark.background`, and in your own app it is whatever constant you define.
 
 ### 5. The Secure Storage Rule
 Never write sensitive user data or API keys into plaintext AsyncStorage or unencrypted files. Always persist credentials through `useSecurity().saveSecureItem()` or `saveApiKey()`, which encrypt with a key held in the StrongBox-backed Android Keystore. `useGemini().setApiKey()` only swaps the key in memory; it does not persist it. No post-quantum algorithm is used: `isPostQuantumProtected` is always `false`.
@@ -69,7 +80,7 @@ When iterating on UI components:
 ---
 
 ### 7. The Telemetry Provenance Rule (Nothing Is Simulated)
-Every hook exposes `source: 'hardware' | 'derived' | 'unavailable'` (see `packages/sdk/src/core/observability.ts`). There is deliberately no `simulated` value: the type makes a fabricated reading unrepresentable. Never substitute a plausible default for a value that could not be read — render `null` as "—" and pass `source` to `MetricCard` so the tag is visible. Radio adapter state (NFC antenna, Bluetooth controller, UWB chip) and live scans both report `hardware`, because both are real reads. HiLight drives the physical LEDs when the native ADB daemon is running (`npm run hilight:daemon`, `source: 'hardware'`); without the daemon its `availability` is `'unavailable'` and the control functions refuse rather than pretending. Log lifecycle and errors with `logEvent(module, event, data)` and `logError(module, event, error)`; both surface in the Observability panel and in `adb logcat -s ReactNativeJS | grep PixelKit`.
+Every hook exposes `source: 'hardware' | 'derived' | 'unavailable'` (see `packages/sdk/src/core/observability.ts`). There is deliberately no `simulated` value: the type makes a fabricated reading unrepresentable. Never substitute a plausible default for a value that could not be read — render `null` as "—" and surface `source` next to the reading so the tag is visible. Radio adapter state (NFC antenna, Bluetooth controller, UWB chip) and live scans both report `hardware`, because both are real reads. HiLight drives the physical LEDs when the native ADB daemon is running (`npm run hilight:daemon`, `source: 'hardware'`); without the daemon its `availability` is `'unavailable'` and the control functions refuse rather than pretending. Log lifecycle and errors with `logEvent(module, event, data)` and `logError(module, event, error)`; both surface in the Observability panel and in `adb logcat -s ReactNativeJS | grep PixelKit`.
 
 ---
 
@@ -140,12 +151,12 @@ When instructing another AI model or configuring an IDE prompt, copy and paste t
 ```markdown
 You are building an application using the PixelKit SDK on a Google Pixel 11 Pro (Android 17, Google Tensor G6).
 Always adhere to these requirements:
-1. Import all hardware and AI hooks directly from '@pixelkit-labs/sdk' (e.g. useCPU, useHiLight, useSensors, useGemini, useHaptics, useCamera).
+1. Import hardware and AI hooks from '@pixelkit-labs/sdk' (e.g. useCPU, useHiLight, useSensors, useGemini, useHaptics, useCamera). Five ML Kit hooks come from '@pixelkit-labs/sdk/mlkit' instead: useGeminiNano, useGenAITasks, useNaturalLanguageAI, useVisionAI, useEmbeddings.
 2. Attach tactile haptic feedback (useHaptics) to all user interactions: selection for navigation, light for taps, success for completed actions, error for failures.
 3. When running Gemini AI, trigger the rear HiLight ring via useHiLight().triggerGeminiPulse() for face-down visual signaling.
 4. Treat Camera Looks and Super Res Zoom as Pixel Camera app features. useCamera() does capture (takePicture, startRecording) and exposes zoom as a 0..1 fraction, never an optical multiplier. Save captures with useMediaLibrary() or the system reclaims them.
 5. Respect the 8.33ms 120Hz frame budget. Use useADPF() to check thermal state before heavy workloads.
-6. Use true OLED black (#0E1119) for backgrounds via Colors.dark.background.
+6. Use true OLED black (#0E1119) for backgrounds. The SDK exports no palette; define the constant in your own app.
 7. Store sensitive keys exclusively through useSecurity().saveSecureItem() (SecureStore, Android Keystore).
 8. For Expo SDK 57 compatibility: expo-keep-awake uses activateKeepAwakeAsync(tag) / deactivateKeepAwake(tag).
 ```
@@ -162,8 +173,8 @@ Both recipes state what they take and what they give back. Full contracts are in
 
 ```tsx
 import React from 'react';
-import { View } from 'react-native';
-import { useGemini, useHiLight, useHaptics, HapticButton } from '@pixelkit-labs/sdk';
+import { View, Pressable, Text } from 'react-native';
+import { useGemini, useHiLight, useHaptics } from '@pixelkit-labs/sdk';
 
 export function SmartAssistant() {
  const gemini = useGemini();
@@ -179,12 +190,9 @@ export function SmartAssistant() {
 
  return (
  <View style={{ padding: 16 }}>
- <HapticButton
- title={gemini.isLoading ? 'Waiting on the cloud model…' : 'Ask assistant'}
- onPress={handleAskAI}
- variant="primary"
- disabled={gemini.isLoading}
- />
+ <Pressable onPress={handleAskAI} disabled={gemini.isLoading}>
+ <Text>{gemini.isLoading ? 'Waiting on the cloud model…' : 'Ask assistant'}</Text>
+ </Pressable>
  </View>
  );
 }
@@ -198,7 +206,8 @@ export function SmartAssistant() {
 import React from 'react';
 import { View, Text } from 'react-native';
 import { CameraView } from 'expo-camera';
-import { useCamera, useHaptics, HapticButton } from '@pixelkit-labs/sdk';
+import { Pressable } from 'react-native';
+import { useCamera, useHaptics } from '@pixelkit-labs/sdk';
 
 export function ProPhotoView() {
  const camera = useCamera();
@@ -213,9 +222,9 @@ export function ProPhotoView() {
  <View style={{ flex: 1, padding: 16 }}>
  <CameraView ref={camera.cameraRef} onCameraReady={camera.handleCameraReady} {...camera.viewProps} style={{ flex: 1 }} />
  <Text>Zoom {Math.round(camera.zoomFactor * 100)}% of the lens range</Text>
- <HapticButton title="Widest" onPress={() => { selection(); camera.setZoom(0); }} variant="outline" />
- <HapticButton title="Longest" onPress={() => { selection(); camera.setZoom(1); }} variant="outline" />
- <HapticButton title="Capture" onPress={capture} variant="primary" />
+ <Pressable onPress={() => { selection(); camera.setZoom(0); }}><Text>Widest</Text></Pressable>
+ <Pressable onPress={() => { selection(); camera.setZoom(1); }}><Text>Longest</Text></Pressable>
+ <Pressable onPress={capture}><Text>Capture</Text></Pressable>
  </View>
  );
 }

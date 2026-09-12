@@ -3,6 +3,8 @@
 
 Complete, production-grade recipes for common agentic tasks. Each one states what it takes in and what it gives back, so an agent can wire it up without reading the hook source first. Every hook contract behind these recipes is documented field by field on its own page in the [API reference](../api/README.md).
 
+The interface is deliberately plain `react-native` — `Pressable`, `View`, `Text` — so a recipe compiles in any app. `PixelKitDevTools` is the only component the SDK ships; the richer `HapticButton` and `MetricCard` belong to [the template](https://github.com/PixelKit-Labs/pixelkit-template), under its own `src/components/`. Substitute your own and keep the hook calls.
+
 ---
 
 ## Recipe Index
@@ -27,8 +29,8 @@ Records from the microphone, transcribes it, lights the camera-bar ring while th
 
 ```tsx
 import React from 'react';
-import { View, Text } from 'react-native';
-import { useSpeechAI, useGemini, useHiLight, useHaptics, HapticButton } from '@pixelkit-labs/sdk';
+import { View, Text, Pressable } from 'react-native';
+import { useSpeechAI, useGemini, useHiLight, useHaptics } from '@pixelkit-labs/sdk';
 
 export function VoiceCommander() {
  const speech = useSpeechAI();
@@ -55,11 +57,9 @@ export function VoiceCommander() {
 
  return (
  <View style={{ padding: 16 }}>
- <HapticButton
- title={speech.isListening ? `Listening (${speech.voiceDecibels} dB) — tap to send` : 'Speak to assistant'}
- onPress={handleVoiceToggle}
- variant={speech.isListening ? 'danger' : 'primary'}
- />
+ <Pressable onPress={handleVoiceToggle}>
+ <Text>{speech.isListening ? `Listening (${speech.voiceDecibels} dB) — tap to send` : 'Speak to assistant'}</Text>
+ </Pressable>
  {speech.streamingPartial ? <Text>{speech.streamingPartial}</Text> : null}
  {gemini.isLoading && <Text style={{ color: '#00E5FF', marginTop: 10 }}>Waiting on the cloud model…</Text>}
  {speech.error ? <Text style={{ color: '#F28B82' }}>{speech.error}</Text> : null}
@@ -82,8 +82,8 @@ Slows the sensor stream down as the phone warms up, instead of waiting for the s
 
 ```tsx
 import React, { useState, useEffect } from 'react';
-import { View } from 'react-native';
-import { useSensors, useADPF, MetricCard } from '@pixelkit-labs/sdk';
+import { View, Text } from 'react-native';
+import { useSensors, useADPF } from '@pixelkit-labs/sdk';
 
 export function AdaptiveTelemetryHUD() {
  const [intervalMs, setIntervalMs] = useState(100);
@@ -101,15 +101,19 @@ export function AdaptiveTelemetryHUD() {
 
  return (
  <View style={{ padding: 16 }}>
- <MetricCard
- title="Barometric altitude"
- value={barometerAvailable === false ? null : barometer.relativeAltitude}
- unit="m"
- badge={barometer.pressure == null ? '—' : `${barometer.pressure} hPa`}
- badgeColor="#8AB4F8"
- subtitle={`Thermal ${thermalStatus} · headroom ${headroomLabel} · ${intervalMs} ms`}
- source={source}
- />
+ <View>
+ <Text>Barometric altitude</Text>
+ {/* null renders as an em dash, never as a substitute number — see the provenance rule */}
+ <Text>
+ {barometerAvailable === false || barometer.relativeAltitude == null
+ ? '—'
+ : `${barometer.relativeAltitude} m`}
+ </Text>
+ <Text>{barometer.pressure == null ? '—' : `${barometer.pressure} hPa`}</Text>
+ <Text>{`Thermal ${thermalStatus} · headroom ${headroomLabel} · ${intervalMs} ms`}</Text>
+ {/* the provenance tag travels with the reading, so a blank is never mistaken for a zero */}
+ <Text>{source}</Text>
+ </View>
  </View>
  );
 }
@@ -129,9 +133,9 @@ Drives the camera and takes a still. **Zoom is a 0 to 1 fraction of the lens ran
 
 ```tsx
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { CameraView } from 'expo-camera';
-import { useCamera, useMediaLibrary, useHaptics, HapticButton } from '@pixelkit-labs/sdk';
+import { useCamera, useMediaLibrary, useHaptics } from '@pixelkit-labs/sdk';
 
 export function ProPhotoSuite() {
  const camera = useCamera();
@@ -152,9 +156,9 @@ export function ProPhotoSuite() {
  <CameraView ref={camera.cameraRef} onCameraReady={camera.handleCameraReady} {...camera.viewProps} style={{ flex: 1 }} />
  <Text>Zoom {Math.round(camera.zoomFactor * 100)}% of the lens range · {camera.availableLenses.length} lenses</Text>
  {[0, 0.25, 0.5, 0.75, 1].map(f => (
- <HapticButton key={f} title={`${f * 100}%`} onPress={() => { selection(); camera.setZoom(f); }} variant={camera.zoomFactor === f ? 'primary' : 'outline'} />
+ <Pressable key={f} onPress={() => { selection(); camera.setZoom(f); }}><Text>{`${f * 100}%`}</Text></Pressable>
  ))}
- <HapticButton title="Capture" onPress={capture} variant="primary" />
+ <Pressable onPress={capture}><Text>Capture</Text></Pressable>
  {camera.error ? <Text style={{ color: '#F28B82' }}>{camera.error}</Text> : null}
  </View>
  );
@@ -175,8 +179,8 @@ Persists secrets through SecureStore (Android Keystore, StrongBox-backed on this
 
 ```tsx
 import React, { useState } from 'react';
-import { View, Text } from 'react-native';
-import { useSecurity, useBiometrics, HapticButton } from '@pixelkit-labs/sdk';
+import { View, Text, Pressable } from 'react-native';
+import { useSecurity, useBiometrics } from '@pixelkit-labs/sdk';
 
 export function CredentialVault() {
  const security = useSecurity();
@@ -198,7 +202,7 @@ export function CredentialVault() {
  return (
  <View style={{ padding: 16 }}>
  <Text style={{ marginBottom: 10 }}>Vault: {status}</Text>
- <HapticButton title="Biometric unlock" onPress={handleUnlock} variant="primary" disabled={!canPrompt} />
+ <Pressable onPress={handleUnlock} disabled={!canPrompt}><Text>Biometric unlock</Text></Pressable>
  {!canPrompt && <Text>{biometrics.hasHardware ? 'No biometric enrolled' : 'No biometric hardware'}</Text>}
  </View>
  );
@@ -219,8 +223,8 @@ Opens a ranging session and renders distance and angle to each peer.
 
 ```tsx
 import React from 'react';
-import { View, Text } from 'react-native';
-import { useUWB, HapticButton } from '@pixelkit-labs/sdk';
+import { View, Text, Pressable } from 'react-native';
+import { useUWB } from '@pixelkit-labs/sdk';
 
 export function SpatialRadarView() {
  const { activeTargets, isRanging, isSupported, startRanging, stopRanging, sessionError } = useUWB();
@@ -229,11 +233,9 @@ export function SpatialRadarView() {
 
  return (
  <View style={{ padding: 16 }}>
- <HapticButton
- title={isRanging ? 'Stop ranging' : 'Start UWB ranging'}
- onPress={() => (isRanging ? stopRanging() : startRanging())}
- variant={isRanging ? 'danger' : 'primary'}
- />
+ <Pressable onPress={() => (isRanging ? stopRanging() : startRanging())}>
+ <Text>{isRanging ? 'Stop ranging' : 'Start UWB ranging'}</Text>
+ </Pressable>
  {sessionError ? <Text style={{ color: '#F28B82' }}>{sessionError}</Text> : null}
  {activeTargets.map(t => (
  <View key={t.deviceId} style={{ marginTop: 8 }}>
