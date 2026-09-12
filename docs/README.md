@@ -15,12 +15,12 @@ Documentation for the **PixelKit SDK**: the silicon, sensors, radios and on-devi
 * **[Architecture & Silicon Overview](./getting-started/architecture.md)**: The Tensor G6 7-core cluster, the PowerVR GPU, the StrongBox-backed keystore, wireless charging and the Hermes runtime — with device-verified figures separated from Google's published specification.
 
 ### [API Reference](./api/)
-* **[Silicon & Compute](./api/silicon-compute/README.md)**: `useCPU`, `useGPU`, `useTPU`, `useMemory`, `useADPF`.
-* **[Pixel Pro Exclusives](./api/pro-exclusives/README.md)**: `useHiLight` (camera bar notification ring), `useUWB` (spatial radar AoA).
-* **[Neural & AI](./api/neural-ai/README.md)**: `useGemini`, `useGeminiNano`, `useGenAITasks`, `useNaturalLanguageAI`, `useSpeechAI`, `useSpeech`, `useVisionAI`, `geminiClient`.
-* **[Sensors & Actuators](./api/sensors-actuators/README.md)**: `useSensors` (6-axis IMU, barometer, light), `useCamera` (capture, zoom, flash, torch), `useTorch`, `useHaptics` (LRA patterns, envelopes, primitives).
-* **[Radios & Security](./api/radios-security/README.md)**: `useBiometrics`, `useSecurity` (SecureStore on the Android Keystore; no post-quantum algorithms are used), `useBLE`, `useNFC`, `useRadios`, `useLocation` (dual-band GNSS).
-* **[System & Media](./api/system-media/README.md)**: `useAudio`, `useCapabilities`, `useDisplay` (1-120 Hz LTPO, HDR, ARR), `useDevice`, `useNetwork`, `useVideo`, `useMediaLibrary`, `useCellular`.
+* **[Silicon & Compute](./api/silicon-compute/README.md)**: CPU topology and cpufreq, GPU identity and frame pacing, the AICore stack, memory pressure, ADPF thermal headroom, battery and charging, and kernel tracing.
+* **[Pixel Pro Exclusives](./api/pro-exclusives/README.md)**: the camera bar HiLight LED ring, and UWB spatial ranging with angle of arrival.
+* **[Neural & AI](./api/neural-ai/README.md)**: cloud Gemini and on-device Gemini Nano, vision, language, speech, embeddings, and the AppFunctions bridge to the system assistant.
+* **[Sensors & Actuators](./api/sensors-actuators/README.md)**: the IMU, barometer and light sensor, camera and its vendor extensions, the microphone array, altimetry, infrared temperature, health records, torch and haptics.
+* **[Radios & Security](./api/radios-security/README.md)**: BLE and Bluetooth channel sounding, NFC, Wi-Fi 7 MLO and RTT, satellite NTN, GNSS, biometrics, the hardware keystore, key agreement, Private Space and Play Integrity.
+* **[System & Media](./api/system-media/README.md)**: audio capture and spatial audio, display and refresh rate, device identity and capabilities, network and cellular, video playback and the media library.
 
 ### [AI Agent Guidance](./ai-guidance/)
 * **[Agent Primer](./AI_PRIMER.md)**: the rules an agent follows here, the hook table with inputs, outputs and functions, worked recipes, and a copy-paste system prompt.

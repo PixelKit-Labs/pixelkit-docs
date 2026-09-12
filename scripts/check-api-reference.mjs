@@ -175,6 +175,25 @@ for (const hook of hooks) {
   }
 }
 
+/**
+ * The agent primer's mapping table calls itself the index, so it has to name every hook.
+ *
+ * It did not. It stopped at 32 while the SDK exported 51, which is the failure mode worth guarding
+ * against here: a page that claims completeness and quietly is not. An agent reading it would have
+ * concluded the other 19 hooks do not exist.
+ */
+const PRIMER = path.join(ROOT, 'docs', 'AI_PRIMER.md');
+if (existsSync(PRIMER)) {
+  const primer = readFileSync(PRIMER, 'utf8');
+  const absent = hooks.filter((h) => !primer.includes(h.name)).map((h) => h.name);
+  if (absent.length) {
+    failures.push(
+      `docs/AI_PRIMER.md calls its mapping table the index but does not name ${absent.length} hook(s): ` +
+        `${absent.join(', ')}.`
+    );
+  }
+}
+
 // A leaf with no hook behind it is either a renamed hook or a page for something that no longer
 // exists. The three known non-hook pages are listed so they do not read as orphans.
 const NON_HOOK_PAGES = new Set(['geminiclient.md', 'observability-provenance.md', 'pixelnative-module.md']);

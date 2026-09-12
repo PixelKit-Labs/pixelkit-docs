@@ -111,6 +111,25 @@ Every hook's full contract — each input with its default and units, each outpu
 | **Capabilities** | `useCapabilities()` | none | `hasHiLight`, `hasUWB`, `hasStrongBox`, `supportsHapticEnvelopes`, `verification` (`device` or `model-table`) | none |
 | **Haptics** | `useHaptics()` | none | `envelopeSupported`, `resonantFrequencyHz` (134.4 Hz), `supportedPrimitives[]` | `triggerHaptic(type?)`, `playEnvelope(points, initialSharpness?) → boolean`, `playPrimitives(steps) → boolean`, `cancel()` |
 | **Microphone** | `useAudio()` | none | `meteringDecibels` (dBFS), `level` (0..1), `isSilent`, `durationSeconds`, `lastRecordingUri` | `startRecording({quality?, maxDurationSeconds?}) → Promise<boolean>`, `stopRecording() → Promise<string \| null>`, `playLastRecording(uri?)` |
+| **ADPF · EAS · frame hints** | `useADPFHintSession(initialTargetDurationMs?: number)` | `initialTargetDurationMs` | `isSupported`, `targetFrameDurationMs`, `error`, `source` | `reportWorkDuration(actualDurationNanos)`, `updateTargetWorkDuration(targetNanos)`, `closeSession()` |
+| **barometer · altimetry** | `useAltimeter(updateIntervalMs?: number)` | `updateIntervalMs` | `altitudeM`, `altitudeFt`, `verticalVelocityMs`, `pressureHpa`, `seaLevelPressureHpa`, `pressureTrend` | `calibrateSeaLevel(hPa)`, `resetCalibration()` |
+| **Android 17 AppFunctions** | `useAppFunctions()` | none | `isSupported`, `serviceFound`, `apiLevel`, `serviceName`, `functions`, `error` | `executeFunction(functionId, params?)`, `registerFunction(schema, handler)`, `unregisterFunction(functionId)` |
+| **Qi TX · reverse charging** | `useBatteryShare()` | none | `isSupported`, `isActive`, `isReceiverDetected`, `transmittedWatts`, `batteryThreshold`, `error` | `setBatteryShare(enabled)`, `setBatteryThreshold(pct)`, `refresh()` |
+| **Camera2 extensions** | `useCameraExtensions()` | none | `available`, `cameras`, `hasNightSight`, `hasUltraHdr`, `hasPortraitBokeh`, `error` | `refresh()` |
+| **BLE 6.0 Channel Sounding** | `useChannelSounding()` | none | `isSupported`, `isEnabled`, `serviceFound`, `supportsPbr`, `supportsRtt`, `channelCount` | `startRanging(targetAddress?)`, `stopRanging()`, `refresh()` |
+| **battery · health · SoH** | `useChargingIntelligence()` | none | `stateOfHealthPercent`, `cycleCount`, `manufactureDate`, `firstUsageDate`, `chargingWattage`, `chargingTier` | `refresh()` |
+| **EdgeTPU · Embeddings · 512-dim** | `useEmbeddings()` | none | `isAvailable`, `isLoading`, `vectorDimension`, `error`, `source` | `embed(text)`, `cosineSimilarity(vecA, vecB)` |
+| **Health Connect & Sensor Vitals** | `useHealthConnect()` | none | `isAvailable`, `sdkStatus`, `hasStepCounter`, `hasHeartRateSensor`, `stepSensorName`, `heartRateSensorName` | `refresh()` |
+| **Titan M2 · StrongBox · ECDH** | `useKeyAgreement()` | none | `isStrongBoxSupported`, `error`, `source` | `generateKeyPair(alias, preferStrongBox)`, `deriveSharedSecret(alias, peerPublicKeyBase64)` |
+| **audio · beamforming · mics** | `useMicrophoneArray()` | none | `microphones`, `direction`, `fieldZoom`, `isSupported`, `error`, `source` | `setDirection(direction)`, `setFieldZoom(zoom)`, `refresh()` |
+| **Perfetto Silicon Tracing** | `usePerfetto()` | none | `isSupported`, `isTracing`, `perfettoVersion`, `availableCategories`, `activeCategories`, `lastTraceUri` | `startTrace(categories?, bufferSizeKb?)`, `stopTrace()`, `beginSection(name)`, `endSection()`, `setCounter(name, value)`, `refresh()` |
+| **Titan M2 & Play Integrity** | `usePlayIntegrity()` | none | `isSupported`, `hasStrongBox`, `strongBoxVersion`, `hardwareKeystoreVersion`, `hasAppAttestKey`, `securityModelCompatible` | `requestAttestation(challenge?)`, `refresh()` |
+| **Android 15 · Private Space · Vault** | `usePrivateSpace()` | none | `isInsidePrivateSpace`, `isPrivateSpaceConfigured`, `autoLockPolicy`, `error`, `source` | `refresh()` |
+| **3GPP Rel-17 · Satellite SOS** | `useSatelliteNTN()` | none | `isSupported`, `connectionState`, `carrier`, `signalQualityBars`, `pointingGuidance`, `emergencyServicesReady` | `refresh()` |
+| **Android Spatializer** | `useSpatialAudio()` | none | `isSupported`, `isAvailable`, `isEnabled`, `hasHeadTracker`, `headTrackingMode`, `immersiveAudioLevel` | `refresh()` |
+| **FIR · MLX90632 · thermal** | `useThermometer(initialEmissivity?: number)` | `initialEmissivity` | `isSupported`, `surfaceTemperatureC`, `surfaceTemperatureF`, `ambientTemperatureC`, `emissivity`, `mode` | `setEmissivity(value)`, `setMode(mode)`, `refresh()` |
+| **Wi-Fi 7 · 802.11be · MLO** | `useWifi7MLO()` | none | `isSupported`, `isMloActive`, `links`, `aggregateSpeedMbps`, `error`, `source` | `refresh()` |
+| **Wi-Fi RTT · 802.11az · FTM** | `useWifiRTT()` | none | `isSupported`, `isAvailable`, `isRanging`, `rangingResults`, `error`, `source` | `startRanging(bssids)`, `refresh()` |
 
 ---
 

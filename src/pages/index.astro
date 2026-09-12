@@ -11,11 +11,47 @@
  * design lives on its own page - it is what makes the readings trustworthy once you are using them,
  * not what decides whether to install.
  */
+import { readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { CardGrid, LinkCard, Aside, Code } from '@astrojs/starlight/components';
 import pixelHero from '../assets/pixel-hero.png';
 import { getImage } from 'astro:assets';
 import { withBase } from '../../site.config.mjs';
+
+/**
+ * The hook table, read from `data/hooks` at build time.
+ *
+ * It used to be written out by hand, and it was the last place still claiming 32 hooks: it never
+ * caught up to 39, and was 19 behind by the time the next-gen hooks landed. The landing page is
+ * where most readers form their idea of how much the SDK covers, so it is the worst page to let
+ * drift. Deriving it means a new hook appears here the moment its definition exists.
+ */
+const SECTION_OF = {
+  silicon: 'silicon-compute', compute: 'silicon-compute', ai: 'neural-ai',
+  sensors: 'sensors-actuators', radios: 'radios-security', security: 'radios-security',
+  system: 'system-media', pro: 'pro-exclusives',
+};
+const AREA_LABEL = {
+  'silicon-compute': 'Silicon & compute',
+  'system-media': 'System & media',
+  'sensors-actuators': 'Sensors & actuators',
+  'radios-security': 'Radios & security',
+  'neural-ai': 'AI',
+  'pro-exclusives': 'Pixel Pro',
+};
+
+const hooksDir = path.resolve(process.cwd(), 'data', 'hooks');
+const allHooks = readdirSync(hooksDir)
+  .filter((f) => f.endsWith('.json'))
+  .map((f) => JSON.parse(readFileSync(path.join(hooksDir, f), 'utf8')))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+const hookAreas = Object.entries(AREA_LABEL).map(([section, label]) => ({
+  label,
+  hooks: allHooks.filter((h) => SECTION_OF[h.category] === section),
+}));
+const hookCount = allHooks.length;
 
 /**
  * Starlight renders hero.image.file through <Image width={400} height={400}>, which squashes a
@@ -69,7 +105,7 @@ function Readout() {
 			},
 			actions: [
 				{ text: 'Get started', link: withBase('/getting-started/quickstart/'), variant: 'primary', icon: 'right-arrow' },
-				{ text: 'API reference', link: withBase('/api/hardware-api/'), variant: 'secondary' },
+				{ text: 'API reference', link: withBase('/api/'), variant: 'secondary' },
 			],
 		},
 	}}
@@ -94,40 +130,24 @@ function Readout() {
 				<tr><th>Area</th><th>Hooks</th></tr>
 			</thead>
 			<tbody>
-				<tr>
-					<td><strong>Silicon</strong></td>
-					<td><code>useCPU</code> <code>useGPU</code> <code>useMemory</code> <code>useADPF</code> <code>useTPU</code></td>
-				</tr>
-				<tr>
-					<td><strong>System</strong></td>
-					<td><code>useDevice</code> <code>useDisplay</code> <code>useNetwork</code> <code>useCellular</code> <code>useCapabilities</code></td>
-				</tr>
-				<tr>
-					<td><strong>Sensors</strong></td>
-					<td><code>useSensors</code> <code>useLocation</code> <code>useCamera</code> <code>useVideo</code> <code>useMediaLibrary</code> <code>useAudio</code></td>
-				</tr>
-				<tr>
-					<td><strong>Actuators</strong></td>
-					<td><code>useHaptics</code> <code>useTorch</code> <code>useHiLight</code></td>
-				</tr>
-				<tr>
-					<td><strong>Radios</strong></td>
-					<td><code>useBLE</code> <code>useNFC</code> <code>useUWB</code> <code>useRadios</code></td>
-				</tr>
-				<tr>
-					<td><strong>Security</strong></td>
-					<td><code>useBiometrics</code> <code>useSecurity</code></td>
-				</tr>
-				<tr>
-					<td><strong>AI</strong></td>
-					<td><code>useGemini</code> <code>useSpeechAI</code> <code>useSpeech</code> <code>useGeminiNano</code> <code>useGenAITasks</code> <code>useVisionAI</code> <code>useNaturalLanguageAI</code></td>
-				</tr>
+				{hookAreas.map((area) => (
+					<tr>
+						<td><strong>{area.label}</strong></td>
+						<td>
+							{area.hooks.map((hook) => (
+								<a href={withBase(`/api/${SECTION_OF[hook.category]}/${hook.name.toLowerCase()}/`)}>
+									<code>{hook.name}</code>
+								</a>
+							))}
+						</td>
+					</tr>
+				))}
 			</tbody>
 		</table>
 
 		<p>
-			Every hook is documented with its arguments, every field it returns with the type it really
-			has, and a contract for each function it exposes.
+			All {hookCount} hooks are documented with their arguments, every field they return with the
+			type it really has, and a contract for each function they expose.
 		</p>
 
 		<h2>Where to go</h2>
@@ -139,7 +159,7 @@ function Readout() {
 			/>
 			<LinkCard
 				title="API reference"
-				href={withBase("/api/hardware-api/")}
+				href={withBase("/api/")}
 				description="Every hook: inputs, outputs, and what failure looks like."
 			/>
 			<LinkCard
