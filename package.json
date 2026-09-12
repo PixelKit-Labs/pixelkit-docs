@@ -13,7 +13,8 @@
     "astro": "astro",
     "build:diagrams": "node scripts/build-diagrams.mjs",
     "check:diagrams": "node scripts/check-diagrams.mjs",
-    "check:api": "node scripts/check-api-reference.mjs"
+    "check:api": "node scripts/check-api-reference.mjs",
+    "build:api-pages": "node scripts/build-api-pages.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.42.0",

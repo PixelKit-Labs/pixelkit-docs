@@ -12,12 +12,15 @@ on the hook's declared type.
 cannot be listed in the wrong section or listed twice.
 
 ## Hooks by section
-
+<!-- hooks:start -->
 ### [Silicon and compute](./silicon-compute/)
 
 | Hook | What it reads |
 | :--- | :--- |
 | [`useADPF`](./silicon-compute/useadpf.md) | How much thermal room is left before the phone slows itself down. |
+| [`useADPFHintSession`](./silicon-compute/useadpfhintsession.md) | Active frame workload negotiation with Android Dynamic Performance Framework and Tensor EAS. |
+| [`useBatteryShare`](./silicon-compute/usebatteryshare.md) | Google Pixel Battery Share (Reverse Wireless Qi Charging) telemetry and actuator. |
+| [`useChargingIntelligence`](./silicon-compute/usechargingintelligence.md) | Deep battery health, cycle count, manufacturing dates, and charging wattage tiers. |
 | [`useCPU`](./silicon-compute/usecpu.md) | What the CPU is and how hard it is working right now. |
 | [`useGPU`](./silicon-compute/usegpu.md) | Which GPU this is, and whether your frames are arriving on time. |
 | [`useMemory`](./silicon-compute/usememory.md) | System RAM, this app's heaps, and how close the system is to killing you. |
@@ -29,6 +32,7 @@ cannot be listed in the wrong section or listed twice.
 | Hook | What it reads |
 | :--- | :--- |
 | [`useAppFunctions`](./neural-ai/useappfunctions.md) | Exposes on-device actions and hardware capabilities to system AI and Gemini Assistant. |
+| [`useEmbeddings`](./neural-ai/useembeddings.md) | On-device vector embeddings and semantic cosine similarity scoring via Tensor EdgeTPU. |
 | [`useGemini`](./neural-ai/usegemini.md) | Cloud Gemini chat with real multi-turn history. |
 | [`useGeminiNano`](./neural-ai/usegemininano.md) | Gemini Nano running on the phone, with no network and no API key. |
 | [`useGenAITasks`](./neural-ai/usegenaitasks.md) | Four focused text tasks that run locally: summarise, proofread, rewrite, describe. |
@@ -41,11 +45,14 @@ cannot be listed in the wrong section or listed twice.
 
 | Hook | What it reads |
 | :--- | :--- |
+| [`useAltimeter`](./sensors-actuators/usealtimeter.md) | Precision barometric altimetry, vertical climb/descent velocity, and weather trends. |
 | [`useCamera`](./sensors-actuators/usecamera.md) | Lens, zoom, flash and torch, plus taking photos and recording video. |
 | [`useCameraExtensions`](./sensors-actuators/usecameraextensions.md) | Google computational photography vendor extensions (Night Sight, Ultra HDR, Portrait Bokeh). |
 | [`useHaptics`](./sensors-actuators/usehaptics.md) | Vibration, from simple taps to custom-shaped waveforms. |
 | [`useHealthConnect`](./sensors-actuators/usehealthconnect.md) | Platform health records, steps, and sensor vitals telemetry. |
+| [`useMicrophoneArray`](./sensors-actuators/usemicrophonearray.md) | Multi-mic acoustic array topology, polar directivity, and beamforming controls. |
 | [`useSensors`](./sensors-actuators/usesensors.md) | Motion, orientation, air pressure and ambient light, streaming live. |
+| [`useThermometer`](./sensors-actuators/usethermometer.md) | Non-contact infrared temperature measurement on Google Pixel Pro hardware. |
 | [`useTorch`](./sensors-actuators/usetorch.md) | The rear flashlight, including variable brightness and an SOS strobe. |
 
 ### [Radios and security](./radios-security/)
@@ -55,11 +62,16 @@ cannot be listed in the wrong section or listed twice.
 | [`useBiometrics`](./radios-security/usebiometrics.md) | Fingerprint and face authentication. |
 | [`useBLE`](./radios-security/useble.md) | Bluetooth adapter state, Channel Sounding, bonded devices, and active BLE peripheral discovery. |
 | [`useChannelSounding`](./radios-security/usechannelsounding.md) | Bluetooth Core 6.0 high-accuracy centimeter-precision Phase-Based Ranging (PBR). |
+| [`useKeyAgreement`](./radios-security/usekeyagreement.md) | Hardware-isolated Elliptic Curve Diffie-Hellman session key derivation via Titan M2. |
 | [`useLocation`](./radios-security/uselocation.md) | Position, altitude, heading and speed from the satellite receiver. |
 | [`useNFC`](./radios-security/usenfc.md) | Reading and writing real NFC tags through reader mode. |
 | [`usePlayIntegrity`](./radios-security/useplayintegrity.md) | Hardware Key Attestation and Google Play Integrity verdicts via Titan M2. |
+| [`usePrivateSpace`](./radios-security/useprivatespace.md) | Android 15+ Private Space profile isolation detection and vault policy. |
 | [`useRadios`](./radios-security/useradios.md) | Every radio subsystem in one read. |
+| [`useSatelliteNTN`](./radios-security/usesatellitentn.md) | 3GPP Release-17 Non-Terrestrial Network (satellite SOS) status and alignment telemetry. |
 | [`useSecurity`](./radios-security/usesecurity.md) | Encrypted storage for secrets, backed by hardware. |
+| [`useWifi7MLO`](./radios-security/usewifi7mlo.md) | Wi-Fi 7 (802.11be) Multi-Link Operation and 320 MHz channel telemetry. |
+| [`useWifiRTT`](./radios-security/usewifirtt.md) | Fine Timing Measurement (FTM / 802.11az) indoor centimeter-level positioning. |
 
 ### [System and media](./system-media/)
 
@@ -81,6 +93,8 @@ cannot be listed in the wrong section or listed twice.
 | :--- | :--- |
 | [`useHiLight`](./pro-exclusives/usehilight.md) | The eight-LED ring around the rear camera flash. Real LEDs or nothing. |
 | [`useUWB`](./pro-exclusives/useuwb.md) | Ultra-wideband radio state, hardware ranging sessions, and spatial diagnostics. |
+
+<!-- hooks:end -->
 
 ## Reading a hook's `source`
 

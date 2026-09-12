@@ -30,7 +30,7 @@ const SECTION_OF = {
   compute: 'silicon-compute',
   ai: 'neural-ai',
   sensors: 'sensors-actuators',
-  radios: 'radios-security',
+  radios: 'radios-security', security: 'radios-security',
   system: 'system-media',
   pro: 'pro-exclusives',
 };
