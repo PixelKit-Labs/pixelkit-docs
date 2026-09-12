@@ -8,7 +8,7 @@
 
 Android 14 and later integrated **Health Connect** into the core operating system, replacing fragmented Google Fit APIs with an on-device, encrypted health and fitness storage architecture.
 
-The [`useHealthConnect`](/api/sensors-actuators/#usehealthconnect) hook provides a unified bridge: it connects to the AndroidX Health Connect client for historical record management, while simultaneously exposing direct zero-latency hardware HAL feeds from physical step counters and photoplethysmography (PPG) heart rate sensors.
+The [`useHealthConnect`](/api/sensors-actuators/usehealthconnect/) hook provides a unified bridge: it connects to the AndroidX Health Connect client for historical record management, while simultaneously exposing direct zero-latency hardware HAL feeds from physical step counters and photoplethysmography (PPG) heart rate sensors.
 
 ```tsx
 import React, { useEffect } from 'react';

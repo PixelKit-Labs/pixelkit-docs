@@ -8,7 +8,7 @@
 
 Diagnosing performance bottlenecks, stutter, or frame drops in production React Native applications often requires deep visibility into kernel scheduling, thread states, and hardware DVFS (Dynamic Voltage and Frequency Scaling).
 
-The [`usePerfetto`](/api/silicon-compute/#useperfetto) hook connects directly to the Android 17 Perfetto tracing service (`traced`, v54.0+) and the low-overhead `android.os.Trace` kernel ftrace ring buffer.
+The [`usePerfetto`](/api/silicon-compute/useperfetto/) hook connects directly to the Android 17 Perfetto tracing service (`traced`, v54.0+) and the low-overhead `android.os.Trace` kernel ftrace ring buffer.
 
 ```tsx
 import React from 'react';

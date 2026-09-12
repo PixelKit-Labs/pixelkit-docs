@@ -8,7 +8,7 @@
 
 Starting with Android 17 (API 37), Google introduced the **AppFunctions** architecture (`android.app.appsearch.AppFunctionManager`). AppFunctions replaces legacy App Actions and static Shortcuts with a dynamic, schema-driven framework that lets AI agents (such as the system-level Gemini Assistant) discover, invoke, and inspect app functionalities at runtime.
 
-The [`useAppFunctions`](/api/for-coding-agents/#useappfunctions) hook provides full lifecycle management for registering and executing on-device functions.
+The [`useAppFunctions`](/api/neural-ai/useappfunctions/) hook provides full lifecycle management for registering and executing on-device functions.
 
 ```tsx
 import React from 'react';

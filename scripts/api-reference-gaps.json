@@ -1,0 +1,171 @@
+{
+  "useAudio": {
+    "absentFromPage": [
+      "setSilenceThresholdDbfs"
+    ]
+  },
+  "useBiometrics": {
+    "absentFromData": [
+      "hasChecked",
+      "lastResult",
+      "error",
+      "source",
+      "refresh"
+    ]
+  },
+  "useBLE": {
+    "absentFromData": [
+      "error"
+    ]
+  },
+  "useCamera": {
+    "absentFromPage": [
+      "pausePreview",
+      "resumePreview"
+    ],
+    "absentFromData": [
+      "maxZoomFactor",
+      "isUltraLowLightVideoActive",
+      "toggleUltraLowLightVideo"
+    ]
+  },
+  "useCapabilities": {
+    "absentFromData": [
+      "isPhysicalDevice",
+      "hasTitanM3"
+    ]
+  },
+  "useGemini": {
+    "absentFromData": [
+      "availableModels",
+      "temperature",
+      "topP",
+      "topK",
+      "maxOutputTokens",
+      "systemInstruction",
+      "thinkingBudget",
+      "error",
+      "source"
+    ]
+  },
+  "useGeminiNano": {
+    "absentFromPage": [
+      "warmupMs",
+      "temperature",
+      "topK",
+      "candidateCount",
+      "maxOutputTokens",
+      "setSystemInstruction",
+      "setTemperature",
+      "setTopK",
+      "setCandidateCount",
+      "setMaxOutputTokens",
+      "setThinkingMode"
+    ],
+    "absentFromData": [
+      "summarize",
+      "proofread",
+      "rewrite"
+    ]
+  },
+  "useHaptics": {
+    "absentFromPage": [
+      "selection",
+      "light",
+      "medium",
+      "heavy",
+      "success",
+      "warning",
+      "error"
+    ],
+    "absentFromData": [
+      "triggerHaptic"
+    ]
+  },
+  "useHiLight": {
+    "absentFromData": [
+      "error"
+    ]
+  },
+  "useLocation": {
+    "absentFromData": [
+      "isLocating",
+      "hasFix",
+      "lastFixAt",
+      "error",
+      "source"
+    ]
+  },
+  "useNetwork": {
+    "absentFromData": [
+      "hasRead",
+      "isChecking",
+      "error",
+      "source"
+    ]
+  },
+  "useRadios": {
+    "absentFromPage": [
+      "wifiRtt"
+    ]
+  },
+  "useSecurity": {
+    "absentFromData": [
+      "error",
+      "lastOperation",
+      "source"
+    ]
+  },
+  "useSensors": {
+    "absentFromData": [
+      "hasMotionSample",
+      "barometerAvailable",
+      "lightAvailable",
+      "error",
+      "source"
+    ]
+  },
+  "useSpeech": {
+    "absentFromPage": [
+      "setRate",
+      "setPitch"
+    ]
+  },
+  "useSpeechAI": {
+    "absentFromPage": [
+      "setRecognitionMode"
+    ],
+    "absentFromData": [
+      "source"
+    ]
+  },
+  "useTPU": {
+    "absentFromData": [
+      "throughputTokensPerSec",
+      "memoryFootprintMB"
+    ]
+  },
+  "useUWB": {
+    "absentFromData": [
+      "error"
+    ]
+  },
+  "useVideo": {
+    "absentFromPage": [
+      "isMuted",
+      "isLooping",
+      "play",
+      "pause",
+      "togglePlay"
+    ]
+  },
+  "useVisionAI": {
+    "absentFromData": [
+      "selectedImageBase64",
+      "detectFaceMesh",
+      "labelImage",
+      "segmentSelfie",
+      "recognizeDigitalInk"
+    ]
+  }
+}

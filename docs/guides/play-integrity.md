@@ -8,7 +8,7 @@
 
 Securing mobile applications against malicious tampering, app cloning, reverse engineering, and rooted environments requires verifiable hardware roots of trust.
 
-Google Pixel 11 Pro includes Google's custom **Titan M2** security chip, providing a dedicated **StrongBox KeyStore** (KeyMint 400). The [`usePlayIntegrity`](/api/radios-security/#useplayintegrity) hook pairs Google Play Integrity API verdicts with on-chip StrongBox asymmetric keypair attestation.
+Google Pixel 11 Pro includes Google's custom **Titan M2** security chip, providing a dedicated **StrongBox KeyStore** (KeyMint 400). The [`usePlayIntegrity`](/api/radios-security/useplayintegrity/) hook pairs Google Play Integrity API verdicts with on-chip StrongBox asymmetric keypair attestation.
 
 ```tsx
 import React, { useState } from 'react';

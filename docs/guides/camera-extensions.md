@@ -8,7 +8,7 @@
 
 Google Pixel phones are renowned for computational photography algorithms that run directly on the Tensor ISP and TPU. While third-party camera apps historically had to build their own software pipelines or settle for standard Camera2 output, Android's CameraX Extensions library provides vendor-level hooks into Google's proprietary camera processing pipeline.
 
-The [`useCameraExtensions`](/api/sensors-actuators/#usecameraextensions) hook exposes these hardware extensions on Pixel 11 Pro.
+The [`useCameraExtensions`](/api/sensors-actuators/usecameraextensions/) hook exposes these hardware extensions on Pixel 11 Pro.
 
 ```tsx
 import React, { useState } from 'react';

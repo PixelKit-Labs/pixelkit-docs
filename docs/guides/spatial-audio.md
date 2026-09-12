@@ -10,7 +10,7 @@ Spatial Audio transforms stereo and multichannel audio into an immersive three-d
 
 Starting with Android 13 and expanded in Android 17 (API 37), the Android audio framework exposes the `android.media.Spatializer` API. On Google Pixel 11 Pro, spatial rendering is hardware-accelerated directly inside the Tensor G6 low-power Audio DSP, minimizing CPU utilization and battery drain during extended listening sessions.
 
-PixelKit exposes this capability via the [`useSpatialAudio`](/api/system-media/#usespatialaudio) hook.
+PixelKit exposes this capability via the [`useSpatialAudio`](/api/system-media/usespatialaudio/) hook.
 
 ```tsx
 import React from 'react';

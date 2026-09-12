@@ -8,11 +8,12 @@
     "sync": "node scripts/sync-docs.mjs",
     "dev": "npm run sync && astro dev",
     "start": "npm run sync && astro dev",
-    "build": "npm run check:diagrams && npm run sync && astro build",
+    "build": "npm run check:diagrams && npm run check:api && npm run sync && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "build:diagrams": "node scripts/build-diagrams.mjs",
-    "check:diagrams": "node scripts/check-diagrams.mjs"
+    "check:diagrams": "node scripts/check-diagrams.mjs",
+    "check:api": "node scripts/check-api-reference.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.42.0",

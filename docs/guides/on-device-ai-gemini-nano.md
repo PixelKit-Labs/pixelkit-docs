@@ -652,7 +652,7 @@ Checklist before you call it done:
 - [ ] `thinking: true` produces thoughts on Pixel 11, empty array on Pixel 9/10.
 - [ ] Structured output `ToolChoice` parses for 20 consecutive prompts with `temperature: 0.2`.
 - [ ] Airplane mode: `prefer_on_device` still answers; `prefer_cloud` falls back to Nano.
-- [ ] Docs updated: `docs/api/neural-ai.md`, `docs/HARDWARE_API.md`, `README.md` matrix, `DocsScreen.tsx` entry for `useGeminiNano`.
+- [ ] Docs updated: `docs/api/neural-ai/usegemininano.md`, `data/hooks/useGeminiNano.json`, `README.md` matrix.
 
 ---
 

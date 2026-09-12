@@ -10,7 +10,7 @@ Traditional Bluetooth proximity detection relies on Received Signal Strength Ind
 
 Starting with Bluetooth Core Specification 6.0 and Android 17 (API 37), Google introduced native platform support for **Bluetooth Channel Sounding (CS)**. Google Pixel 11 Pro (`grizzly`) pairs Tensor G6 with an advanced dual-antenna BLE 6.0 radio controller, enabling hardware-accelerated **Phase-Based Ranging (PBR)** and **Round-Trip Time (RTT)** ranging.
 
-PixelKit exposes this physical radio capability via the [`useChannelSounding`](/api/radios-security/#usechannelsounding) hook.
+PixelKit exposes this physical radio capability via the [`useChannelSounding`](/api/radios-security/usechannelsounding/) hook.
 
 ```tsx
 import React, { useEffect } from 'react';

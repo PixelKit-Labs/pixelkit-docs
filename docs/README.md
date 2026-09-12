@@ -15,12 +15,12 @@ Documentation for the **PixelKit SDK**: the silicon, sensors, radios and on-devi
 * **[Architecture & Silicon Overview](./getting-started/architecture.md)**: The Tensor G6 7-core cluster, the PowerVR GPU, the StrongBox-backed keystore, wireless charging and the Hermes runtime — with device-verified figures separated from Google's published specification.
 
 ### [API Reference](./api/)
-* **[Silicon & Compute](./api/silicon-compute.md)**: `useCPU`, `useGPU`, `useTPU`, `useMemory`, `useADPF`.
-* **[Pixel Pro Exclusives](./api/pro-exclusives.md)**: `useHiLight` (camera bar notification ring), `useUWB` (spatial radar AoA).
-* **[Neural & AI](./api/neural-ai.md)**: `useGemini`, `useGeminiNano`, `useGenAITasks`, `useNaturalLanguageAI`, `useSpeechAI`, `useSpeech`, `useVisionAI`, `geminiClient`.
-* **[Sensors & Actuators](./api/sensors-actuators.md)**: `useSensors` (6-axis IMU, barometer, light), `useCamera` (capture, zoom, flash, torch), `useTorch`, `useHaptics` (LRA patterns, envelopes, primitives).
-* **[Radios & Security](./api/radios-security.md)**: `useBiometrics`, `useSecurity` (SecureStore on the Android Keystore; no post-quantum algorithms are used), `useBLE`, `useNFC`, `useRadios`, `useLocation` (dual-band GNSS).
-* **[System & Media](./api/system-media.md)**: `useAudio`, `useCapabilities`, `useDisplay` (1-120 Hz LTPO, HDR, ARR), `useDevice`, `useNetwork`, `useVideo`, `useMediaLibrary`, `useCellular`.
+* **[Silicon & Compute](./api/silicon-compute/README.md)**: `useCPU`, `useGPU`, `useTPU`, `useMemory`, `useADPF`.
+* **[Pixel Pro Exclusives](./api/pro-exclusives/README.md)**: `useHiLight` (camera bar notification ring), `useUWB` (spatial radar AoA).
+* **[Neural & AI](./api/neural-ai/README.md)**: `useGemini`, `useGeminiNano`, `useGenAITasks`, `useNaturalLanguageAI`, `useSpeechAI`, `useSpeech`, `useVisionAI`, `geminiClient`.
+* **[Sensors & Actuators](./api/sensors-actuators/README.md)**: `useSensors` (6-axis IMU, barometer, light), `useCamera` (capture, zoom, flash, torch), `useTorch`, `useHaptics` (LRA patterns, envelopes, primitives).
+* **[Radios & Security](./api/radios-security/README.md)**: `useBiometrics`, `useSecurity` (SecureStore on the Android Keystore; no post-quantum algorithms are used), `useBLE`, `useNFC`, `useRadios`, `useLocation` (dual-band GNSS).
+* **[System & Media](./api/system-media/README.md)**: `useAudio`, `useCapabilities`, `useDisplay` (1-120 Hz LTPO, HDR, ARR), `useDevice`, `useNetwork`, `useVideo`, `useMediaLibrary`, `useCellular`.
 
 ### [AI Agent Guidance](./ai-guidance/)
 * **[Agent Primer](./AI_PRIMER.md)**: the rules an agent follows here, the hook table with inputs, outputs and functions, worked recipes, and a copy-paste system prompt.
@@ -41,7 +41,7 @@ Documentation for the **PixelKit SDK**: the silicon, sensors, radios and on-devi
 
 
 ### Consolidated Single-File Manuals
-* **[HARDWARE_API.md](./HARDWARE_API.md)**: All 39 hooks in one document, each with its inputs, outputs and function contracts.
+* **[API reference](./api/README.md)**: One page per hook, each with its inputs, outputs and function contracts.
 * **[AI_PRIMER.md](./AI_PRIMER.md)**: Complete AI agent operational manual in a single document.
 
 ---

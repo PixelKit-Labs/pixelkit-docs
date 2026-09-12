@@ -1,7 +1,7 @@
 # AI Agent Production Recipes
 > **Field-tested code for autonomous agents on the Pixel 11 Pro**
 
-Complete, production-grade recipes for common agentic tasks. Each one states what it takes in and what it gives back, so an agent can wire it up without reading the hook source first. Every hook contract behind these recipes is documented field by field in [`docs/HARDWARE_API.md`](../HARDWARE_API.md).
+Complete, production-grade recipes for common agentic tasks. Each one states what it takes in and what it gives back, so an agent can wire it up without reading the hook source first. Every hook contract behind these recipes is documented field by field on its own page in the [API reference](../api/README.md).
 
 ---
 
