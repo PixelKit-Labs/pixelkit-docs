@@ -1,0 +1,50 @@
+{
+  "id": "useKeyAgreement",
+  "name": "useKeyAgreement",
+  "category": "security",
+  "chipBadge": "Titan M2 · StrongBox · ECDH",
+  "summary": "Hardware-isolated Elliptic Curve Diffie-Hellman session key derivation via Titan M2.",
+  "plain": "Generates hardware-bound EC keypairs in the Titan M2 security enclave and derives high-entropy shared secrets via ECDH without ever exposing the private key to software memory.",
+  "description": "Utilizes AndroidKeyStore and Java Cryptography Architecture (JCA) backed by the Google Titan M2 StrongBox hardware security module. Implements Elliptic Curve Diffie-Hellman (ECDH) on the NIST P-256 (secp256r1) curve with PURPOSE_AGREE_KEY. Generates hardware-isolated keypairs and derives symmetrical AES shared secrets against external peer public keys.",
+  "signature": "useKeyAgreement(): KeyAgreementTelemetry",
+  "params": [],
+  "returns": [
+    {
+      "name": "isStrongBoxSupported",
+      "type": "boolean",
+      "desc": "Whether the device hardware includes a dedicated StrongBox Keymaster module (Titan M2)."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Latest error message if keypair generation or secret derivation failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' or 'unavailable'."
+    },
+    {
+      "name": "generateKeyPair",
+      "type": "(alias: string, preferStrongBox?: boolean) => Promise<KeyAgreementKeyPairResult>",
+      "desc": "Generates an EC keypair inside the hardware enclave with PURPOSE_AGREE_KEY."
+    },
+    {
+      "name": "deriveSharedSecret",
+      "type": "(alias: string, peerPublicKeyBase64: string) => Promise<SharedSecretResult>",
+      "desc": "Computes an ECDH shared secret using the hardware private key and peer's public key."
+    }
+  ],
+  "actions": [
+    {
+      "name": "generateKeyPair(alias, preferStrongBox)",
+      "desc": "Generates an EC keypair inside the hardware enclave."
+    },
+    {
+      "name": "deriveSharedSecret(alias, peerPublicKeyBase64)",
+      "desc": "Derives a shared secret via ECDH with a peer's public key."
+    }
+  ],
+  "example": "import { useKeyAgreement } from '@pixelkit-labs/sdk';\n\nfunction KeyExchange() {\n  const { isStrongBoxSupported, generateKeyPair, deriveSharedSecret } = useKeyAgreement();\n  const handleExchange = async () => {\n    const pair = await generateKeyPair('session_key_1', true);\n    console.log('Public Key:', pair.publicKeyBase64);\n  };\n  return <Button title=\"Generate StrongBox Key\" onPress={handleExchange} />;\n}",
+  "agentNote": "Titan M2 StrongBox backed on Google Pixel 3 and newer. Hardware isolation guarantees private keys cannot be extracted even by rooted or compromised kernels."
+}

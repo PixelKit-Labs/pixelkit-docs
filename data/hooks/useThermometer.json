@@ -1,0 +1,90 @@
+{
+  "id": "useThermometer",
+  "name": "useThermometer",
+  "category": "sensors",
+  "chipBadge": "FIR · MLX90632 · thermal",
+  "summary": "Non-contact infrared temperature measurement on Google Pixel Pro hardware.",
+  "plain": "Reads surface and ambient temperatures from the dedicated far-infrared (FIR) sensor on Pixel 8 Pro, 9 Pro, 10 Pro, and 11 Pro devices. Allows adjusting material emissivity and measurement mode.",
+  "description": "Interfaces with the Melexis MLX90632 non-contact FIR temperature sensor integrated into Google Pixel Pro camera visors. Surfaces calibrated surface temperatures in both Celsius and Fahrenheit along with ambient die temperature. Supports configurable emissivity correction factors (0.10 to 1.00) and measurement modes (object, body, ambient). Reports unavailable on non-Pro models.",
+  "signature": "useThermometer(initialEmissivity?: number): ThermometerTelemetry",
+  "params": [
+    {
+      "name": "initialEmissivity",
+      "type": "number",
+      "desc": "Surface emissivity factor from 0.1 to 1.0, defaulting to 0.95 (organic/skin/water)."
+    }
+  ],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether the device hardware features the FIR non-contact temperature sensor."
+    },
+    {
+      "name": "surfaceTemperatureC",
+      "type": "number | null",
+      "desc": "Calibrated surface temperature in degrees Celsius (°C), or null if absent/unmeasured."
+    },
+    {
+      "name": "surfaceTemperatureF",
+      "type": "number | null",
+      "desc": "Calibrated surface temperature in degrees Fahrenheit (°F), or null."
+    },
+    {
+      "name": "ambientTemperatureC",
+      "type": "number | null",
+      "desc": "Sensor die / internal ambient temperature in degrees Celsius (°C), or null."
+    },
+    {
+      "name": "emissivity",
+      "type": "number",
+      "desc": "Current material surface emissivity coefficient (0.1 to 1.0)."
+    },
+    {
+      "name": "mode",
+      "type": "'object' | 'body' | 'ambient'",
+      "desc": "Target measurement mode: 'object', 'body', or 'ambient'."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if sensor probing failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' or 'unavailable'."
+    },
+    {
+      "name": "setEmissivity",
+      "type": "(value: number) => void",
+      "desc": "Updates the material emissivity factor."
+    },
+    {
+      "name": "setMode",
+      "type": "(mode: 'object' | 'body' | 'ambient') => void",
+      "desc": "Sets the measurement mode to 'object', 'body', or 'ambient'."
+    },
+    {
+      "name": "refresh",
+      "type": "() => void",
+      "desc": "Probes the hardware sensor for a fresh reading."
+    }
+  ],
+  "actions": [
+    {
+      "name": "setEmissivity(value)",
+      "desc": "Updates the material surface emissivity coefficient."
+    },
+    {
+      "name": "setMode(mode)",
+      "desc": "Switches the calculation mode between 'object', 'body', and 'ambient'."
+    },
+    {
+      "name": "refresh()",
+      "desc": "Requests an updated temperature reading from hardware."
+    }
+  ],
+  "example": "import { useThermometer } from '@pixelkit-labs/sdk';\n\nfunction TemperatureBadge() {\n  const { isSupported, surfaceTemperatureC, surfaceTemperatureF } = useThermometer();\n  if (!isSupported) return <Text>Thermometer unavailable</Text>;\n  return <Text>Temp: {surfaceTemperatureC?.toFixed(1) ?? '—'} °C ({surfaceTemperatureF?.toFixed(1) ?? '—'} °F)</Text>;\n}",
+  "agentNote": "Available exclusively on Pixel Pro devices (8 Pro, 9 Pro, 10 Pro, 11 Pro). Non-Pro devices return isSupported: false with null readings."
+}

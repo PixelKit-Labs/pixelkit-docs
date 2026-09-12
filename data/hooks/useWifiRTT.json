@@ -1,0 +1,65 @@
+{
+  "id": "useWifiRTT",
+  "name": "useWifiRTT",
+  "category": "radios",
+  "chipBadge": "Wi-Fi RTT · 802.11az · FTM",
+  "summary": "Fine Timing Measurement (FTM / 802.11az) indoor centimeter-level positioning.",
+  "plain": "Measures round-trip time (RTT) distance between the phone and nearby Wi-Fi access points to determine indoor location within 1 to 2 meters without GPS.",
+  "description": "Utilizes android.net.wifi.rtt.WifiRttManager for 802.11mc / 802.11az Fine Timing Measurement ranging. Discovers RTT-capable access points and measures exact flight time in picoseconds, returning calculated distances in millimeters with standard deviation accuracy metrics. Operates indoors where satellite GNSS signals are obstructed.",
+  "signature": "useWifiRTT(): WifiRTTTelemetry",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether the device hardware features the Wi-Fi RTT ranging subsystem."
+    },
+    {
+      "name": "isAvailable",
+      "type": "boolean",
+      "desc": "Whether the Wi-Fi RTT ranging service is currently active and available."
+    },
+    {
+      "name": "isRanging",
+      "type": "boolean",
+      "desc": "Whether an active RTT ranging sweep is currently in progress."
+    },
+    {
+      "name": "rangingResults",
+      "type": "WifiRttResult[]",
+      "desc": "Latest distance measurements to specified AP BSSIDs in millimeters."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if RTT service probing or ranging execution failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' or 'unavailable'."
+    },
+    {
+      "name": "startRanging",
+      "type": "(bssids: string[]) => Promise<WifiRttResult[]>",
+      "desc": "Initiates an active round-trip time ranging request against specified AP BSSIDs."
+    },
+    {
+      "name": "refresh",
+      "type": "() => void",
+      "desc": "Re-checks the availability status of the Wi-Fi RTT service."
+    }
+  ],
+  "actions": [
+    {
+      "name": "startRanging(bssids)",
+      "desc": "Performs round-trip time distance ranging to target BSSIDs."
+    },
+    {
+      "name": "refresh()",
+      "desc": "Refreshes Wi-Fi RTT service status."
+    }
+  ],
+  "example": "import { useWifiRTT } from '@pixelkit-labs/sdk';\n\nfunction IndoorRadar() {\n  const { isAvailable, rangingResults, startRanging } = useWifiRTT();\n  return (\n    <View>\n      <Text>RTT Service: {isAvailable ? 'Ready' : 'Offline'}</Text>\n      <Button title=\"Range Access Points\" onPress={() => startRanging(['00:11:22:33:44:55'])} />\n    </View>\n  );\n}",
+  "agentNote": "Requires Android 9+ (API 28+) and location permissions. Access points must support 802.11mc or 802.11az FTM responders."
+}

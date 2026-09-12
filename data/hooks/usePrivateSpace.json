@@ -1,0 +1,51 @@
+{
+  "id": "usePrivateSpace",
+  "name": "usePrivateSpace",
+  "category": "security",
+  "chipBadge": "Android 15 · Private Space · Vault",
+  "summary": "Android 15+ Private Space profile isolation detection and vault policy.",
+  "plain": "Detects whether the running app instance is executing inside Android 15's isolated Private Space vault or the primary profile, and inspects vault auto-lock settings.",
+  "description": "Utilizes android.os.UserManager.isPrivateProfile() introduced in Android 15 (API 35). Identifies whether the current application process has been launched within the isolated user profile partition (Private Space), detects whether Private Space has been set up on the device, and reports the active lock policy (immediate, screen_off, device_reboot).",
+  "signature": "usePrivateSpace(): PrivateSpaceTelemetry",
+  "params": [],
+  "returns": [
+    {
+      "name": "isInsidePrivateSpace",
+      "type": "boolean",
+      "desc": "Whether the current application process is executing inside the isolated Private Space profile."
+    },
+    {
+      "name": "isPrivateSpaceConfigured",
+      "type": "boolean",
+      "desc": "Whether the device currently has a Private Space secure profile configured."
+    },
+    {
+      "name": "autoLockPolicy",
+      "type": "'immediate' | 'screen_off' | 'device_reboot' | 'unknown'",
+      "desc": "Configured auto-lock timeout policy for the private space vault."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if private profile querying failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' or 'unavailable'."
+    },
+    {
+      "name": "refresh",
+      "type": "() => void",
+      "desc": "Re-reads user profile isolation state."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refresh()",
+      "desc": "Requests an updated check of Private Space status."
+    }
+  ],
+  "example": "import { usePrivateSpace } from '@pixelkit-labs/sdk';\n\nfunction VaultStatus() {\n  const { isInsidePrivateSpace, isPrivateSpaceConfigured } = usePrivateSpace();\n  return <Text>Vault: {isInsidePrivateSpace ? 'Inside Private Space' : 'Main Profile'} (Configured: {String(isPrivateSpaceConfigured)})</Text>;\n}",
+  "agentNote": "Introduced in Android 15 (API 35). Earlier Android versions return isInsidePrivateSpace: false and autoLockPolicy: 'unknown'."
+}

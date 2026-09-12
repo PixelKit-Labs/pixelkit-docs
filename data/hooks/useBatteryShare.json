@@ -1,0 +1,79 @@
+{
+  "id": "useBatteryShare",
+  "name": "useBatteryShare",
+  "category": "silicon",
+  "chipBadge": "Qi TX · reverse charging",
+  "summary": "Google Pixel Battery Share (Reverse Wireless Qi Charging) telemetry and actuator.",
+  "plain": "Monitors and controls the phone's reverse wireless charging transmitter coil to share battery power with accessories like Pixel Buds or other Qi devices docked on the back.",
+  "description": "Directly interfaces with the Google Pixel reverse wireless charging subsystem (/sys/class/power_supply/wireless/reverse_chg_mode). Reports whether wireless power transfer is active, whether a compatible Qi receiver is docked, real-time power transmission in watts, and allows programmatically enabling or disabling power transfer with safety cutoff thresholds.",
+  "signature": "useBatteryShare(): BatteryShareTelemetry",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether this device hardware supports reverse wireless power transmission."
+    },
+    {
+      "name": "isActive",
+      "type": "boolean",
+      "desc": "Whether the Qi TX reverse charging coil is currently energized."
+    },
+    {
+      "name": "isReceiverDetected",
+      "type": "boolean",
+      "desc": "Whether a compatible Qi receiver device is docked on the reverse charging coil."
+    },
+    {
+      "name": "transmittedWatts",
+      "type": "number | null",
+      "desc": "Real-time power transmitted in watts (W), or null if inactive/unsupported."
+    },
+    {
+      "name": "batteryThreshold",
+      "type": "number",
+      "desc": "Configured battery percentage cutoff threshold (stops sharing below this percentage)."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if reading or toggling the coil failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' or 'unavailable'."
+    },
+    {
+      "name": "setBatteryShare",
+      "type": "(enabled: boolean) => Promise<boolean>",
+      "desc": "Toggles reverse wireless power transmission on or off."
+    },
+    {
+      "name": "setBatteryThreshold",
+      "type": "(pct: number) => void",
+      "desc": "Sets the safety battery cutoff percentage (e.g. 15%)."
+    },
+    {
+      "name": "refresh",
+      "type": "() => void",
+      "desc": "Re-reads the reverse wireless charging subsystem status."
+    }
+  ],
+  "actions": [
+    {
+      "name": "setBatteryShare(enabled)",
+      "desc": "Turns reverse wireless charging on or off."
+    },
+    {
+      "name": "setBatteryThreshold(pct)",
+      "desc": "Sets minimum battery cutoff percentage."
+    },
+    {
+      "name": "refresh()",
+      "desc": "Refreshes reverse wireless charging state."
+    }
+  ],
+  "example": "import { useBatteryShare } from '@pixelkit-labs/sdk';\n\nfunction PowerShareToggle() {\n  const { isSupported, isActive, setBatteryShare } = useBatteryShare();\n  if (!isSupported) return <Text>Battery Share not supported</Text>;\n  return <Button title={isActive ? 'Stop Sharing' : 'Share Battery'} onPress={() => setBatteryShare(!isActive)} />;\n}",
+  "agentNote": "Supported on Google Pixel 5 and later flagship models with reverse wireless charging coils."
+}

@@ -1,0 +1,56 @@
+{
+  "id": "useWifi7MLO",
+  "name": "useWifi7MLO",
+  "category": "radios",
+  "chipBadge": "Wi-Fi 7 · 802.11be · MLO",
+  "summary": "Wi-Fi 7 (802.11be) Multi-Link Operation and 320 MHz channel telemetry.",
+  "plain": "Inspects affiliated Wi-Fi 7 radio links operating simultaneously across 2.4 GHz, 5 GHz, and 6 GHz spectrum, reporting bonded link speeds and channel bandwidths.",
+  "description": "Reads Multi-Link Operation (MLO) telemetry introduced in Android 14+ (API 34+) for 802.11be Wi-Fi 7 routers and modems. Surfaces the array of active affiliated links, their respective channel widths (including ultra-wide 320 MHz channels on 6 GHz), per-link transmit and receive speeds, and calculates combined aggregate throughput. Reports inactive on Wi-Fi 6 or earlier.",
+  "signature": "useWifi7MLO(): Wifi7MloTelemetry",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether the device hardware and platform support Wi-Fi 7 MLO querying."
+    },
+    {
+      "name": "isMloActive",
+      "type": "boolean",
+      "desc": "Whether multiple simultaneous radio links are currently bonded."
+    },
+    {
+      "name": "links",
+      "type": "MloLinkInfo[]",
+      "desc": "Array of affiliated radio links with frequency band, channel width, RSSI, and link speeds."
+    },
+    {
+      "name": "aggregateSpeedMbps",
+      "type": "number | null",
+      "desc": "Combined theoretical PHY throughput across all bonded links in Mbps, or null."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if Wi-Fi link inspection failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' or 'unavailable'."
+    },
+    {
+      "name": "refresh",
+      "type": "() => void",
+      "desc": "Queries the Wi-Fi subsystem for updated link state."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refresh()",
+      "desc": "Requests an updated reading of affiliated Wi-Fi 7 links."
+    }
+  ],
+  "example": "import { useWifi7MLO } from '@pixelkit-labs/sdk';\n\nfunction Wifi7Status() {\n  const { isMloActive, links, aggregateSpeedMbps } = useWifi7MLO();\n  return <Text>MLO: {isMloActive ? 'Active' : 'Single-link'} · Links: {links.length} · Speed: {aggregateSpeedMbps ?? '—'} Mbps</Text>;\n}",
+  "agentNote": "Available on Android 14+ (API 34+) devices with Wi-Fi 7 hardware (Google Pixel 8/9/10/11)."
+}

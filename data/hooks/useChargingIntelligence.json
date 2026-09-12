@@ -1,0 +1,71 @@
+{
+  "id": "useChargingIntelligence",
+  "name": "useChargingIntelligence",
+  "category": "silicon",
+  "chipBadge": "battery · health · SoH",
+  "summary": "Deep battery health, cycle count, manufacturing dates, and charging wattage tiers.",
+  "plain": "Surfaces low-level battery health indicators: lifetime physical charge cycles, maximum state of health (SoH) capacity relative to design, manufacture and first-activation dates, and USB-PD PPS fast charging tiers.",
+  "description": "Reads Android 14+ battery health metrics and Google Pixel power supply sysfs telemetry. Provides lifetime charge cycles (BatteryManager.EXTRA_CYCLE_COUNT), state of health percentage (/sys/class/power_supply/battery/soh), factory manufacture date, first-use date, real-time charging wattage, and classifies charging speed into tiers (slow, standard, rapid, ultra_rapid > 30W).",
+  "signature": "useChargingIntelligence(): ChargingIntelligenceTelemetry",
+  "params": [],
+  "returns": [
+    {
+      "name": "stateOfHealthPercent",
+      "type": "number | null",
+      "desc": "Current maximum battery capacity relative to factory design capacity (0-100%), or null if unreadable."
+    },
+    {
+      "name": "cycleCount",
+      "type": "number | null",
+      "desc": "Lifetime physical charge cycles completed by the battery pack."
+    },
+    {
+      "name": "manufactureDate",
+      "type": "string | null",
+      "desc": "Factory manufacture timestamp/date of the physical battery cell."
+    },
+    {
+      "name": "firstUsageDate",
+      "type": "string | null",
+      "desc": "Date the battery was first activated/used in service."
+    },
+    {
+      "name": "chargingWattage",
+      "type": "number | null",
+      "desc": "Real-time charging power in watts (W) delivered to the battery."
+    },
+    {
+      "name": "chargingTier",
+      "type": "'slow' | 'standard' | 'rapid' | 'ultra_rapid'",
+      "desc": "Classification of charging speed based on delivered wattage."
+    },
+    {
+      "name": "chargeLimitActive",
+      "type": "boolean",
+      "desc": "Whether the Android battery protect 80% charge limit is currently engaged."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if battery telemetry query failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' or 'unavailable'."
+    },
+    {
+      "name": "refresh",
+      "type": "() => void",
+      "desc": "Re-reads battery health and charging state."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refresh()",
+      "desc": "Requests an updated battery intelligence reading."
+    }
+  ],
+  "example": "import { useChargingIntelligence } from '@pixelkit-labs/sdk';\n\nfunction BatteryHealthCard() {\n  const { stateOfHealthPercent, cycleCount, chargingTier } = useChargingIntelligence();\n  return <Text>Health: {stateOfHealthPercent ?? '—'}% · Cycles: {cycleCount ?? '—'} · Tier: {chargingTier}</Text>;\n}",
+  "agentNote": "Battery cycle counts require Android 14+ (API 34+). State of health % and manufacture dates are read from Pixel battery sysfs."
+}

@@ -1,0 +1,70 @@
+{
+  "id": "useADPFHintSession",
+  "name": "useADPFHintSession",
+  "category": "silicon",
+  "chipBadge": "ADPF · EAS · frame hints",
+  "summary": "Active frame workload negotiation with Android Dynamic Performance Framework and Tensor EAS.",
+  "plain": "Creates an active ADPF hint session with the Energy-Aware Scheduler to dynamically adjust CPU clock frequencies based on actual frame render workloads, eliminating stutter without wasting battery.",
+  "description": "Interfaces directly with android.os.PerformanceHintManager (Android 12+ API 31+). Manages an active thread hint session allowing apps to report exact frame computation times in nanoseconds. This informs the kernel scheduler in real-time whether the workload is meeting its deadline (e.g. 16.67ms for 60Hz or 8.33ms for 120Hz), scaling frequencies up only when needed.",
+  "signature": "useADPFHintSession(initialTargetDurationMs?: number): ADPFHintSessionTelemetry",
+  "params": [
+    {
+      "name": "initialTargetDurationMs",
+      "type": "number",
+      "desc": "Initial target frame duration budget in milliseconds, defaulting to 16.67ms (60 FPS)."
+    }
+  ],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether ADPF PerformanceHintManager sessions are supported on this device."
+    },
+    {
+      "name": "targetFrameDurationMs",
+      "type": "number",
+      "desc": "Current target frame render budget in milliseconds."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if hint session creation or reporting failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' or 'unavailable'."
+    },
+    {
+      "name": "reportWorkDuration",
+      "type": "(actualDurationNanos: number) => boolean",
+      "desc": "Reports actual computation duration taken by the render thread in nanoseconds."
+    },
+    {
+      "name": "updateTargetWorkDuration",
+      "type": "(targetNanos: number) => boolean",
+      "desc": "Updates target frame deadline in nanoseconds (e.g. dynamically switching refresh rates)."
+    },
+    {
+      "name": "closeSession",
+      "type": "() => boolean",
+      "desc": "Closes the active ADPF hint session."
+    }
+  ],
+  "actions": [
+    {
+      "name": "reportWorkDuration(actualDurationNanos)",
+      "desc": "Reports frame workload duration to the Energy-Aware Scheduler."
+    },
+    {
+      "name": "updateTargetWorkDuration(targetNanos)",
+      "desc": "Updates the target frame deadline in nanoseconds."
+    },
+    {
+      "name": "closeSession()",
+      "desc": "Terminates the active ADPF hint session."
+    }
+  ],
+  "example": "import { useADPFHintSession } from '@pixelkit-labs/sdk';\n\nfunction HeavyCompute() {\n  const { isSupported, reportWorkDuration } = useADPFHintSession(16.67);\n  const runFrame = () => {\n    const t0 = performance.now();\n    // ... expensive work ...\n    const durationNanos = Math.round((performance.now() - t0) * 1_000_000);\n    reportWorkDuration(durationNanos);\n  };\n  return <Button title=\"Execute Workload\" onPress={runFrame} />;\n}",
+  "agentNote": "Available on Android 12+ (API 31+). Directly drives Tensor DVFS (dynamic voltage and frequency scaling)."
+}

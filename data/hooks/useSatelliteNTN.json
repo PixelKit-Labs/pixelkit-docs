@@ -1,0 +1,66 @@
+{
+  "id": "useSatelliteNTN",
+  "name": "useSatelliteNTN",
+  "category": "radios",
+  "chipBadge": "3GPP Rel-17 · Satellite SOS",
+  "summary": "3GPP Release-17 Non-Terrestrial Network (satellite SOS) status and alignment telemetry.",
+  "plain": "Tracks direct-to-satellite modem connectivity for emergency SOS, reporting provider connection states, signal strength bars, and horizon antenna pointing guidance.",
+  "description": "Interfaces with Android 15+ (API 35+) satellite telephony services and 3GPP Rel-17 NTN modems. Monitors real-time satellite connection states (disconnected, searching, connected, pointing_assist), provider network names, signal quality bars (0 to 4), emergency SOS packet readiness, and surfaces azimuth and elevation vectors to assist pointing the phone at the horizon satellite constellation.",
+  "signature": "useSatelliteNTN(): SatelliteNTNTechTelemetry",
+  "params": [],
+  "returns": [
+    {
+      "name": "isSupported",
+      "type": "boolean",
+      "desc": "Whether this device hardware and modem support Non-Terrestrial Network satellite links."
+    },
+    {
+      "name": "connectionState",
+      "type": "'disconnected' | 'searching' | 'connected' | 'pointing_assist'",
+      "desc": "Current lifecycle connection state with the satellite constellation."
+    },
+    {
+      "name": "carrier",
+      "type": "string | null",
+      "desc": "Satellite network provider name (e.g. Skylo, T-Mobile Starlink, Iridium), or null."
+    },
+    {
+      "name": "signalQualityBars",
+      "type": "number | null",
+      "desc": "Signal quality indicator bars (0 to 4), or null if disconnected."
+    },
+    {
+      "name": "pointingGuidance",
+      "type": "SatelliteGuidance | null",
+      "desc": "Antenna pointing guidance with azimuth, elevation, and alignment flag, or null."
+    },
+    {
+      "name": "emergencyServicesReady",
+      "type": "boolean",
+      "desc": "Whether the satellite link is ready for emergency SOS packet transmission."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if satellite modem querying failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' or 'unavailable'."
+    },
+    {
+      "name": "refresh",
+      "type": "() => void",
+      "desc": "Re-reads satellite modem connectivity and pointing status."
+    }
+  ],
+  "actions": [
+    {
+      "name": "refresh()",
+      "desc": "Queries the satellite subsystem for updated connectivity and antenna guidance."
+    }
+  ],
+  "example": "import { useSatelliteNTN } from '@pixelkit-labs/sdk';\n\nfunction SatelliteStatusCard() {\n  const { isSupported, connectionState, carrier, emergencyServicesReady } = useSatelliteNTN();\n  return <Text>Satellite: {isSupported ? connectionState : 'Unsupported'} · {carrier ?? 'No carrier'} · SOS: {emergencyServicesReady ? 'Ready' : 'Standby'}</Text>;\n}",
+  "agentNote": "Requires Android 15+ (API 35+) and device hardware equipped with a 3GPP Rel-17 NTN satellite modem (Google Pixel 9 and later)."
+}

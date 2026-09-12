@@ -1,0 +1,60 @@
+{
+  "id": "useEmbeddings",
+  "name": "useEmbeddings",
+  "category": "ai",
+  "chipBadge": "EdgeTPU · Embeddings · 512-dim",
+  "summary": "On-device vector embeddings and semantic cosine similarity scoring via Tensor EdgeTPU.",
+  "plain": "Converts text strings into dense 512-dimensional vector embeddings locally on the EdgeTPU for fast offline semantic search, deduplication, and RAG memory without server calls.",
+  "description": "Executes on-device text embedding generation on the Google Tensor EdgeTPU / NPU through ML Kit GenAI. Produces normalized 512-dimensional floating point vectors from input text in milliseconds. Includes an in-memory cosine similarity calculation helper to compare semantic proximity between vectors entirely offline.",
+  "signature": "useEmbeddings(): EmbeddingsTelemetry",
+  "params": [],
+  "returns": [
+    {
+      "name": "isAvailable",
+      "type": "boolean",
+      "desc": "Whether the on-device text embedding model is installed and ready for inference."
+    },
+    {
+      "name": "isLoading",
+      "type": "boolean",
+      "desc": "Whether an embedding inference operation is actively computing on the NPU/TPU."
+    },
+    {
+      "name": "vectorDimension",
+      "type": "number",
+      "desc": "Dimension size of the output embedding vector (512)."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if embedding inference failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' or 'unavailable'."
+    },
+    {
+      "name": "embed",
+      "type": "(text: string) => Promise<number[]>",
+      "desc": "Computes a normalized float vector embedding for the provided text."
+    },
+    {
+      "name": "cosineSimilarity",
+      "type": "(vecA: number[], vecB: number[]) => number",
+      "desc": "Computes cosine similarity between two float vectors (-1.0 to 1.0)."
+    }
+  ],
+  "actions": [
+    {
+      "name": "embed(text)",
+      "desc": "Generates a 512-dimensional embedding vector from input text."
+    },
+    {
+      "name": "cosineSimilarity(vecA, vecB)",
+      "desc": "Scores cosine similarity between two embedding vectors."
+    }
+  ],
+  "example": "import { useEmbeddings } from '@pixelkit-labs/sdk/mlkit';\n\nfunction SimilarityDemo() {\n  const { isAvailable, embed, cosineSimilarity } = useEmbeddings();\n  const compare = async () => {\n    const vecA = await embed('Google Pixel 11 Pro');\n    const vecB = await embed('Android Smartphone');\n    const score = cosineSimilarity(vecA, vecB);\n    console.log('Similarity score:', score);\n  };\n  return <Button title=\"Compare Texts\" onPress={compare} />;\n}",
+  "agentNote": "Exported from '@pixelkit-labs/sdk/mlkit'. Operates entirely on-device with zero network latency."
+}
