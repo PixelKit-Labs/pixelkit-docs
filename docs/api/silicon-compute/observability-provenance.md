@@ -1,5 +1,7 @@
 # Observability & provenance
 
+> **The full function list for the observability layer, with what each call takes and returns.** For how the pieces fit together, and where the stack currently stops, see [Observability](../../observability/README.md).
+
 `packages/sdk/src/core/observability.ts` gives every reading a **source**:
 
 | `TelemetrySource` | Meaning |
@@ -14,18 +16,21 @@ There is deliberately no `simulated` member: the type makes a fabricated reading
 | Function | Inputs | Returns | Description |
 | :--- | :--- | :--- | :--- |
 | `logEvent(module, event, data?, level?)` | `module: string` — hook the event belongs to. `event: string` — short description. `data?: Record<string, unknown>` — structured detail. `level?: 'info' \| 'warn' \| 'error'` — severity, default `'info'`. | `void` | Appends to the in-memory event ring and echoes to the console with the `[PixelKit]` prefix, so `adb logcat -s ReactNativeJS \| grep PixelKit` shows it. Carries the active trace id when inside a `traced` call. |
-| `recordMetric(module, metric, value, source)` | `module: string`. `metric: string` — metric name. `value: unknown` — the reading. `source: TelemetrySource` — where it came from. | `void` | Stores the latest value per `module.metric` with its provenance. Not logged per sample; it feeds the debug panel and `getSourceSummary()`. |
+| `recordMetric(module, metric, value, source)` | `module: string`. `metric: string` — metric name. `value: unknown` — the reading. `source: TelemetrySource` — where it came from. | `void` | Stores the latest value per `module.metric` with its provenance, replacing the previous one. Not logged per sample; it feeds the debug panel and `getSourceSummary()`. |
 | `normalizeError(e)` | `e: unknown` — anything thrown | `NormalizedError` — `{ message: string; code?: string; name?: string }` | Reduces native `CodedException`s, `Error`s, string rejections and plain objects to one shape. |
 | `logError(module, event, e, data?)` | `module: string`. `event: string`. `e: unknown` — the thrown value. `data?: Record<string, unknown>`. | `NormalizedError` — ready to put straight into an `error` state field | Logs at error level and increments the module's error counter. A caught error is never discarded silently. |
-| `traced(module, op, fn, data?, source?)` | `module: string`. `op: string` — operation name. `fn: () => Promise<T> \| T` — the work. `data?: Record<string, unknown>` — context to attach. `source?: TelemetrySource` — provenance for the duration metric, default `'hardware'`. | `Promise<T>` — whatever `fn` resolves to; rethrows on failure | Times the operation, gives it a correlation id (nested calls inherit the parent's), records `<op>Ms` as a metric and logs the outcome. Logs at warn when it runs longer than the slow-operation threshold. |
+| `noteExpected(module, reason)` | `module: string`. `reason: string` — why the failure is expected. | `void` | For a harmless, expected failure, such as calling a native object released during teardown. Counted, but not logged and not counted as an error. The only sanctioned alternative to handling an error; an empty `catch` is not one. |
+| `traced(module, op, fn, data?, source?)` | `module: string`. `op: string` — operation name. `fn: () => Promise<T> \| T` — the work. `data?: Record<string, unknown>` — context to attach. `source?: TelemetrySource` — provenance for the duration metric, default `'hardware'`. | `Promise<T>` — whatever `fn` resolves to; rethrows on failure | Times the operation, gives it a correlation id, records `<op>Ms` as a metric and logs the outcome, at warn past 1,500 ms. Events logged inside it carry its id when calls are sequential; when two traced calls overlap across an `await`, events can carry the wrong id or none — see [Traces](../../observability/traces.md#correlation-when-calls-overlap). |
 | `tracedSafe(module, op, fn, fallback, data?)` | Same as `traced`, plus `fallback: T` — the value to return if `fn` throws. | `Promise<T>` — the result, or `fallback` | For survivable failures: the error is still logged and counted, but control flow continues. |
-| `useObservability()` | none | `{ events, metrics, traces, sources, errorCounts, health, slowest }` | React hook giving a live view for a diagnostics panel, throttled to ≤4 Hz. |
+| `useObservability()` | none | `{ events, metrics, traces, sources, errorCounts, expected, health, slowest }` | React hook giving a live view for a diagnostics panel, throttled to ≤4 Hz. |
 | `getRecentEvents()` / `getMetrics()` / `getTraces()` | none | `TelemetryEvent[]` / `MetricRecord[]` / `TraceRecord[]` | Non-React snapshots for tests and agents. |
 | `getSourceSummary()` | none | `Record<string, TelemetrySource[]>` — the provenance values each module currently reports | Answers "is this module reading real hardware right now?". |
 | `getSlowestTraces(limit?)` | `limit?: number` — how many to return, default 10 | `TraceRecord[]` sorted slowest first | Finds what is making the app feel heavy. |
 | `getTrace(id)` | `id: string` — a correlation id | `{ trace?: TraceRecord; events: TelemetryEvent[] }` | Every event and the trace sharing one id, in order. |
 | `getErrorCounts()` | none | `Record<string, number>` — failures per module | Cumulative since launch or the last reset. |
+| `getExpectedCounts()` | none | `Record<string, number>` — keyed `module:reason` | Expected failures recorded by `noteExpected`. |
 | `getHealthSummary()` | none | `{ module, errors, traces, slowestMs }[]`, worst first | One line per module for a health strip. |
-| `resetObservability()` | none | `void` | Clears events, traces, metrics and error counts. For tests and a "reset diagnostics" control. |
+| `resetObservability()` | none | `void` | Clears events, traces, metrics, error counts and expected counts. For tests and a "reset diagnostics" control. |
 
-`MetricCard` renders the `source` prop as a footer tag, which is how provenance reaches the user.
+Every hook also returns `source`, so provenance reaches the user through whatever renders the
+reading. The SDK ships no card component for it; the template's `MetricCard` shows it as a footer tag.

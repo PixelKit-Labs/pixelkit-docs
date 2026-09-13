@@ -36,7 +36,7 @@ ARTEMIS supports two execution engines depending on the verification goal:
 
 ---
 
-## The 5 Hardware Test Recipes
+## Hardware test recipes
 
 The test recipes live in [`test/artemis/recipes/`](https://github.com/PixelKit-Labs/pixelkit-sdk/tree/master/test/artemis/recipes) within the `pixelkit-sdk` repository:
 
@@ -48,6 +48,7 @@ The test recipes live in [`test/artemis/recipes/`](https://github.com/PixelKit-L
 | **On-Device AI** | `04-ai-gemini-nano.md` | `useGeminiNano` via `@pixelkit-labs/mlkit` | AICore loads Gemini Nano model, inference streams tokens to UI without exceeding context limit or throwing memory warnings. |
 | **Full Sanity Suite** | `05-full-sanity-suite.md` | Every hook the template exercises, across all 4 tabs | Traverses Silicon, Sensors, Actuators, and AI tabs; continuously audits Logcat for native `FATAL` exceptions. |
 | **Pixel 11 Pro Extensions** | `06-pixel-11-pro-hardware.md` | `usePerfetto`, `useCameraExtensions`, `useSpatialAudio`, `useChannelSounding`, `usePlayIntegrity`, `useHealthConnect`, `useAppFunctions` | Verifies CameraX Extensions, Spatial Audio, BLE 6.0 Channel Sounding, Titan M2 Attestation, Perfetto, and Health Connect. |
+| **Next-Gen Hardware** | `07-next-gen-hardware.md` | `useAltimeter`, `useMicrophoneArray`, `useThermometer`, `useBatteryShare`, `useChargingIntelligence`, `useADPFHintSession`, `useWifi7MLO`, `useWifiRTT`, `useSatelliteNTN`, `usePrivateSpace`, `useKeyAgreement`, `useEmbeddings` | Each reports `hardware` or `derived` where the silicon exists and `unavailable` with `null` readings where it does not. **Not runnable yet:** it drives screens the template has not built for these twelve hooks. |
 
 ---
 
