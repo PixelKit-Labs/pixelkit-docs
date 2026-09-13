@@ -32,6 +32,6 @@ any Android device. Another 37 call the Kotlin modules and report `unsupported` 
 not there. The last one is `useHiLight`: Android restricts the camera-bar LEDs to privileged apps,
 so it drives them through a local ADB daemon and reports `unavailable` without one.
 
-If readings come back empty and you are not sure why, `npx @pixelkit-labs/cli doctor` checks adb,
+If readings come back empty and you are not sure why, [`npx @pixelkit-labs/cli doctor`](../cli/README.md) checks adb,
 the device, the development build, the installed packages and AICore, and tells you which case you
 are in.

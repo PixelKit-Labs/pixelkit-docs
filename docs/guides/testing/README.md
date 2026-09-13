@@ -10,7 +10,7 @@ still agree. Only a real device proves a hook reads `hardware`.
 | :--- | :--- | :--- | :--- | :--- |
 | [Unit tests](./unit-tests.md) | Is the logic inside a hook right? | `npm test` | No | SDK CI, every push |
 | [Contract checks](./contract-checks.md) | Do the code, the docs and the template still agree? | `npm run verify` (SDK), `npm run build` (docs), `npm run verify` (template) | No | CI in all three repositories, every push |
-| [Hardware verification](./artemis.md) | Does each hook read real silicon on a real Pixel? | `npm run test:e2e` | Yes | On demand, against a connected phone |
+| [Hardware verification](../../artemis/README.md) | Does each hook read real silicon on a real Pixel? | `npm run test:e2e` | Yes | On demand, against a connected phone |
 
 The first two gate every commit. The third cannot run in CI, because there is no Pixel 11 Pro in a
 CI runner — which is why it exists as a separate layer rather than being skipped.

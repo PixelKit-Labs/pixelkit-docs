@@ -22,6 +22,8 @@ const KNOWN_LABELS = {
   api: 'API Reference',
   guides: 'Guides',
   observability: 'Observability',
+  cli: 'CLI',
+  artemis: 'ARTEMIS',
   'for-coding-agents': 'For Coding Agents',
   project: 'Project',
 };
@@ -48,7 +50,7 @@ const SUBSECTION_LABELS = {
 };
 
 /** Preferred left-to-right order; anything else sorts after, alphabetically. */
-const ORDER = ['getting-started', 'api', 'guides', 'observability', 'for-coding-agents', 'project'];
+const ORDER = ['getting-started', 'api', 'guides', 'observability', 'cli', 'artemis', 'for-coding-agents', 'project'];
 
 function titleCase(slug) {
   return slug
@@ -168,9 +170,12 @@ function buildRedirects() {
 const RETIRED_ROUTES = {
   '/api/hardware-api': withBase('/api/'),
   '/api/hardware-api.md': withBase('/api/'),
-  // Moved into the Testing subsection of Guides, alongside the unit tests and contract checks.
-  '/guides/testing-with-artemis': withBase('/guides/testing/artemis/'),
-  '/guides/testing-with-artemis.md': withBase('/guides/testing/artemis/'),
+  // ARTEMIS has its own section. It lived at /guides/testing-with-artemis/ and then, briefly, at
+  // /guides/testing/artemis/; both were published, so both redirect.
+  '/guides/testing-with-artemis': withBase('/artemis/'),
+  '/guides/testing-with-artemis.md': withBase('/artemis/'),
+  '/guides/testing/artemis': withBase('/artemis/'),
+  '/guides/testing/artemis.md': withBase('/artemis/'),
 };
 
 /**

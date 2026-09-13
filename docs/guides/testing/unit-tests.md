@@ -33,7 +33,7 @@ running it.
 
 Anything that needs a renderer or real silicon. `useObservability` is the one React-dependent export
 in the observability module and is left out for that reason. Whether a hook actually reads
-`hardware` on a Pixel is the job of [on-device verification with ARTEMIS](./artemis.md).
+`hardware` on a Pixel is the job of [on-device verification with ARTEMIS](../../artemis/README.md).
 
 One gap is worth naming because the tests look as though they cover it. The observability suite
 calls `traced` sequentially, and sequential calls are correlated correctly. Overlapping calls are
