@@ -176,7 +176,47 @@ function toYaml(obj, indent = 0) {
   return `${obj}\n`;
 }
 
-export function generateOpenApi() {
+/**
+ * The SDK version the spec's `info.version` reports.
+ *
+ * This used to read `../Pixel delta/package.json` — the maintainer's local folder name — and fall
+ * back to a hard-coded '1.6.8' inside an empty catch. On any other machine, and in CI, that path does
+ * not exist, so every deployed build silently published a spec labelled 1.6.8 whatever the SDK was.
+ *
+ * Now there are two sources and no fallback:
+ *   - `PIXELKIT_SDK_DIR`, a local pixelkit-sdk checkout, for offline work or an unpushed version bump.
+ *     If it is set and does not hold a package.json, that is an error, not a reason to look elsewhere.
+ *   - Otherwise the SDK's package.json on GitHub, so CI and every workstation agree.
+ * Anything else — a failed fetch, a response that is not a version — stops the build, because a spec
+ * stamped with the wrong version is worse than no new spec.
+ */
+async function resolveSdkVersion() {
+  const isVersion = (v) => typeof v === 'string' && /^[0-9]+[.][0-9]+[.][0-9]+$/.test(v);
+  const local = process.env.PIXELKIT_SDK_DIR;
+  if (local) {
+    const pkgPath = path.resolve(local, 'package.json');
+    if (!existsSync(pkgPath)) {
+      throw new Error(`[build-openapi] PIXELKIT_SDK_DIR is set to ${local}, but ${pkgPath} does not exist.`);
+    }
+    const version = JSON.parse(readFileSync(pkgPath, 'utf8')).version;
+    if (!isVersion(version)) throw new Error(`[build-openapi] ${pkgPath} has no usable version: ${version}`);
+    return version;
+  }
+  const url = process.env.PIXELKIT_SDK_PACKAGE_URL
+    ?? 'https://raw.githubusercontent.com/PixelKit-Labs/pixelkit-sdk/master/package.json';
+  let response;
+  try {
+    response = await fetch(url);
+  } catch (e) {
+    throw new Error(`[build-openapi] Could not reach ${url} to read the SDK version (${e.message}). Offline, set PIXELKIT_SDK_DIR to a pixelkit-sdk checkout.`);
+  }
+  if (!response.ok) throw new Error(`[build-openapi] ${url} answered ${response.status}; cannot read the SDK version.`);
+  const version = (await response.json()).version;
+  if (!isVersion(version)) throw new Error(`[build-openapi] ${url} returned no usable version: ${version}`);
+  return version;
+}
+
+export function generateOpenApi(sdkVersion) {
   if (!existsSync(HOOKS_DIR)) {
     console.warn(`[build-openapi] No data/hooks directory found at ${HOOKS_DIR}`);
     return;
@@ -184,13 +224,6 @@ export function generateOpenApi() {
 
   const files = readdirSync(HOOKS_DIR).filter((f) => f.endsWith('.json')).sort();
   const hooks = files.map((f) => JSON.parse(readFileSync(path.join(HOOKS_DIR, f), 'utf8')));
-  let sdkVersion = '1.6.8';
-  try {
-    const sdkPkgPath = path.resolve(ROOT, '..', 'Pixel delta', 'package.json');
-    if (existsSync(sdkPkgPath)) {
-      sdkVersion = JSON.parse(readFileSync(sdkPkgPath, 'utf8')).version;
-    }
-  } catch {}
 
   const spec = {
     openapi: '3.1.0',
@@ -594,4 +627,11 @@ Covers all 51 typed hardware and AI hooks, low-overhead native telemetry, and ac
   console.log(`[build-openapi] Generated public/openapi.json, public/api/openapi.json, and YAML variants (${files.length} hooks, ${Object.keys(spec.paths).length} paths).`);
 }
 
-generateOpenApi();
+try {
+  generateOpenApi(await resolveSdkVersion());
+} catch (error) {
+  console.error(error.message);
+  // exitCode, not exit(): exiting while fetch is still closing its socket crashes Node on Windows
+  // (libuv UV_HANDLE_CLOSING assertion). Letting the loop drain gives the same non-zero code.
+  process.exitCode = 1;
+}
