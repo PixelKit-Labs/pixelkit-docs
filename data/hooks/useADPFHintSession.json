@@ -54,15 +54,18 @@
   "actions": [
     {
       "name": "reportWorkDuration(actualDurationNanos)",
-      "desc": "Reports frame workload duration to the Energy-Aware Scheduler."
+      "desc": "Reports frame workload duration to the Energy-Aware Scheduler.",
+      "type": "(actualDurationNanos: number) => void"
     },
     {
       "name": "updateTargetWorkDuration(targetNanos)",
-      "desc": "Updates the target frame deadline in nanoseconds."
+      "desc": "Updates the target frame deadline in nanoseconds.",
+      "type": "(targetNanos: number) => void"
     },
     {
       "name": "closeSession()",
-      "desc": "Terminates the active ADPF hint session."
+      "desc": "Terminates the active ADPF hint session.",
+      "type": "() => void"
     }
   ],
   "example": "import { useADPFHintSession } from '@pixelkit-labs/sdk';\n\nfunction HeavyCompute() {\n  const { isSupported, reportWorkDuration } = useADPFHintSession(16.67);\n  const runFrame = () => {\n    const t0 = performance.now();\n    // ... expensive work ...\n    const durationNanos = Math.round((performance.now() - t0) * 1_000_000);\n    reportWorkDuration(durationNanos);\n  };\n  return <Button title=\"Execute Workload\" onPress={runFrame} />;\n}",

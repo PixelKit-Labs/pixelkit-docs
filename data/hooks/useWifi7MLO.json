@@ -48,7 +48,8 @@
   "actions": [
     {
       "name": "refresh()",
-      "desc": "Requests an updated reading of affiliated Wi-Fi 7 links."
+      "desc": "Requests an updated reading of affiliated Wi-Fi 7 links.",
+      "type": "() => void"
     }
   ],
   "example": "import { useWifi7MLO } from '@pixelkit-labs/sdk';\n\nfunction Wifi7Status() {\n  const { isMloActive, links, aggregateSpeedMbps } = useWifi7MLO();\n  return <Text>MLO: {isMloActive ? 'Active' : 'Single-link'} · Links: {links.length} · Speed: {aggregateSpeedMbps ?? '—'} Mbps</Text>;\n}",

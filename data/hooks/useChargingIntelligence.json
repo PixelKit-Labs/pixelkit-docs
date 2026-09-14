@@ -63,7 +63,8 @@
   "actions": [
     {
       "name": "refresh()",
-      "desc": "Requests an updated battery intelligence reading."
+      "desc": "Requests an updated battery intelligence reading.",
+      "type": "() => void"
     }
   ],
   "example": "import { useChargingIntelligence } from '@pixelkit-labs/sdk';\n\nfunction BatteryHealthCard() {\n  const { stateOfHealthPercent, cycleCount, chargingTier } = useChargingIntelligence();\n  return <Text>Health: {stateOfHealthPercent ?? '—'}% · Cycles: {cycleCount ?? '—'} · Tier: {chargingTier}</Text>;\n}",

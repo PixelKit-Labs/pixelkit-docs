@@ -1,7 +1,7 @@
 {
   "id": "usePrivateSpace",
   "name": "usePrivateSpace",
-  "category": "security",
+  "category": "radios",
   "chipBadge": "Android 15 · Private Space · Vault",
   "summary": "Android 15+ Private Space profile isolation detection and vault policy.",
   "plain": "Detects whether the running app instance is executing inside Android 15's isolated Private Space vault or the primary profile, and inspects vault auto-lock settings.",
@@ -43,7 +43,8 @@
   "actions": [
     {
       "name": "refresh()",
-      "desc": "Requests an updated check of Private Space status."
+      "desc": "Requests an updated check of Private Space status.",
+      "type": "() => void"
     }
   ],
   "example": "import { usePrivateSpace } from '@pixelkit-labs/sdk';\n\nfunction VaultStatus() {\n  const { isInsidePrivateSpace, isPrivateSpaceConfigured } = usePrivateSpace();\n  return <Text>Vault: {isInsidePrivateSpace ? 'Inside Private Space' : 'Main Profile'} (Configured: {String(isPrivateSpaceConfigured)})</Text>;\n}",

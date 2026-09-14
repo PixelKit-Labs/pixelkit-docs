@@ -58,7 +58,8 @@
   "actions": [
     {
       "name": "refresh()",
-      "desc": "Queries the satellite subsystem for updated connectivity and antenna guidance."
+      "desc": "Queries the satellite subsystem for updated connectivity and antenna guidance.",
+      "type": "() => void"
     }
   ],
   "example": "import { useSatelliteNTN } from '@pixelkit-labs/sdk';\n\nfunction SatelliteStatusCard() {\n  const { isSupported, connectionState, carrier, emergencyServicesReady } = useSatelliteNTN();\n  return <Text>Satellite: {isSupported ? connectionState : 'Unsupported'} · {carrier ?? 'No carrier'} · SOS: {emergencyServicesReady ? 'Ready' : 'Standby'}</Text>;\n}",

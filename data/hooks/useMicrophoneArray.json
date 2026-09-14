@@ -58,15 +58,18 @@
   "actions": [
     {
       "name": "setDirection(direction)",
-      "desc": "Directs acoustic beamforming towards 'user', 'away', 'external', or 'omni'."
+      "desc": "Directs acoustic beamforming towards 'user', 'away', 'external', or 'omni'.",
+      "type": "(direction: 'user' | 'away' | 'external' | 'omni') => Promise<boolean>"
     },
     {
       "name": "setFieldZoom(zoom)",
-      "desc": "Sets the acoustic zoom field dimension (0.0 to 1.0)."
+      "desc": "Sets the acoustic zoom field dimension (0.0 to 1.0).",
+      "type": "(zoom: number) => Promise<boolean>"
     },
     {
       "name": "refresh()",
-      "desc": "Re-queries hardware microphone state."
+      "desc": "Re-queries hardware microphone state.",
+      "type": "() => void"
     }
   ],
   "example": "import { useMicrophoneArray } from '@pixelkit-labs/sdk';\n\nfunction MicDirectivity() {\n  const { microphones, direction, setDirection } = useMicrophoneArray();\n  return (\n    <View>\n      <Text>Mics: {microphones.length} · Beam: {direction}</Text>\n      <Button title=\"Focus User\" onPress={() => setDirection('user')} />\n    </View>\n  );\n}",

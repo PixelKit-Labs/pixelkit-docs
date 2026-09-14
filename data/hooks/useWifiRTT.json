@@ -53,11 +53,13 @@
   "actions": [
     {
       "name": "startRanging(bssids)",
-      "desc": "Performs round-trip time distance ranging to target BSSIDs."
+      "desc": "Performs round-trip time distance ranging to target BSSIDs.",
+      "type": "(bssids: string[]) => Promise<boolean>"
     },
     {
       "name": "refresh()",
-      "desc": "Refreshes Wi-Fi RTT service status."
+      "desc": "Refreshes Wi-Fi RTT service status.",
+      "type": "() => void"
     }
   ],
   "example": "import { useWifiRTT } from '@pixelkit-labs/sdk';\n\nfunction IndoorRadar() {\n  const { isAvailable, rangingResults, startRanging } = useWifiRTT();\n  return (\n    <View>\n      <Text>RTT Service: {isAvailable ? 'Ready' : 'Offline'}</Text>\n      <Button title=\"Range Access Points\" onPress={() => startRanging(['00:11:22:33:44:55'])} />\n    </View>\n  );\n}",

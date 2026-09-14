@@ -74,15 +74,18 @@
   "actions": [
     {
       "name": "setEmissivity(value)",
-      "desc": "Updates the material surface emissivity coefficient."
+      "desc": "Updates the material surface emissivity coefficient.",
+      "type": "(value: number) => void"
     },
     {
       "name": "setMode(mode)",
-      "desc": "Switches the calculation mode between 'object', 'body', and 'ambient'."
+      "desc": "Switches the calculation mode between 'object', 'body', and 'ambient'.",
+      "type": "(mode: 'object' | 'body' | 'ambient') => void"
     },
     {
       "name": "refresh()",
-      "desc": "Requests an updated temperature reading from hardware."
+      "desc": "Requests an updated temperature reading from hardware.",
+      "type": "() => void"
     }
   ],
   "example": "import { useThermometer } from '@pixelkit-labs/sdk';\n\nfunction TemperatureBadge() {\n  const { isSupported, surfaceTemperatureC, surfaceTemperatureF } = useThermometer();\n  if (!isSupported) return <Text>Thermometer unavailable</Text>;\n  return <Text>Temp: {surfaceTemperatureC?.toFixed(1) ?? '—'} °C ({surfaceTemperatureF?.toFixed(1) ?? '—'} °F)</Text>;\n}",

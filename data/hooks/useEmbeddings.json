@@ -48,11 +48,13 @@
   "actions": [
     {
       "name": "embed(text)",
-      "desc": "Generates a 512-dimensional embedding vector from input text."
+      "desc": "Generates a 512-dimensional embedding vector from input text.",
+      "type": "(text: string) => Promise<number[] | null>"
     },
     {
       "name": "cosineSimilarity(vecA, vecB)",
-      "desc": "Scores cosine similarity between two embedding vectors."
+      "desc": "Scores cosine similarity between two embedding vectors.",
+      "type": "(vecA: number[], vecB: number[]) => number"
     }
   ],
   "example": "import { useEmbeddings } from '@pixelkit-labs/sdk/mlkit';\n\nfunction SimilarityDemo() {\n  const { isAvailable, embed, cosineSimilarity } = useEmbeddings();\n  const compare = async () => {\n    const vecA = await embed('Google Pixel 11 Pro');\n    const vecB = await embed('Android Smartphone');\n    const score = cosineSimilarity(vecA, vecB);\n    console.log('Similarity score:', score);\n  };\n  return <Button title=\"Compare Texts\" onPress={compare} />;\n}",

@@ -63,15 +63,18 @@
   "actions": [
     {
       "name": "setBatteryShare(enabled)",
-      "desc": "Turns reverse wireless charging on or off."
+      "desc": "Turns reverse wireless charging on or off.",
+      "type": "(enabled: boolean) => Promise<boolean>"
     },
     {
       "name": "setBatteryThreshold(pct)",
-      "desc": "Sets minimum battery cutoff percentage."
+      "desc": "Sets minimum battery cutoff percentage.",
+      "type": "(pct: number) => Promise<boolean>"
     },
     {
       "name": "refresh()",
-      "desc": "Refreshes reverse wireless charging state."
+      "desc": "Refreshes reverse wireless charging state.",
+      "type": "() => void"
     }
   ],
   "example": "import { useBatteryShare } from '@pixelkit-labs/sdk';\n\nfunction PowerShareToggle() {\n  const { isSupported, isActive, setBatteryShare } = useBatteryShare();\n  if (!isSupported) return <Text>Battery Share not supported</Text>;\n  return <Button title={isActive ? 'Stop Sharing' : 'Share Battery'} onPress={() => setBatteryShare(!isActive)} />;\n}",
