@@ -580,14 +580,18 @@ Covers all 51 typed hardware and AI hooks, low-overhead native telemetry, and ac
   };
 
   if (!existsSync(PUBLIC_DIR)) mkdirSync(PUBLIC_DIR, { recursive: true });
+  const publicApiDir = path.join(PUBLIC_DIR, 'api');
+  if (!existsSync(publicApiDir)) mkdirSync(publicApiDir, { recursive: true });
 
   const jsonStr = JSON.stringify(spec, null, 2);
   writeFileSync(path.join(PUBLIC_DIR, 'openapi.json'), jsonStr, 'utf8');
+  writeFileSync(path.join(publicApiDir, 'openapi.json'), jsonStr, 'utf8');
 
   const yamlStr = toYaml(spec).trim() + '\n';
   writeFileSync(path.join(PUBLIC_DIR, 'openapi.yaml'), yamlStr, 'utf8');
+  writeFileSync(path.join(publicApiDir, 'openapi.yaml'), yamlStr, 'utf8');
 
-  console.log(`[build-openapi] Generated public/openapi.json and public/openapi.yaml (${files.length} hooks, ${Object.keys(spec.paths).length} paths).`);
+  console.log(`[build-openapi] Generated public/openapi.json, public/api/openapi.json, and YAML variants (${files.length} hooks, ${Object.keys(spec.paths).length} paths).`);
 }
 
 generateOpenApi();

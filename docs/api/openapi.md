@@ -21,8 +21,8 @@ Explore, search, and test all 250 hardware endpoints and 505 schemas directly in
 
 | Format | Link | Description |
 | :--- | :--- | :--- |
-| **JSON** | [`openapi.json`](../openapi.json) | Complete OpenAPI 3.1.0 specification in JSON format. |
-| **YAML** | [`openapi.yaml`](../openapi.yaml) | Complete OpenAPI 3.1.0 specification in YAML format. |
+| **JSON** | [`openapi.json`](/openapi.json) | Complete OpenAPI 3.1.0 specification in JSON format. |
+| **YAML** | [`openapi.yaml`](/openapi.yaml) | Complete OpenAPI 3.1.0 specification in YAML format. |
 
 ---
 
