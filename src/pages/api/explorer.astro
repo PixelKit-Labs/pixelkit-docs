@@ -1,0 +1,93 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import { withBase } from '../../../site.config.mjs';
+
+const specPath = path.resolve(process.cwd(), 'public', 'openapi.json');
+const specContent = fs.existsSync(specPath) ? fs.readFileSync(specPath, 'utf8') : '{}';
+const openApiUrl = withBase('/openapi.json');
+const backUrl = withBase('/api/openapi/');
+const swaggerUrl = withBase('/api/swagger/');
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PixelKit API Explorer (OpenAPI 3.1)</title>
+  <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0b0f19;
+      color: #f3f4f6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: #111827;
+      border-bottom: 1px solid #1f2937;
+      font-size: 14px;
+    }
+    .top-bar a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .top-bar a:hover {
+      text-decoration: underline;
+    }
+    .top-bar .links {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .badge {
+      background: #1e293b;
+      color: #94a3b8;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: monospace;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div>
+      <a href={backUrl}>← Back to Documentation</a>
+      <span style="margin: 0 8px; color: #475569;">|</span>
+      <strong>PixelKit OpenAPI 3.1 Explorer</strong>
+      <span class="badge">51 hooks · 250 endpoints</span>
+    </div>
+    <div class="links">
+      <a href={swaggerUrl}>Switch to Swagger UI</a>
+      <a href={openApiUrl} download="openapi.json">Download JSON</a>
+      <a href={withBase('/openapi.yaml')} download="openapi.yaml">Download YAML</a>
+    </div>
+  </div>
+
+  <div id="scalar-container">
+    <script
+      id="api-reference"
+      type="application/json"
+      data-configuration={JSON.stringify({
+        theme: 'deepSpace',
+        showSidebar: true,
+        darkMode: true,
+      })}
+      set:html={specContent}
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  </div>
+</body>
+</html>

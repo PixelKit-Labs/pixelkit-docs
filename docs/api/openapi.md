@@ -6,12 +6,31 @@ PixelKit exports an **OpenAPI 3.1.0 specification** defining every sensor, radio
 
 ---
 
+## Interactive Viewers
+
+Explore, search, and test all 250 hardware endpoints and 505 schemas directly in your browser alongside the documentation:
+
+| Viewer | Description | Direct Link |
+| :--- | :--- | :--- |
+| 🚀 **Scalar API Reference** | Modern OpenAPI 3.1 explorer featuring fast search, code generation across 10+ languages (TypeScript, cURL, Python, Go), and schema tree inspection. | [**Open Scalar Explorer →**](/api/explorer/) |
+| 🛠️ **Swagger UI Sandbox** | Classic Swagger UI interactive console with collapsible categories, parameter inspectors, and JSON/YAML raw payload views. | [**Open Swagger UI →**](/api/swagger/) |
+
+---
+
 ## Downloads
 
 | Format | Link | Description |
 | :--- | :--- | :--- |
 | **JSON** | [`openapi.json`](../openapi.json) | Complete OpenAPI 3.1.0 specification in JSON format. |
 | **YAML** | [`openapi.yaml`](../openapi.yaml) | Complete OpenAPI 3.1.0 specification in YAML format. |
+
+---
+
+## Embedded API Explorer
+
+<iframe src="/pixelkit-docs/api/explorer/" width="100%" height="700px" style="border: 1px solid #1f2937; border-radius: 8px; margin-top: 1rem; background: #0b0f19;" title="PixelKit OpenAPI Explorer"></iframe>
+
+*(Prefer full screen? Launch the [**Fullscreen Scalar Explorer**](/api/explorer/) or [**Swagger UI Sandbox**](/api/swagger/))*
 
 ---
 

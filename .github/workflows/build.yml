@@ -32,4 +32,6 @@ jobs:
         run: |
           test -f "dist/openapi.json" || { echo "missing dist/openapi.json"; exit 1; }
           test -f "dist/openapi.yaml" || { echo "missing dist/openapi.yaml"; exit 1; }
-          echo "OpenAPI artifacts verified in dist/."
+          test -f "dist/api/explorer/index.html" || { echo "missing dist/api/explorer/index.html"; exit 1; }
+          test -f "dist/api/swagger/index.html" || { echo "missing dist/api/swagger/index.html"; exit 1; }
+          echo "OpenAPI artifacts and interactive explorer verified in dist/."
