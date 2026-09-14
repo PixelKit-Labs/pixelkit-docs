@@ -113,3 +113,4 @@ right now.
 | [`geminiClient`](./neural-ai/geminiclient.md) | The cloud Gemini client the AI hooks call, and its constants. |
 | [Observability and provenance](./silicon-compute/observability-provenance.md) | How a reading reports where it came from, and what `null` means. |
 | [PixelNative module](./silicon-compute/pixelnative-module.md) | The Kotlin module the hooks read through, and the events it emits. |
+| [OpenAPI 3.1 specification](./openapi.md) | Full OpenAPI 3.1.0 schema for the 51 hooks, hardware telemetry, and actuators. |

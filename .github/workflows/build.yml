@@ -28,3 +28,8 @@ jobs:
             test -d "dist/$d" || { echo "missing section: $d"; exit 1; }
           done
           echo "pages built: $(find dist -name index.html | wc -l)"
+      - name: Verify OpenAPI artifacts generated
+        run: |
+          test -f "dist/openapi.json" || { echo "missing dist/openapi.json"; exit 1; }
+          test -f "dist/openapi.yaml" || { echo "missing dist/openapi.yaml"; exit 1; }
+          echo "OpenAPI artifacts verified in dist/."
