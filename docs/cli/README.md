@@ -29,6 +29,7 @@ It needs Node 18 or later and nothing else — no third-party dependencies, only
 | Page | What it covers |
 | :--- | :--- |
 | [pixelkit doctor](./doctor.md) | Usage, options, what the output means, exit codes, and using it in a script. |
+| [pixelkit agent](./agent.md) | Autonomous hardware telemetry triage, diagnostic matrix analysis, and cloud agent reasoning. |
 | [What doctor checks](./checks.md) | The six checks, the command behind each, and what to do when one fails. |
 
 Source: [`PixelKit-Labs/pixelkit-cli`](https://github.com/PixelKit-Labs/pixelkit-cli).
