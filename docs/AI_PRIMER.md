@@ -141,6 +141,8 @@ Every hook's full contract — each input with its default and units, each outpu
 | **FIR · MLX90632 · thermal** | `useThermometer(initialEmissivity?: number)` | `initialEmissivity` | `isSupported`, `surfaceTemperatureC`, `surfaceTemperatureF`, `ambientTemperatureC`, `emissivity`, `mode` | `setEmissivity(value)`, `setMode(mode)`, `refresh()` |
 | **Wi-Fi 7 · 802.11be · MLO** | `useWifi7MLO()` | none | `isSupported`, `isMloActive`, `links`, `aggregateSpeedMbps`, `error`, `source` | `refresh()` |
 | **Wi-Fi RTT · 802.11az · FTM** | `useWifiRTT()` | none | `isSupported`, `isAvailable`, `isRanging`, `rangingResults`, `error`, `source` | `startRanging(bssids)`, `refresh()` |
+| **Cloud Hardware Agent** | `useCloudHardwareAgent(defaultOptions?: CloudAgentOptions)` | `defaultOptions` | `isRunning`, `steps`, `lastResponse`, `lastResult`, `history`, `error`, `source` | `ask(prompt, customOptions)`, `reset()` |
+| **Gemini Live Streaming** | `useGeminiLive(config?: GeminiLiveConfig)` | `config` | `isConnected`, `isStreaming`, `isSpeaking`, `isListening`, `transcript`, `currentThinking`, `activeToolCalls`, `error`, `source` | `connect(customApiKey)`, `disconnect()`, `sendText(text)`, `sendAudioChunk(pcmBase64)`, `interrupt()`, `clearTranscript()` |
 
 ---
 

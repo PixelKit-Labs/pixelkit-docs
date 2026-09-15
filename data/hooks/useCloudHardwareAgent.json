@@ -1,0 +1,78 @@
+{
+  "id": "useCloudHardwareAgent",
+  "name": "useCloudHardwareAgent",
+  "category": "ai",
+  "chipBadge": "Gemini 2.5 / 3.8 · Cloud Agent · Multi-Turn",
+  "summary": "Autonomous cloud hardware reasoning loop with multi-turn tool calling and extended thinking.",
+  "plain": "Dispatches autonomous multi-turn reasoning loops with Gemini in the cloud, dynamically invoking unified PixelKit hardware tools to diagnose system telemetry and execute hardware actions.",
+  "description": "Orchestrates multi-turn agentic hardware problem solving using Google Gen AI SDK (`@google/genai`). Evaluates prompts, plans hardware tool invocations, executes local sensors and actuators, and reflects on results across consecutive turns until the goal is achieved. Surfaces live reasoning thought chains, intermediate tool execution steps, and final diagnostics.",
+  "signature": "useCloudHardwareAgent(defaultOptions?: CloudAgentOptions): CloudHardwareAgentTelemetry",
+  "params": [
+    {
+      "name": "defaultOptions",
+      "type": "CloudAgentOptions",
+      "desc": "Default configuration for model selection, temperature, system instruction, thinking budget, and max steps."
+    }
+  ],
+  "returns": [
+    {
+      "name": "isRunning",
+      "type": "boolean",
+      "desc": "Whether the autonomous reasoning loop is actively executing multi-turn tool steps."
+    },
+    {
+      "name": "steps",
+      "type": "AgentStepInfo[]",
+      "desc": "Ordered list of tool execution steps taken by the model during the latest execution."
+    },
+    {
+      "name": "lastResponse",
+      "type": "string | null",
+      "desc": "Latest response text returned by the cloud agent."
+    },
+    {
+      "name": "lastResult",
+      "type": "CloudAgentResult | null",
+      "desc": "Complete result payload of the last agent execution including stop reason."
+    },
+    {
+      "name": "history",
+      "type": "Content[]",
+      "desc": "Full conversation turn history with model tool calls and function outputs."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if agent initialization, network, or execution failed."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' when an API key is present, or 'unavailable'."
+    },
+    {
+      "name": "ask",
+      "type": "(prompt: string, customOptions?: CloudAgentOptions) => Promise<CloudAgentResult | null>",
+      "desc": "Dispatches an autonomous reasoning prompt with multi-turn tool execution."
+    },
+    {
+      "name": "reset",
+      "type": "() => void",
+      "desc": "Resets the agent memory, step history, and conversation state."
+    }
+  ],
+  "actions": [
+    {
+      "name": "ask(prompt, customOptions)",
+      "desc": "Dispatches an autonomous multi-turn reasoning prompt.",
+      "type": "(prompt: string, customOptions?: CloudAgentOptions) => Promise<CloudAgentResult | null>"
+    },
+    {
+      "name": "reset()",
+      "desc": "Clears agent memory, step history, and conversation turns.",
+      "type": "() => void"
+    }
+  ],
+  "example": "import { useCloudHardwareAgent } from '@pixelkit-labs/sdk';\n\nfunction DiagnosticsView() {\n  const { isRunning, steps, lastResponse, ask } = useCloudHardwareAgent();\n  return (\n    <View>\n      <Button title=\"Check Thermals\" onPress={() => ask('Inspect current thermal status and optimize')} />\n      {isRunning && <ActivityIndicator />}\n      <Text>{lastResponse}</Text>\n    </View>\n  );\n}",
+  "agentNote": "Requires a Gemini API key. Dispatches real hardware tool calls against registered PixelKit actuators and telemetry sensors."
+}

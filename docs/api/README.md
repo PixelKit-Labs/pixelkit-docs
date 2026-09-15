@@ -10,7 +10,7 @@ on the hook's declared type.
 
 ## Hooks by section
 <!-- hooks:start -->
-51 hooks across 6 sections. This index is generated from `data/hooks`, so a hook
+53 hooks across 6 sections. This index is generated from `data/hooks`, so a hook
 cannot be listed in the wrong section or listed twice.
 
 ### [Silicon and compute](./silicon-compute/)
@@ -32,8 +32,10 @@ cannot be listed in the wrong section or listed twice.
 | Hook | What it reads |
 | :--- | :--- |
 | [`useAppFunctions`](./neural-ai/useappfunctions.md) | Exposes on-device actions and hardware capabilities to system AI and Gemini Assistant. |
+| [`useCloudHardwareAgent`](./neural-ai/usecloudhardwareagent.md) | Autonomous cloud hardware reasoning loop with multi-turn tool calling and extended thinking. |
 | [`useEmbeddings`](./neural-ai/useembeddings.md) | On-device vector embeddings and semantic cosine similarity scoring via Tensor EdgeTPU. |
 | [`useGemini`](./neural-ai/usegemini.md) | Cloud Gemini chat with real multi-turn history. |
+| [`useGeminiLive`](./neural-ai/usegeminilive.md) | Real-time bidirectional streaming audio, text, and hardware tool execution with Gemini 3.8 Multimodal Live API. |
 | [`useGeminiNano`](./neural-ai/usegemininano.md) | Gemini Nano running on the phone, with no network and no API key. |
 | [`useGenAITasks`](./neural-ai/usegenaitasks.md) | Four focused text tasks that run locally: summarise, proofread, rewrite, describe. |
 | [`useNaturalLanguageAI`](./neural-ai/usenaturallanguageai.md) | Translation, language detection, smart replies and entity extraction, all offline. |

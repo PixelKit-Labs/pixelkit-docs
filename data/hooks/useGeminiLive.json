@@ -1,0 +1,128 @@
+{
+  "id": "useGeminiLive",
+  "name": "useGeminiLive",
+  "category": "ai",
+  "chipBadge": "Gemini Live · WebSocket Duplex · Real-Time",
+  "summary": "Real-time bidirectional streaming audio, text, and hardware tool execution with Gemini 3.8 Multimodal Live API.",
+  "plain": "Streams live bidirectional voice and text with Gemini in the cloud over WebSockets, executing real-time hardware diagnostics and actions with low-latency audio duplexing.",
+  "description": "Establishes a persistent full-duplex WebSocket connection to the Gemini Multimodal Live API. Streams base64-encoded PCM audio chunks from device microphones, receives low-latency synthesized speech responses, exposes live extended thinking thought streams, and intercepts model tool calls to execute device hardware actuators and sensors with zero round-trip delay.",
+  "signature": "useGeminiLive(config?: GeminiLiveConfig): GeminiLiveTelemetry",
+  "params": [
+    {
+      "name": "config",
+      "type": "GeminiLiveConfig",
+      "desc": "Configuration options for model name, voice profile ('Aoede', 'Puck', etc.), system instruction, thinking budget, and hardware tool binding."
+    }
+  ],
+  "returns": [
+    {
+      "name": "isConnected",
+      "type": "boolean",
+      "desc": "Whether the WebSocket session to Gemini Live is active and ready."
+    },
+    {
+      "name": "isStreaming",
+      "type": "boolean",
+      "desc": "Whether the model is actively streaming an audio or text response."
+    },
+    {
+      "name": "isSpeaking",
+      "type": "boolean",
+      "desc": "Whether synthesized speech audio is currently playing."
+    },
+    {
+      "name": "isListening",
+      "type": "boolean",
+      "desc": "Whether the client is streaming microphone audio chunks to the server."
+    },
+    {
+      "name": "transcript",
+      "type": "LiveMessage[]",
+      "desc": "Real-time transcript of conversational dialogue."
+    },
+    {
+      "name": "currentThinking",
+      "type": "string | null",
+      "desc": "Latest reasoning thoughts emitted by the model during extended thinking."
+    },
+    {
+      "name": "activeToolCalls",
+      "type": "LiveToolCall[]",
+      "desc": "Real-time hardware tool invocations executed during the session."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Error message if connection or streaming protocol encountered a failure."
+    },
+    {
+      "name": "source",
+      "type": "TelemetrySource",
+      "desc": "Data provenance: 'hardware' when connected with valid key, or 'unavailable'."
+    },
+    {
+      "name": "connect",
+      "type": "(customApiKey?: string) => Promise<boolean>",
+      "desc": "Establishes the bidirectional WebSocket session to the Gemini Live endpoint."
+    },
+    {
+      "name": "disconnect",
+      "type": "() => void",
+      "desc": "Closes the active live streaming session."
+    },
+    {
+      "name": "sendText",
+      "type": "(text: string) => void",
+      "desc": "Sends a text prompt through the live duplex session."
+    },
+    {
+      "name": "sendAudioChunk",
+      "type": "(pcmBase64: string) => void",
+      "desc": "Streams a base64 PCM audio chunk from the microphone array."
+    },
+    {
+      "name": "interrupt",
+      "type": "() => void",
+      "desc": "Signals the model to interrupt speech immediately."
+    },
+    {
+      "name": "clearTranscript",
+      "type": "() => void",
+      "desc": "Clears the transcript and active tool calls."
+    }
+  ],
+  "actions": [
+    {
+      "name": "connect(customApiKey)",
+      "desc": "Opens the duplex WebSocket connection to Gemini Live.",
+      "type": "(customApiKey?: string) => Promise<boolean>"
+    },
+    {
+      "name": "disconnect()",
+      "desc": "Terminates the streaming session.",
+      "type": "() => void"
+    },
+    {
+      "name": "sendText(text)",
+      "desc": "Sends a text message to the live session.",
+      "type": "(text: string) => void"
+    },
+    {
+      "name": "sendAudioChunk(pcmBase64)",
+      "desc": "Sends a PCM audio packet to the live session.",
+      "type": "(pcmBase64: string) => void"
+    },
+    {
+      "name": "interrupt()",
+      "desc": "Interrupts model speech playback.",
+      "type": "() => void"
+    },
+    {
+      "name": "clearTranscript()",
+      "desc": "Clears conversation history and active tool calls.",
+      "type": "() => void"
+    }
+  ],
+  "example": "import { useGeminiLive } from '@pixelkit-labs/sdk';\n\nfunction VoiceTriage() {\n  const { isConnected, isStreaming, connect, disconnect, sendText } = useGeminiLive();\n  return (\n    <View>\n      <Button title={isConnected ? \"Disconnect\" : \"Connect Live\"} onPress={isConnected ? disconnect : () => connect()} />\n      <Button title=\"Ask Status\" onPress={() => sendText(\"Check battery and thermals\")} disabled={!isConnected} />\n    </View>\n  );\n}",
+  "agentNote": "Supports bidirectional audio duplex streaming and real-time hardware tool calling over WebSockets."
+}
