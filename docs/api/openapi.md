@@ -2,13 +2,13 @@
 
 > **Full OpenAPI 3.1.0 schema for the PixelKit SDK hardware & AI surface, automatically synchronized from `data/hooks`.**
 
-PixelKit exports an **OpenAPI 3.1.0 specification** defining every sensor, radio, compute, and AI capability across all 51 typed React hooks and hardware actuators. It provides a standard REST/RPC interface for developer tooling, the `<PixelKitDevTools />` HUD, local Metro bridges, and AI tool-calling agents.
+PixelKit exports an **OpenAPI 3.1.0 specification** defining every sensor, radio, compute, and AI capability across all 53 typed React hooks and hardware actuators. It provides a standard REST/RPC interface for developer tooling, the `<PixelKitDevTools />` HUD, local Metro bridges, and AI tool-calling agents.
 
 ---
 
 ## Interactive Viewers
 
-Explore, search, and test all 250 hardware endpoints and 505 schemas directly in your browser alongside the documentation:
+Explore, search, and test all 260 hardware endpoints and 530 schemas directly in your browser alongside the documentation:
 
 | Viewer | Description | Direct Link |
 | :--- | :--- | :--- |
@@ -59,8 +59,8 @@ Fabricated readings cannot be represented in the schema. Unreadable sensor readi
 
 ### 2. Endpoints
 
-- **`GET /api/state`**: Returns an instantaneous atomic snapshot of all 51 hardware telemetry states simultaneously.
-- **`GET /api/hooks`**: Returns the catalog of all 51 hooks, category metadata, and hardware badges.
+- **`GET /api/state`**: Returns an instantaneous atomic snapshot of all 53 hardware telemetry states simultaneously.
+- **`GET /api/hooks`**: Returns the catalog of all 53 hooks, category metadata, and hardware badges.
 - **`GET /api/hooks/{hookName}`**: Queries the telemetry state of an individual hook (e.g., `GET /api/hooks/useThermometer`, `GET /api/hooks/useCPU`, `GET /api/hooks/useWifi7MLO`).
 - **`POST /api/hooks/{hookName}/actions/{actionName}`**: Invokes physical hardware actuators and AI routines:
   - `POST /api/hooks/useTorch/actions/setTorch`: Sets rear LED flashlight level or toggles strobe.

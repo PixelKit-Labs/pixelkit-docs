@@ -26,8 +26,8 @@ only contains the native code Expo shipped.
 
 **Android only.** Both Kotlin modules declare `platforms: ["android"]`.
 
-**It degrades rather than fails on other hardware.** 13 of the 51 hooks are pure Expo and
-JavaScript — camera, audio, sensors, location, biometrics, the keystore, cloud Gemini — and work on
+**It degrades rather than fails on other hardware.** 15 of the 53 hooks are pure Expo and
+JavaScript — camera, audio, sensors, location, biometrics, the keystore, cloud Gemini, cloud hardware agent, Gemini Live duplex — and work on
 any Android device. Another 37 call the Kotlin modules and report `unsupported` where the silicon is
 not there. The last one is `useHiLight`: Android restricts the camera-bar LEDs to privileged apps,
 so it drives them through a local ADB daemon and reports `unavailable` without one.
