@@ -11,7 +11,7 @@
 | Dictation, voice commands, captions | **1. On-device STT** | `com.google.mlkit:genai-speech-recognition` (Gemini Nano, Advanced mode) | No | ~200 ms partials |
 | Fallback STT on any Android 12+ | 1b | `android.speech.SpeechRecognizer` on-device | No | ~300 ms |
 | Batch transcription with speakers | 1c | `gemini-3.5-transcribe` (cloud) | Yes | file-based |
-| Talk to an agent that can act (tools), interrupt it, hear it | **2. Live API** | `gemini-3.1-flash-live-preview` | Yes (WSS) | ~500 ms |
+| Talk to an agent that can act (tools), interrupt it, hear it | **2. Live API** | `gemini-3.8-live` / `gemini-3.8-live-extended-thinking` | Yes (WSS) | ~500 ms |
 | Read text aloud offline | **3. TTS local** | `expo-speech` (Android TTS engine) | No | ~100 ms |
 | Studio-quality, controllable voice | 3b | `gemini-3.1-flash-tts-preview` | Yes | ~600 ms |
 
@@ -335,7 +335,7 @@ export async function mintLiveToken() {
  expireTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // session may last 30 min
  newSessionExpireTime: new Date(Date.now() + 60 * 1000).toISOString(), // must connect within 60 s
  liveConnectConstraints: {
- model: 'gemini-3.1-flash-live-preview',
+ model: 'gemini-3.8-live-extended-thinking',
  config: { responseModalities: [Modality.AUDIO] }, // token cannot be reused for text/other models
  },
  },
@@ -379,10 +379,11 @@ export function useLiveVoiceAgent(opts: { systemInstruction: string; voiceName?:
  const ai = new GoogleGenAI({ apiKey: tokenName, httpOptions: { apiVersion: 'v1alpha' } });
 
  session.current = await ai.live.connect({
- model: 'gemini-3.1-flash-live-preview',
+ model: 'gemini-3.8-live-extended-thinking',
  config: {
  responseModalities: [Modality.AUDIO],
  speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: opts.voiceName ?? 'Kore' } } },
+ thinkingConfig: { thinkingBudget: 4096 }, // asynchronous background reasoning & tool orchestration
  systemInstruction: opts.systemInstruction,
  tools: [{ functionDeclarations: toFunctionDeclarations() }],
  inputAudioTranscription: {},
