@@ -469,9 +469,80 @@ adb shell "cmd app_function execute-app-function \
 
 If your app is also an **agent** (PixelKit's Delta Bot calling other apps), request `android.permission.EXECUTE_APP_FUNCTIONS` and use `AppFunctionManager` to enumerate and execute other apps' functions, then feed them into the registry as cloud tools.
 
+## 6. Google Agent Development Kit (ADK) & Multi-Agent Diagnostics
+
+PixelKit provides native integration with the **Google Agent Development Kit (ADK)** for building autonomous multi-agent teams. Rather than writing manual prompt loops, developers can compose specialized ADK agents with hardware tools and run diagnostic sweeps across the Pixel 11 Pro's silicon, battery, and RF systems.
+
+### 6.1 Creating ADK Tools & Specialist Agents
+
+```ts
+import {
+  createADKTool,
+  createADKAgent,
+  createDiagnosticSpecialists,
+  runDiagnosticTeam,
+} from '@pixelkit-labs/sdk';
+import { Type, GoogleGenAI } from '@google/genai';
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+// 1. Convert or create an ADK-compatible hardware tool
+const tempTool = createADKTool(
+  'get_surface_temperature',
+  'Read non-contact infrared temperature from MLX90632 sensor',
+  { type: Type.OBJECT, properties: {} },
+  async () => {
+    // Hardware bridge execution
+    return { surfaceC: 32.5, ambientC: 22.0 };
+  }
+);
+
+// 2. Define a specialized ADK agent
+const thermalAgent = createADKAgent({
+  name: 'ThermalSpecialist',
+  role: 'Tensor G6 Silicon & Thermals Architect',
+  description: 'Specializes in thermal profiling and ADPF throttling headroom.',
+  systemInstruction: 'Analyze thermal headroom. Follow Zero-Simulation Principle (never fabricate numbers).',
+  tools: [tempTool],
+});
+```
+
+### 6.2 Multi-Agent Hardware Diagnostic Team
+
+When diagnosing complex device anomalies (e.g. "Device is warm while fast charging and dropping frames"), `runDiagnosticTeam` dispatches specialized ADK agents concurrently and uses a Lead Diagnostic Coordinator to synthesize a structured root-cause assessment:
+
+```ts
+const report = await runDiagnosticTeam(
+  ai,
+  'Phone is dropping frame rates during camera recording',
+  adkTools,
+  {
+    model: 'gemini-3.8-flash',
+    onAgentComplete: (result) => {
+      console.log(`[ADK] ${result.agentName} finished with ${result.steps.length} tool executions.`);
+    },
+  }
+);
+
+console.log('Verdict:', report.verdict); // 'healthy' | 'warning' | 'critical'
+console.log('Summary:', report.summary);
+console.log('Recommendations:', report.recommendations);
+```
+
+**Diagnostic Report Contract**
+
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `timestamp` | `string` | ISO 8601 timestamp of when the diagnostic sweep executed. |
+| `issue` | `string` | The original user or system symptom description. |
+| `verdict` | `'healthy' \| 'warning' \| 'critical'` | Overall device health verdict synthesized by the Lead Diagnostic Coordinator. |
+| `summary` | `string` | Concise 1–3 sentence root cause assessment. |
+| `specialistResults` | `ADKAgentExecutionResult[]` | Detailed findings and tool execution audit trail for each specialist (Silicon, Battery, Radios). |
+| `recommendations` | `string[]` | Actionable next steps or hardware remediation instructions. |
+
 ---
 
-## 6. Choosing a path at runtime
+## 7. Choosing a path at runtime
 
 ```ts
 export async function handleUserIntent(text: string, ctx: { online: boolean; nanoReady: boolean; ai?: GoogleGenAI }) {
@@ -490,19 +561,21 @@ export async function handleUserIntent(text: string, ctx: { online: boolean; nan
 
 ---
 
-## 7. Checklist
+## 8. Checklist
 
 - [ ] Every hardware hook used by AI is registered through `defineTool`, nowhere else.
 - [ ] Tool descriptions are one sentence; arguments use enums; reads and writes are separate tools.
 - [ ] Cloud loop pushes the model turn before `functionResponse`, caps steps, handles parallel calls.
 - [ ] Nano path uses `ToolChoice` first, `tool_code` regex second, cloud third.
+- [ ] ADK specialist agents follow the Zero-Simulation Principle and never fabricate missing metrics.
 - [ ] AppFunctions service listed by `adb shell cmd app_function list-app-functions`.
 - [ ] Docs updated per the mandatory rule: `docs/api/neural-ai.md`, `docs/ai-guidance/recipes.md`, `DocsScreen.tsx`.
 
 ---
 
-## 8. Sources
+## 9. Sources
 
 - [Gemini API function calling](https://ai.google.dev/gemini-api/docs/function-calling) · [Structured output](https://ai.google.dev/gemini-api/docs/structured-output) · [Models](https://ai.google.dev/gemini-api/docs/models)
 - [ML Kit Prompt API](https://developers.google.com/ml-kit/genai/prompt/android) · [Structured output (alpha)](https://developers.google.com/ml-kit/genai/prompt/android/structured-output) · [Firebase hybrid capability table (no on-device function calling)](https://firebase.google.com/docs/ai-logic/hybrid/android/get-started)
 - [AppFunctions overview](https://developer.android.com/ai/appfunctions) · [Add AppFunctions](https://developer.android.com/ai/appfunctions/add-appfunctions) · [9to5Google: AppFunctions & Gemini](https://9to5google.com/2026/02/25/android-appfunctions-gemini/)
+- [Google Agent Development Kit (ADK)](https://github.com/google/agent-development-kit)
