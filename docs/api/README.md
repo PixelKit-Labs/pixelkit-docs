@@ -35,7 +35,7 @@ cannot be listed in the wrong section or listed twice.
 | [`useCloudHardwareAgent`](./neural-ai/usecloudhardwareagent.md) | Autonomous cloud hardware reasoning loop with multi-turn tool calling and extended thinking. |
 | [`useEmbeddings`](./neural-ai/useembeddings.md) | On-device vector embeddings and semantic cosine similarity scoring via Tensor EdgeTPU. |
 | [`useGemini`](./neural-ai/usegemini.md) | Cloud Gemini chat with real multi-turn history. |
-| [`useGeminiLive`](./neural-ai/usegeminilive.md) | Real-time bidirectional streaming audio, text, and hardware tool execution with Gemini 3.8 Multimodal Live API. |
+| [`useGeminiLive`](./neural-ai/usegeminilive.md) | Real-time bidirectional streaming audio, camera video frames, text, and hardware tool execution with Gemini 3.8 Multimodal Live API. |
 | [`useGeminiNano`](./neural-ai/usegemininano.md) | Gemini Nano running on the phone, with no network and no API key. |
 | [`useGenAITasks`](./neural-ai/usegenaitasks.md) | Four focused text tasks that run locally: summarise, proofread, rewrite, describe. |
 | [`useNaturalLanguageAI`](./neural-ai/usenaturallanguageai.md) | Translation, language detection, smart replies and entity extraction, all offline. |
@@ -83,7 +83,7 @@ cannot be listed in the wrong section or listed twice.
 | [`useCapabilities`](./system-media/usecapabilities.md) | What this particular phone actually has. |
 | [`useCellular`](./system-media/usecellular.md) | Carrier, radio generation and network codes from the modem. |
 | [`useDevice`](./system-media/usedevice.md) | Device identity, battery level, thermistor temperature, voltage, current, and wattage. |
-| [`useDisplay`](./system-media/usedisplay.md) | Refresh rate, HDR capability, brightness and the screen wake lock. |
+| [`useDisplay`](./system-media/usedisplay.md) | Refresh rate, HDR capability, brightness, high brightness mode, and the screen wake lock. |
 | [`useMediaLibrary`](./system-media/usemedialibrary.md) | Saving captures to the gallery, and reading what is there. |
 | [`useNetwork`](./system-media/usenetwork.md) | Connection type, address and whether traffic actually goes anywhere. |
 | [`useSpatialAudio`](./system-media/usespatialaudio.md) | Android Spatializer status, binaural rendering, and dynamic head tracking telemetry. |

@@ -11,7 +11,7 @@ This document covers conversational reasoning, on-device generative tasks, speec
 | [`useCloudHardwareAgent`](./usecloudhardwareagent.md) | Autonomous cloud hardware reasoning loop with multi-turn tool calling and extended thinking. |
 | [`useEmbeddings`](./useembeddings.md) | On-device vector embeddings and semantic cosine similarity scoring via Tensor EdgeTPU. |
 | [`useGemini`](./usegemini.md) | Cloud Gemini chat with real multi-turn history. |
-| [`useGeminiLive`](./usegeminilive.md) | Real-time bidirectional streaming audio, text, and hardware tool execution with Gemini 3.8 Multimodal Live API. |
+| [`useGeminiLive`](./usegeminilive.md) | Real-time bidirectional streaming audio, camera video frames, text, and hardware tool execution with Gemini 3.8 Multimodal Live API. |
 | [`useGeminiNano`](./usegemininano.md) | Gemini Nano running on the phone, with no network and no API key. |
 | [`useGenAITasks`](./usegenaitasks.md) | Four focused text tasks that run locally: summarise, proofread, rewrite, describe. |
 | [`useNaturalLanguageAI`](./usenaturallanguageai.md) | Translation, language detection, smart replies and entity extraction, all offline. |

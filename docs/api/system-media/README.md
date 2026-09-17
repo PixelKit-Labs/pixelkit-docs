@@ -11,7 +11,7 @@ This document covers system telemetry, media capture and playback, power and the
 | [`useCapabilities`](./usecapabilities.md) | What this particular phone actually has. |
 | [`useCellular`](./usecellular.md) | Carrier, radio generation and network codes from the modem. |
 | [`useDevice`](./usedevice.md) | Device identity, battery level, thermistor temperature, voltage, current, and wattage. |
-| [`useDisplay`](./usedisplay.md) | Refresh rate, HDR capability, brightness and the screen wake lock. |
+| [`useDisplay`](./usedisplay.md) | Refresh rate, HDR capability, brightness, high brightness mode, and the screen wake lock. |
 | [`useMediaLibrary`](./usemedialibrary.md) | Saving captures to the gallery, and reading what is there. |
 | [`useNetwork`](./usenetwork.md) | Connection type, address and whether traffic actually goes anywhere. |
 | [`useSpatialAudio`](./usespatialaudio.md) | Android Spatializer status, binaural rendering, and dynamic head tracking telemetry. |

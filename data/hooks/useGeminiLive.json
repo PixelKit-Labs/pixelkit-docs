@@ -2,10 +2,10 @@
   "id": "useGeminiLive",
   "name": "useGeminiLive",
   "category": "ai",
-  "chipBadge": "Gemini Live · WebSocket Duplex · Real-Time",
-  "summary": "Real-time bidirectional streaming audio, text, and hardware tool execution with Gemini 3.8 Multimodal Live API.",
-  "plain": "Streams live bidirectional voice and text with Gemini in the cloud over WebSockets, executing real-time hardware diagnostics and actions with low-latency audio duplexing.",
-  "description": "Establishes a persistent full-duplex WebSocket connection to the Gemini Multimodal Live API. Streams base64-encoded PCM audio chunks from device microphones, receives low-latency synthesized speech responses, exposes live extended thinking thought streams, and intercepts model tool calls to execute device hardware actuators and sensors with zero round-trip delay.",
+  "chipBadge": "Gemini Live · WebSocket Duplex · Multimodal Camera",
+  "summary": "Real-time bidirectional streaming audio, camera video frames, text, and hardware tool execution with Gemini 3.8 Multimodal Live API.",
+  "plain": "Streams live bidirectional voice, camera video frames, and text with Gemini in the cloud over WebSockets, executing real-time hardware diagnostics and actions with low-latency audio duplexing.",
+  "description": "Establishes a persistent full-duplex WebSocket connection to the Gemini Multimodal Live API. Streams base64-encoded PCM audio chunks and camera image/video frames from device sensors, receives low-latency synthesized speech responses, exposes live extended thinking thought streams, and intercepts model tool calls to execute device hardware actuators and sensors with zero round-trip delay.",
   "signature": "useGeminiLive(config?: GeminiLiveConfig): GeminiLiveTelemetry",
   "params": [
     {
@@ -34,6 +34,11 @@
       "name": "isListening",
       "type": "boolean",
       "desc": "Whether the client is streaming microphone audio chunks to the server."
+    },
+    {
+      "name": "isStreamingMedia",
+      "type": "boolean",
+      "desc": "Whether the client is actively streaming media (camera video frames or images) to the server."
     },
     {
       "name": "transcript",
@@ -81,6 +86,21 @@
       "desc": "Streams a base64 PCM audio chunk from the microphone array."
     },
     {
+      "name": "sendImageChunk",
+      "type": "(base64Data: string, mimeType?: string) => void",
+      "desc": "Streams a base64 camera image or video frame into the real-time multimodal live session."
+    },
+    {
+      "name": "sendVideoFrame",
+      "type": "(base64Jpeg: string) => void",
+      "desc": "Streams a continuous camera video frame (JPEG base64) into the real-time live session."
+    },
+    {
+      "name": "sendMultimodalTurn",
+      "type": "(text: string, images?: Array<{ data: string; mimeType?: string }>) => void",
+      "desc": "Sends a multimodal user turn containing both text and image attachments."
+    },
+    {
       "name": "interrupt",
       "type": "() => void",
       "desc": "Signals the model to interrupt speech immediately."
@@ -113,6 +133,21 @@
       "type": "(pcmBase64: string) => void"
     },
     {
+      "name": "sendImageChunk(base64Data, mimeType)",
+      "desc": "Streams a base64 camera frame into the live multimodal session.",
+      "type": "(base64Data: string, mimeType?: string) => void"
+    },
+    {
+      "name": "sendVideoFrame(base64Jpeg)",
+      "desc": "Streams a continuous camera video frame into the live session.",
+      "type": "(base64Jpeg: string) => void"
+    },
+    {
+      "name": "sendMultimodalTurn(text, images)",
+      "desc": "Sends a user turn with both text and image attachments.",
+      "type": "(text: string, images?: Array<{ data: string; mimeType?: string }>) => void"
+    },
+    {
       "name": "interrupt()",
       "desc": "Interrupts model speech playback.",
       "type": "() => void"
@@ -123,6 +158,6 @@
       "type": "() => void"
     }
   ],
-  "example": "import { useGeminiLive } from '@pixelkit-labs/sdk';\n\nfunction VoiceTriage() {\n  const { isConnected, isStreaming, connect, disconnect, sendText } = useGeminiLive();\n  return (\n    <View>\n      <Button title={isConnected ? \"Disconnect\" : \"Connect Live\"} onPress={isConnected ? disconnect : () => connect()} />\n      <Button title=\"Ask Status\" onPress={() => sendText(\"Check battery and thermals\")} disabled={!isConnected} />\n    </View>\n  );\n}",
-  "agentNote": "Supports bidirectional audio duplex streaming and real-time hardware tool calling over WebSockets."
+  "example": "import { useGeminiLive } from '@pixelkit-labs/sdk';\n\nfunction VisionVoiceTriage() {\n  const { isConnected, connect, disconnect, sendText, sendVideoFrame } = useGeminiLive();\n  return (\n    <View>\n      <Button title={isConnected ? \"Disconnect\" : \"Connect Live\"} onPress={isConnected ? disconnect : () => connect()} />\n      <Button title=\"Send Camera Snapshot\" onPress={() => sendVideoFrame(base64Jpeg)} disabled={!isConnected} />\n    </View>\n  );\n}",
+  "agentNote": "Supports bidirectional audio duplex streaming, live camera frame ingestion, and real-time hardware tool calling over WebSockets."
 }

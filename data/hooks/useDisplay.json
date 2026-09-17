@@ -3,9 +3,9 @@
   "name": "useDisplay",
   "category": "system",
   "chipBadge": "LTPO OLED · ARR",
-  "summary": "Refresh rate, HDR capability, brightness and the screen wake lock.",
+  "summary": "Refresh rate, HDR capability, brightness, high brightness mode, and the screen wake lock.",
   "plain": "Reads what the screen is doing and lets you influence it. The refresh rate changes constantly on this panel to save power, so it is re-read live rather than assumed.",
-  "description": "Display mode, supported refresh rates, HDR types and resolution come from the Android Display object through the native module, re-read every two seconds because adaptive refresh rate changes the active mode continuously. Brightness uses expo-brightness and the wake lock uses expo-keep-awake. setPreferredRefreshRate requests a rate; the platform may ignore it, so read refreshRateHz back rather than assuming it took.",
+  "description": "Display mode, supported refresh rates, HDR types, and resolution come from the Android Display object through the native module, re-read every two seconds because adaptive refresh rate changes the active mode continuously. Brightness uses expo-brightness and the wake lock uses expo-keep-awake. setPreferredRefreshRate requests a rate, setHighBrightnessMode toggles peak sunlight luminance, and setPreferredDisplayMode selects panel modes directly.",
   "signature": "useDisplay(): DisplayState",
   "params": [],
   "returns": [
@@ -45,6 +45,16 @@
       "desc": "Peak luminance the panel reports, when it reports one."
     },
     {
+      "name": "hdrSdrRatio",
+      "type": "number | null",
+      "desc": "Current HDR to SDR luminance boost ratio (Android 14+ / API 34+), or null if not reported."
+    },
+    {
+      "name": "isHbmActive",
+      "type": "boolean",
+      "desc": "Whether High Brightness Mode (HBM) override is currently engaged."
+    },
+    {
       "name": "brightness",
       "type": "number",
       "desc": "Current screen brightness from 0 to 1."
@@ -53,6 +63,11 @@
       "name": "isKeepAwake",
       "type": "boolean",
       "desc": "Whether this app is currently holding the screen on."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Latest failure message, or null."
     },
     {
       "name": "source",
@@ -75,6 +90,45 @@
       "output": "Resolves true when the request was applied. It is a request, not a guarantee: the system may pick another mode."
     },
     {
+      "name": "setHighBrightnessMode(enabled)",
+      "type": "(enabled: boolean) => Promise<boolean>",
+      "desc": "Engages High Brightness Mode (HBM) peak sunlight boost and maximum HDR headroom override.",
+      "inputs": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "desc": "Whether HBM should be forced on."
+        }
+      ],
+      "output": "Resolves true when applied."
+    },
+    {
+      "name": "setPreferredDisplayMode(modeId)",
+      "type": "(modeId: number) => Promise<boolean>",
+      "desc": "Requests a specific display mode configuration by its numeric ID.",
+      "inputs": [
+        {
+          "name": "modeId",
+          "type": "number",
+          "desc": "Display mode ID from modes list."
+        }
+      ],
+      "output": "Resolves true when applied."
+    },
+    {
+      "name": "setDesiredHdrHeadroom(headroom)",
+      "type": "(headroom: number) => Promise<boolean>",
+      "desc": "Requests desired HDR headroom ratio on Android 14+ (1.0 to 3.0+).",
+      "inputs": [
+        {
+          "name": "headroom",
+          "type": "number",
+          "desc": "Desired HDR headroom multiplier."
+        }
+      ],
+      "output": "Resolves true when applied."
+    },
+    {
       "name": "setScreenBrightness(value)",
       "type": "(value: number) => Promise<void>",
       "desc": "Sets the brightness of this app window.",
@@ -94,6 +148,6 @@
       "output": "Resolves once the lock state has flipped; isKeepAwake reflects it. Release it when you no longer need it."
     }
   ],
-  "example": "import { useDisplay } from '@pixelkit-labs/sdk';\n\nfunction DisplayPanel() {\n  const display = useDisplay();\n  return (\n    <View>\n      <Text>{display.refreshRateHz} Hz{display.hasArrSupport ? ' · adaptive' : ''}</Text>\n      <Button title=\"Prefer 120 Hz\" onPress={() => display.setPreferredRefreshRate(120)} />\n    </View>\n  );\n}",
+  "example": "import { useDisplay } from '@pixelkit-labs/sdk';\n\nfunction DisplayPanel() {\n  const display = useDisplay();\n  return (\n    <View>\n      <Text>{display.refreshRateHz} Hz{display.hasArrSupport ? ' · adaptive' : ''}</Text>\n      <Button title=\"Prefer 120 Hz\" onPress={() => display.setPreferredRefreshRate(120)} />\n      <Button title={display.isHbmActive ? \"Disable HBM\" : \"Engage High Brightness\"} onPress={() => display.setHighBrightnessMode(!display.isHbmActive)} />\n    </View>\n  );\n}",
   "agentNote": "Do not cache refreshRateHz; it moves. Always release the wake lock when the screen no longer needs to stay on, or you will drain the battery."
 }
