@@ -18,6 +18,9 @@ npx expo install @pixelkit-labs/mlkit
 | [Quickstart](./quickstart.md) | Install, development build, first hook on a real device |
 | [Architecture](./architecture.md) | How the hooks reach the silicon: the native bridge and the HAL layer |
 
+The separate [Laya decision SDK](../guides/laya.md) is being prepared for local typed decisions on
+the Pixel. Its source is public; npm release and real-checkpoint device verification are pending.
+
 ## Before you start
 
 **You need a development build.** `npx expo run:android`, or an EAS development profile. PixelKit
