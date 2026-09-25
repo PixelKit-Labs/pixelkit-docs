@@ -9,8 +9,9 @@ rather than generated prose. It does not call a hosted inference API.
 
 **Status:** the public source repository and its TypeScript package are available. The package has
 not yet been published to npm. A pinned public checkpoint has passed a local fused-graph smoke run,
-and the Android verification app has built. Pixel 11 Pro latency, memory use, answer parity, and
-execution provider choice remain unverified. Do not treat this page as a device performance claim.
+and the Android verification app has built. CI now typechecks and builds its Android debug APK.
+Pixel 11 Pro latency, memory use, answer parity, and execution provider choice remain unverified.
+Do not treat this page as a device performance claim.
 
 ## Package boundary
 
