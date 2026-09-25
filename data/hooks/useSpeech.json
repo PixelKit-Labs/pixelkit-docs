@@ -5,7 +5,7 @@
   "chipBadge": "expo-speech · text to speech",
   "summary": "Speaking text aloud with the voices the phone has installed.",
   "plain": "Reads text out loud. This is the output half of voice: useSpeechAI listens, this one talks back. Which voices exist depends on what the user has downloaded in system settings, so check the list rather than assuming a language is available.",
-  "description": "Wraps expo-speech, which drives the platform speech service. speak resolves when the engine finishes, so utterances can be awaited in sequence rather than overlapping. Text longer than maxInputLength is rejected rather than silently truncated, because a cut-off sentence is worse than an error. The hook stops the engine on unmount so speech does not continue after the screen is gone.",
+  "description": "Wraps expo-speech for the system voice and can address an installed Android TTS service by package name without changing the phone default. An explicit service must really initialize as requested; Android fallback is rejected. speak resolves when the engine finishes, so utterances can be awaited in sequence rather than overlapping. Text longer than maxInputLength is rejected. The hook stops only speech it owns on unmount.",
   "signature": "useSpeech(): SpeechState",
   "params": [],
   "returns": [
@@ -23,6 +23,11 @@
       "name": "voices",
       "type": "Voice[]",
       "desc": "Installed voices, each with an identifier, name, language and quality."
+    },
+    {
+      "name": "speechEngines",
+      "type": "{ packageName: string; label: string }[]",
+      "desc": "Android TTS services installed on the device; empty when unavailable. Separate from the system engine's voice list."
     },
     {
       "name": "voice",
@@ -95,6 +100,11 @@
           "name": "options.volume",
           "type": "number | undefined",
           "desc": "0 to 1 for this utterance."
+        },
+        {
+          "name": "options.enginePackage",
+          "type": "string | undefined",
+          "desc": "Installed Android TTS service package to use for this utterance without changing the system default. Rejects if unavailable or Android selects a different engine."
         }
       ],
       "output": "Resolves when the engine finishes or is stopped. Rejects when the text is too long or the engine errors, with the message also in error."
@@ -122,6 +132,12 @@
       "type": "() => Promise<Voice[]>",
       "desc": "Re-reads installed voices, which changes when the user downloads one in system settings.",
       "output": "Resolves with the list, also written to voices. Empty array on failure, with the reason in error."
+    },
+    {
+      "name": "refreshSpeechEngines()",
+      "type": "() => Promise<{ packageName: string; label: string }[]>",
+      "desc": "Re-reads Android TTS services after installation or removal.",
+      "output": "Resolves with the installed services, also written to speechEngines. Empty on unsupported platforms or failure, with the reason in error."
     },
     {
       "name": "voicesForLanguage(languageTag)",

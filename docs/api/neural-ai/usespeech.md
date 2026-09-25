@@ -2,9 +2,9 @@
 
 **Source:** [packages/sdk/src/ai/useSpeech.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/ai/useSpeech.ts)
 
-Text to speech on `expo-speech`, the output half of the voice story: `useSpeechAI` listens, this one talks back.
+Text to speech through the system engine or an explicitly selected installed Android TTS service. `useSpeechAI` listens; this hook talks back.
 
-Voices come from the platform speech service, so language coverage and quality depend on what the user has downloaded in system settings rather than on this app. Read `voices` instead of assuming a language exists. `speak` resolves when the engine finishes, so utterances can be awaited in sequence instead of overlapping. Text longer than `maxInputLength` is rejected rather than silently truncated, and the engine is stopped on unmount so speech does not continue after the screen is gone. It reads the installed voices on mount. Per-utterance settings go in the `speak` options; `setVoice`, `setRate` and `setPitch` set the defaults those options fall back to.
+Voices come from the system's default speech engine; `speechEngines` lists installed Android TTS services. An `enginePackage` selects one for an utterance without changing the phone default and rejects if Android falls back to another engine. `speak` resolves when the engine finishes. Text longer than `maxInputLength` is rejected, and unmount stops only speech owned by this hook. Per-utterance settings go in the `speak` options; `setVoice`, `setRate` and `setPitch` set defaults for the system engine.
 
 ## Signature
 ```typescript
@@ -12,6 +12,7 @@ function useSpeech(): {
  isSpeaking: boolean;
  isPaused: boolean;
  voices: Voice[];
+ speechEngines: { packageName: string; label: string }[];
  voice: string | null;
  rate: number;
  pitch: number;
@@ -25,6 +26,7 @@ function useSpeech(): {
  resume: () => Promise<void>;
  checkSpeaking: () => Promise<boolean>;
  refreshVoices: () => Promise<Voice[]>;
+ refreshSpeechEngines: () => Promise<{ packageName: string; label: string }[]>;
  voicesForLanguage: (languageTag: string) => Voice[];
  setVoice: (id: string | null) => void;
  setRate: (n: number) => void;
@@ -39,6 +41,7 @@ function useSpeech(): {
 | `rate` | `number` | Speaking speed; `1` is normal, lower is slower. Falls back to the hook's `rate`. |
 | `pitch` | `number` | Voice pitch; `1` is normal. Falls back to the hook's `pitch`. |
 | `volume` | `number` | 0 to 1 for this utterance. |
+| `enginePackage` | `string` | Installed Android TTS service for this utterance. Rejects if unavailable or Android selects a different service. |
 
 ## Outputs
 | Field | Type | Description |
@@ -46,6 +49,7 @@ function useSpeech(): {
 | `isSpeaking` | `boolean` | Whether the engine is currently speaking. |
 | `isPaused` | `boolean` | Whether speech is paused rather than stopped. |
 | `voices` | `Voice[]` | Installed voices: `{ identifier, name, language, quality }`. Empty when none are installed or the read failed. |
+| `speechEngines` | `{ packageName: string; label: string }[]` | Installed Android TTS services; distinct from the default service's voice list. |
 | `voice` | `string \| null` | Selected voice identifier, or `null` for the system default. |
 | `rate` | `number` | Default speaking speed; `1` is normal. |
 | `pitch` | `number` | Default pitch; `1` is normal. |
@@ -63,6 +67,7 @@ function useSpeech(): {
 | `resume()` | none | `Promise<void>` | Continues a paused utterance. |
 | `checkSpeaking()` | none | `Promise<boolean>` — the engine's own answer, also written to `isSpeaking` | Asks the engine directly rather than trusting the local flag. |
 | `refreshVoices()` | none | `Promise<Voice[]>` — the list, also written to `voices` | Re-reads installed voices, e.g. after the user downloads one in Settings. |
+| `refreshSpeechEngines()` | none | `Promise<{ packageName: string; label: string }[]>` | Re-reads installed Android TTS services into `speechEngines`. |
 | `voicesForLanguage(languageTag)` | `languageTag: string` — a prefix such as `'en'` or a full tag such as `'en-GB'`, matched case-insensitively | `Voice[]` — matching voices; empty when none are installed | Filters `voices` so you can offer a real choice. |
 | `setVoice(id)` | `id: string \| null` — an identifier from `voices`, or `null` for the system default | `void` | Sets the default voice for later `speak` calls. |
 | `setRate(n)` / `setPitch(n)` | `n: number` — `1` is normal | `void` | Set the defaults `speak` falls back to. |
