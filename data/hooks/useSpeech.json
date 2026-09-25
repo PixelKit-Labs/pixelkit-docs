@@ -5,7 +5,7 @@
   "chipBadge": "expo-speech · text to speech",
   "summary": "Speaking text aloud with the voices the phone has installed.",
   "plain": "Reads text out loud. This is the output half of voice: useSpeechAI listens, this one talks back. Which voices exist depends on what the user has downloaded in system settings, so check the list rather than assuming a language is available.",
-  "description": "Wraps expo-speech for the system voice and can address an installed Android TTS service by package name without changing the phone default. An explicit service must really initialize as requested; Android fallback is rejected. speak resolves when the engine finishes, so utterances can be awaited in sequence rather than overlapping. Text longer than maxInputLength is rejected. The hook stops only speech it owns on unmount.",
+  "description": "Wraps expo-speech for the system voice and can address an installed Android TTS service by package name without changing the phone default. The requested service must be installed and initialize; Android can silently fall back after a binding failure, and public APIs cannot always identify the active engine. speak resolves when the engine finishes, so utterances can be awaited in sequence rather than overlapping. Text longer than maxInputLength is rejected. The hook stops only speech it owns on unmount.",
   "signature": "useSpeech(): SpeechState",
   "params": [],
   "returns": [
@@ -104,7 +104,7 @@
         {
           "name": "options.enginePackage",
           "type": "string | undefined",
-          "desc": "Installed Android TTS service package to use for this utterance without changing the system default. Rejects if unavailable or Android selects a different engine."
+          "desc": "Installed Android TTS service package to use for this utterance without changing the system default. Rejects when unavailable or when a different active engine can be detected; Android may silently fall back when the active engine cannot be inspected."
         }
       ],
       "output": "Resolves when the engine finishes or is stopped. Rejects when the text is too long or the engine errors, with the message also in error."

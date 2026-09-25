@@ -4,7 +4,7 @@
 
 Text to speech through the system engine or an explicitly selected installed Android TTS service. `useSpeechAI` listens; this hook talks back.
 
-Voices come from the system's default speech engine; `speechEngines` lists installed Android TTS services. An `enginePackage` selects one for an utterance without changing the phone default and rejects if Android falls back to another engine. `speak` resolves when the engine finishes. Text longer than `maxInputLength` is rejected, and unmount stops only speech owned by this hook. Per-utterance settings go in the `speak` options; `setVoice`, `setRate` and `setPitch` set defaults for the system engine.
+Voices come from the system's default speech engine; `speechEngines` lists installed Android TTS services. An `enginePackage` requests one for an utterance without changing the phone default. Android can silently fall back after a binding failure, and public APIs cannot identify the active engine on every device. Verify exact engine identity on the target phone. `speak` resolves when the engine finishes. Text longer than `maxInputLength` is rejected, and unmount stops only speech owned by this hook. Per-utterance settings go in the `speak` options; `setVoice`, `setRate` and `setPitch` set defaults for the system engine.
 
 ## Signature
 ```typescript
@@ -41,7 +41,7 @@ function useSpeech(): {
 | `rate` | `number` | Speaking speed; `1` is normal, lower is slower. Falls back to the hook's `rate`. |
 | `pitch` | `number` | Voice pitch; `1` is normal. Falls back to the hook's `pitch`. |
 | `volume` | `number` | 0 to 1 for this utterance. |
-| `enginePackage` | `string` | Installed Android TTS service for this utterance. Rejects if unavailable or Android selects a different service. |
+| `enginePackage` | `string` | Installed Android TTS service for this utterance. Rejects if unavailable or a different active service is detected; silent fallback may be unobservable on some devices. |
 
 ## Outputs
 | Field | Type | Description |

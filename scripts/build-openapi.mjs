@@ -620,7 +620,7 @@ Covers all ${files.length} typed hardware and AI hooks, low-overhead native tele
   writeFileSync(path.join(PUBLIC_DIR, 'openapi.json'), jsonStr, 'utf8');
   writeFileSync(path.join(publicApiDir, 'openapi.json'), jsonStr, 'utf8');
 
-  const yamlStr = toYaml(spec).trim() + '\n';
+  const yamlStr = toYaml(spec).replace(/[ \t]+(?=\r?$)/gm, '').trim() + '\n';
   writeFileSync(path.join(PUBLIC_DIR, 'openapi.yaml'), yamlStr, 'utf8');
   writeFileSync(path.join(publicApiDir, 'openapi.yaml'), yamlStr, 'utf8');
 
