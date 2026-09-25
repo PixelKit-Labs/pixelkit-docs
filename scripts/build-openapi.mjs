@@ -239,7 +239,7 @@ Every telemetry read exposes \`source: 'hardware' | 'derived' | 'unavailable'\`.
 - Unreadable sensor readings are \`null\` and report \`unavailable\`.
 - Actuators reject with an explicit reason in \`error\` when hardware is unavailable or disabled.
 
-Covers all 51 typed hardware and AI hooks, low-overhead native telemetry, and actuators.
+Covers all ${files.length} typed hardware and AI hooks, low-overhead native telemetry, and actuators.
       `.trim(),
       contact: {
         name: 'PixelKit Labs',
@@ -269,7 +269,7 @@ Covers all 51 typed hardware and AI hooks, low-overhead native telemetry, and ac
         get: {
           summary: 'Get Full Device Hardware Telemetry Snapshot',
           description:
-            'Atomic snapshot of instantaneous telemetry across all 51 hardware and AI subsystems. Values are strictly measured from real hardware or null.',
+            'Atomic snapshot of available instantaneous hardware telemetry. Values are strictly measured from real hardware or null.',
           operationId: 'getFullDeviceState',
           tags: ['silicon-compute'],
           responses: {
@@ -289,12 +289,12 @@ Covers all 51 typed hardware and AI hooks, low-overhead native telemetry, and ac
       '/hooks': {
         get: {
           summary: 'List All PixelKit Hardware & AI Hooks',
-          description: 'Lists all 51 available hooks, their categories, descriptions, and hardware chip badges.',
+          description: `Lists all ${files.length} available hooks, their categories, descriptions, and hardware chip badges.`,
           operationId: 'listHooks',
           tags: ['silicon-compute'],
           responses: {
             '200': {
-              description: 'List of all 51 hooks.',
+              description: `List of all ${files.length} hooks.`,
               content: {
                 'application/json': {
                   schema: {
@@ -608,7 +608,7 @@ Covers all 51 typed hardware and AI hooks, low-overhead native telemetry, and ac
 
   spec.components.schemas.HardwareStateSnapshot = {
     type: 'object',
-    description: 'Instantaneous snapshot of all 51 PixelKit hardware telemetry states.',
+    description: 'Instantaneous snapshot of available PixelKit hardware telemetry states.',
     properties: snapshotProperties,
   };
 

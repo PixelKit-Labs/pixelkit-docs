@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "PixelKit SDK API",
-    "version": "1.6.33",
+    "version": "1.6.35",
     "description": "OpenAPI 3.1.0 specification for the **PixelKit SDK** targeting Google Pixel hardware (Tensor G6, Titan M2/M3, Android 17 API 37).\n\n### The Zero-Simulation Principle\nEvery telemetry read exposes `source: 'hardware' | 'derived' | 'unavailable'`.\n- Fabricated readings are completely unrepresentable in this specification.\n- Unreadable sensor readings are `null` and report `unavailable`.\n- Actuators reject with an explicit reason in `error` when hardware is unavailable or disabled.\n\nCovers all 53 typed hardware and AI hooks, low-overhead native telemetry, and actuators.",
     "contact": {
       "name": "PixelKit Labs",
@@ -53,7 +53,7 @@
     "/state": {
       "get": {
         "summary": "Get Full Device Hardware Telemetry Snapshot",
-        "description": "Atomic snapshot of instantaneous telemetry across all 53 hardware and AI subsystems. Values are strictly measured from real hardware or null.",
+        "description": "Atomic snapshot of available instantaneous hardware telemetry. Values are strictly measured from real hardware or null.",
         "operationId": "getFullDeviceState",
         "tags": [
           "silicon-compute"
@@ -20049,7 +20049,7 @@
       },
       "HardwareStateSnapshot": {
         "type": "object",
-        "description": "Instantaneous snapshot of all 51 PixelKit hardware telemetry states.",
+        "description": "Instantaneous snapshot of available PixelKit hardware telemetry states.",
         "properties": {
           "useADPF": {
             "$ref": "#/components/schemas/useADPFTelemetry"
