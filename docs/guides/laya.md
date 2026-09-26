@@ -7,7 +7,7 @@
 an ONNX model on the user's own device. It is useful when an app needs a decision and probabilities
 rather than generated prose. It does not call a hosted inference API.
 
-**SDK version:** `0.1.6`
+**SDK version:** `0.1.7`
 
 Laya CI and release check this guide's SDK version and example imports against the package.
 SDK changes also require a version bump and matching README and changelog updates in the same
@@ -16,8 +16,18 @@ change set. Update this guide before pushing the corresponding SDK change.
 **Status:** the public source repository and its TypeScript package are available. The package has
 not yet been published to npm. A pinned public checkpoint has passed a local fused-graph smoke run,
 and the Android verification app has built. CI now typechecks and builds its Android debug APK.
-Pixel 11 Pro latency, memory use, answer parity, and execution provider choice remain unverified.
-Do not treat this page as a device performance claim.
+A local CPU smoke run has completed on a Pixel 11 Pro. General accuracy, memory
+profiling, cross-provider answer parity, and hardware placement remain unverified.
+Do not treat this page as a general device performance claim.
+
+The Android example includes editable support routing, notification triage, and
+assistant intent selection, plus 24 authored evaluation cases with expected
+answers fixed in advance. It reports correct/wrong/error counts, per-case
+predictions, and latency, and saves a local JSON report. Six challenge cases cover
+negation, ambiguity, multiple intents, and misleading instructions. The examples
+do not execute actions. Their correct-answer fraction is not a held-out accuracy
+benchmark, and model probability is not measured accuracy. Choose **Run 24
+examples** for the evaluation or **Classify message** for your own input.
 
 ## Package boundary
 
