@@ -7,7 +7,7 @@
 an ONNX model on the user's own device. It is useful when an app needs a decision and probabilities
 rather than generated prose. It does not call a hosted inference API.
 
-**SDK version:** `0.1.7`
+**SDK version:** `0.1.8`
 
 Laya CI and release check this guide's SDK version and example imports against the package.
 SDK changes also require a version bump and matching README and changelog updates in the same
