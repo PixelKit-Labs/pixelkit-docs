@@ -30,12 +30,12 @@ The full function list, with inputs and outputs, is on the
 
 Measured against a complete observability stack, the layer is strongest on provenance — no other
 part of the SDK makes a fabricated reading unrepresentable — and weakest on getting data off the
-device. In priority order, the first being a correctness bug rather than a missing feature:
+device. The SDK 1.6.42 source corrects completion-event attribution and uses monotonic durations, but is not yet published or device-verified. Remaining gaps:
 
 | Gap | What it means in practice | What closing it takes |
 | :--- | :--- | :--- |
-| **Correlation breaks when calls overlap** | An event logged after an `await` can carry another operation's trace id, or none at all. Measured with two overlapping `traced` calls, not inferred — see [Traces](./traces.md#correlation-when-calls-overlap). | Pass the trace context into the traced function explicitly — `traced(module, op, (ctx) => …)`, with `ctx.log` — because Hermes has no `AsyncLocalStorage` to propagate it implicitly. |
-| **Nesting is recorded flat** | An operation inside another is stored as an unrelated trace, so a user action cannot be viewed as a tree. | Store the parent id on `TraceRecord`. `traced` already computes it and throws it away. |
+| **Async event ownership is incomplete** | In 1.6.42 source, completion events keep their own ID; events after an `await` have no implicit owner. Older versions can misattribute concurrent events. See [Traces](./traces.md#correlation-when-calls-overlap). | Add explicit async context propagation; until then carry application request IDs in event data. |
+| **Nesting is recorded flat** | TraceRecord has no parent ID, so a user action cannot be viewed as a tree. | Design explicit context propagation and store parent ownership. |
 | **Nothing leaves the device** | All five pillars live in memory and are gone on restart; there is no path to a backend. | A public subscription and an exporter interface, with OTLP over HTTP as an opt-in package so the SDK itself stays dependency-free. |
 | **Only React can observe changes** | The listener set exists, but the only way to join it is `useObservability`. A non-React consumer, or an exporter, has to poll. | Export `subscribe(listener)`. |
 | **Metrics are the last value only** | No history, no rates, no histograms, no percentiles, so a trend cannot be charted from the SDK. | A bounded sample window or a histogram per metric. |

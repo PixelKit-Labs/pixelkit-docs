@@ -1,6 +1,6 @@
 # Traces
 
-> **Every call to the outside world timed, given an id, and recorded as succeeded or failed — and the one case where that id is wrong.**
+> **Operations carry their own completion IDs; implicit event ownership covers synchronous execution only.**
 
 ## Recording
 
@@ -31,11 +31,17 @@ throwing. The failure is still logged and counted; it is never swallowed.
 
 ## Correlation when calls overlap
 
+The SDK 1.6.42 source correction restores global context as soon as `fn` returns its value or promise, before awaiting it. Success and failure events carry the completed operation's explicit ID, regardless of completion order. Durations use `performance.now()`; `startedAt` and event timestamps remain wall-clock time. This increment is not yet published or device-verified.
+
+Inline `logEvent` and `logError` calls inherit the synchronous operation's ID. Events after an `await` have no implicit owner, including in sequential code. Carry an application request ID in event data when correlating those callbacks. `getTrace(id)` does not gather an entire asynchronous workflow automatically. The explicit-context API proposed below remains unimplemented.
+
+### Historical behavior through 1.6.41
+
 Events logged inside a traced call are stamped with its id, so `getTrace(id)` can gather everything
 one operation did. That works when calls are sequential. **It does not work when they overlap**,
 and in an app with several hooks polling at once, overlapping is the normal case.
 
-The current trace id is a single module-level variable. `traced` sets it on entry and restores it on
+The old trace id was a single module-level variable. `traced` set it on entry and restored it on
 exit, but across an `await` another traced call can change it in between. Run with two calls, where
 B starts while A is waiting:
 
@@ -45,7 +51,7 @@ B starts while A is waiting:
 | logged by A after its `await` | A's id | **B's id** |
 | logged by B after its `await` | B's id | **none** |
 
-That is measured, not inferred. The practical effect is that `getTrace(id)` can return events from
+That historical failure was measured. The practical effect was that `getTrace(id)` could return events from
 the wrong operation and miss ones from the right one.
 
 The usual fix, propagating context implicitly with something like `AsyncLocalStorage`, is not
@@ -62,10 +68,7 @@ await traced(MODULE, 'takePicture', async (ctx) => {
 
 ## Nesting is recorded flat
 
-`traced` already works out which trace it is running inside — it has to, to restore the id when it
-returns. It does not store that. `TraceRecord` has no parent field, so a call made inside another is
-recorded as an unrelated trace, and a user action cannot be viewed as a tree of the operations it
-caused. Storing the parent id is a one-field change.
+`TraceRecord` has no parent field. Synchronous scope restoration does not establish async parentage, so a user action cannot be viewed as a tree of the operations it caused. Explicit context propagation and parent storage remain future work.
 
 ## Limits
 
