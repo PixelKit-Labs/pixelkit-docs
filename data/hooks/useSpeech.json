@@ -5,7 +5,7 @@
   "chipBadge": "expo-speech · text to speech",
   "summary": "Speaking text aloud with the voices the phone has installed.",
   "plain": "Reads text out loud. This is the output half of voice: useSpeechAI listens, this one talks back. Which voices exist depends on what the user has downloaded in system settings, so check the list rather than assuming a language is available.",
-  "description": "Wraps expo-speech for the system voice and can address an installed Android TTS service by package name without changing the phone default. The requested service must be installed and initialize; Android can silently fall back after a binding failure, and public APIs cannot always identify the active engine. speak resolves when the engine finishes, so utterances can be awaited in sequence rather than overlapping. Text longer than maxInputLength is rejected. The hook stops only speech it owns on unmount.",
+  "description": "Wraps expo-speech for the system voice and can address an installed Android TTS service by package name without changing the phone default. Explicit-engine calls fail closed unless Android exposes an exact active-package match: PixelKit inventories and rechecks the installed package/version, resolves voice/locale identity, and rejects missing, changed, mismatched or unobservable engines before synthesis. Platform TTS, explicit Android TTS and Gemini Live audio use distinct output identities. External apps own installation and model downloads; their internal execution provider is not inferred. Speech runs require explicit trace context.",
   "signature": "useSpeech(): SpeechState",
   "params": [],
   "returns": [
@@ -26,8 +26,18 @@
     },
     {
       "name": "speechEngines",
-      "type": "{ packageName: string; label: string }[]",
-      "desc": "Android TTS services installed on the device; empty when unavailable. Separate from the system engine's voice list."
+      "type": "SpeechEngineInfo[]",
+      "desc": "Android TTS services installed on the device, including package label/version and external installation ownership; empty when unavailable."
+    },
+    {
+      "name": "lastSpeechIdentity",
+      "type": "SpeechOutputIdentity | null",
+      "desc": "Observed identity for the latest output. Platform TTS, explicit Android TTS and Gemini Live audio are distinct discriminated types."
+    },
+    {
+      "name": "lastSynthesis",
+      "type": "SpeechSynthesisResult | null",
+      "desc": "Latest explicit-engine terminal result with utterance identity, callback timestamps, status and redacted trace correlation."
     },
     {
       "name": "voice",
@@ -67,9 +77,9 @@
   ],
   "actions": [
     {
-      "name": "speak(text, options?)",
-      "type": "(text: string, options?: SpeakOptions) => Promise<void>",
-      "desc": "Speaks the text on the platform engine. Await it to sequence utterances instead of overlapping them.",
+      "name": "speak(text, run, options?)",
+      "type": "(text: string, run: SpeechRunOptions, options?: SpeakOptions) => Promise<void>",
+      "desc": "Speaks through platform TTS or one exact explicit Android engine under caller-owned trace context. Await it to sequence utterances.",
       "inputs": [
         {
           "name": "text",
@@ -77,37 +87,32 @@
           "desc": "What to say. Trimmed first; blank resolves immediately. Longer than maxInputLength is rejected, not truncated."
         },
         {
-          "name": "options.language",
+          "name": "run",
+          "type": "SpeechRunOptions",
+          "desc": "Explicit immutable trace context and optional local observability sink/redaction policy."
+        },
+        {
+          "name": "options.language / options.voice",
           "type": "string | undefined",
-          "desc": "BCP-47 tag such as en-GB. Defaults to the system language."
+          "desc": "Requested BCP-47 locale or voice identifier. Explicit-engine identity reports the voice and locale Android actually selected."
         },
         {
-          "name": "options.voice",
-          "type": "string | undefined",
-          "desc": "Identifier from voices; overrides language when both are given."
-        },
-        {
-          "name": "options.rate",
+          "name": "options.rate / options.pitch / options.volume",
           "type": "number | undefined",
-          "desc": "Speaking speed; 1 is normal. Falls back to the hook rate."
-        },
-        {
-          "name": "options.pitch",
-          "type": "number | undefined",
-          "desc": "Voice pitch; 1 is normal. Falls back to the hook pitch."
-        },
-        {
-          "name": "options.volume",
-          "type": "number | undefined",
-          "desc": "0 to 1 for this utterance."
+          "desc": "Per-utterance speech controls; rate and pitch default to the hook values and volume ranges from 0 to 1."
         },
         {
           "name": "options.enginePackage",
           "type": "string | undefined",
-          "desc": "Installed Android TTS service package to use for this utterance without changing the system default. Rejects when unavailable or when a different active engine can be detected; Android may silently fall back when the active engine cannot be inspected."
+          "desc": "Installed Android TTS service package for this utterance. Missing, changed, mismatched or unobservable active identity is rejected before synthesis."
+        },
+        {
+          "name": "options.onIdentityResolved / onStart / onDone / onError",
+          "type": "callback | undefined",
+          "desc": "Correlated local callbacks. Identity resolves before explicit text submission; terminal and late callbacks are accepted at most once for the owning utterance."
         }
       ],
-      "output": "Resolves when the engine finishes or is stopped. Rejects when the text is too long or the engine errors, with the message also in error."
+      "output": "Resolves on completion or stop. Rejects invalid text, unavailable identity, initialization/configuration failure, or synthesis error. Callback evidence does not prove audible voice identity."
     },
     {
       "name": "stop()",
@@ -135,8 +140,8 @@
     },
     {
       "name": "refreshSpeechEngines()",
-      "type": "() => Promise<{ packageName: string; label: string }[]>",
-      "desc": "Re-reads Android TTS services after installation or removal.",
+      "type": "() => Promise<SpeechEngineInfo[]>",
+      "desc": "Re-reads Android TTS services and package versions after installation, update or removal.",
       "output": "Resolves with the installed services, also written to speechEngines. Empty on unsupported platforms or failure, with the reason in error."
     },
     {
@@ -153,6 +158,24 @@
       "output": "Returns the matching voices; empty when none are installed for that language."
     },
     {
+      "name": "resolveSpeechEngineIdentity(packageName, run, options?)",
+      "type": "(packageName: string, run: SpeechRunOptions, options?: { language?: string; voice?: string }) => Promise<AndroidTtsIdentity>",
+      "desc": "Initializes and inspects one explicit Android TTS package without speaking.",
+      "output": "Returns installed/resolved package and version, exact-match evidence, initialization state, selected voice/locale and explicit unavailable/error reason."
+    },
+    {
+      "name": "verifySpeechEngine(phrase, run, options)",
+      "type": "(phrase: string, run: SpeechRunOptions, options: SpeechVerificationOptions) => Promise<SpeechVerificationResult>",
+      "desc": "Resolves exact engine identity before submitting a caller-supplied verification phrase.",
+      "output": "Returns the pre-submission AndroidTtsIdentity plus a correlated terminal SpeechSynthesisResult. Audible identity still requires independent user/device evidence."
+    },
+    {
+      "name": "getSpeechEngineStatus()",
+      "type": "() => SpeechEngineStatus | null",
+      "desc": "Reads the native engine's current or last terminal state without inferring provider identity.",
+      "output": "Returns correlated status/identity/timestamps when the native bridge is present, otherwise null."
+    },
+    {
       "name": "setVoice(id) / setRate(n) / setPitch(n)",
       "type": "(value: string | null | number) => void",
       "desc": "Defaults applied to later calls to speak, unless that call overrides them.",
@@ -166,6 +189,6 @@
       "output": "Returns nothing; voice, rate and pitch update."
     }
   ],
-  "example": "import { useSpeech, useGeminiNano } from '@pixelkit-labs/sdk';\n\nfunction TalkBack() {\n  const speech = useSpeech();\n  const nano = useGeminiNano();\n\n  const answer = async () => {\n    const reply = await nano.generate('Describe the thermal state in one sentence.');\n    await speech.speak(reply.text, { rate: 0.95 });\n  };\n  return <Button title=\"Ask and speak\" onPress={answer} />;\n}",
-  "agentNote": "Await speak rather than firing several in a row, or they queue unpredictably. Check voices before promising a language; coverage depends on what the user installed."
+  "example": "import { createTraceContext, useSpeech } from '@pixelkit-labs/sdk';\n\nfunction TalkBack() {\n  const speech = useSpeech();\n\n  const answer = async () => {\n    const run = { context: createTraceContext({ runId: `speech-${Date.now()}` }) };\n    await speech.speak('The device is ready.', run, { rate: 0.95 });\n  };\n  return <Button title=\"Speak\" onPress={answer} disabled={speech.isSpeaking} />;\n}",
+  "agentNote": "Pass explicit trace context and await speak. For an explicit Android package, preflight with resolveSpeechEngineIdentity or use verifySpeechEngine; never infer the external app's execution provider or audible voice from binding/callback success."
 }
