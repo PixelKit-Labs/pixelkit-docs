@@ -6,3 +6,7 @@ src/content/docs/
 
 # Scratch output from an ad-hoc archify render; scripts/build-diagrams.mjs uses a temp dir
 .diagram-build/
+
+# Local package/build verification transcripts
+.*-docs.log
+.*-build.log
