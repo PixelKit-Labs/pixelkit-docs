@@ -5,7 +5,7 @@
   "chipBadge": "PowerManager · SystemHealth",
   "summary": "How much thermal room is left before the phone slows itself down.",
   "plain": "Warns you before the phone gets hot enough to throttle. Check thermalHeadroom before starting sustained work such as camera capture or a long inference run, and back off as it climbs toward 1.",
-  "description": "thermalHeadroom comes from PowerManager.getThermalHeadroom and is sampled every ten seconds, which is the cadence Google specifies; polling faster returns NaN. A live thermal-status listener reports the coarse state from NONE through SHUTDOWN. On Android 16 and above, SystemHealthManager can also report CPU and GPU headroom, which stays null when the device does not provide it. Frame figures pair the display mode refresh rate as a target with the Choreographer-measured rate as the actual.",
+  "description": "thermalHeadroom comes from PowerManager.getThermalHeadroom and is sampled every ten seconds. A live thermal-status listener reports the coarse state from NONE through SHUTDOWN. Android 16+ SystemHealthManager CPU/GPU headroom estimates available compute capacity (0..1 after scaling its 0..100 result); it is not thermal headroom or utilization. Android can return NaN with insufficient workload or a transient server error, or throw if a device does not implement it. The unavailable-reason fields distinguish those outcomes, pending reads and API absence. Frame figures pair the display mode refresh rate as a target with the Choreographer-measured rate as the actual. Battery-pack temperature is available separately through useDevice; an FIR object thermometer reading cannot be substituted for it.",
   "signature": "useADPF(): ADPFState",
   "params": [],
   "returns": [
@@ -32,12 +32,22 @@
     {
       "name": "cpuHeadroom",
       "type": "number | null",
-      "desc": "Android 16+ remaining CPU capacity. Null when the device does not report it."
+      "desc": "Android 16+ available CPU capacity fraction (0..1), not thermal headroom or utilization; null when unmeasured."
     },
     {
       "name": "gpuHeadroom",
       "type": "number | null",
-      "desc": "Same for the GPU."
+      "desc": "Android 16+ available GPU capacity fraction (0..1), not GPU utilization; null when unmeasured."
+    },
+    {
+      "name": "cpuHeadroomUnavailableReason",
+      "type": "'api_unavailable' | 'unsupported' | 'temporarily_unavailable' | 'read_failed' | 'not_sampled' | null",
+      "desc": "Null with a measured CPU estimate; otherwise distinguishes missing API, unsupported device, temporary NaN (including insufficient workload), failed read or no sample yet."
+    },
+    {
+      "name": "gpuHeadroomUnavailableReason",
+      "type": "'api_unavailable' | 'unsupported' | 'temporarily_unavailable' | 'read_failed' | 'not_sampled' | null",
+      "desc": "Null with a measured GPU estimate; otherwise the same availability categories as CPU."
     },
     {
       "name": "targetFps",
@@ -75,6 +85,6 @@
       "output": "'WITHIN_BUDGET' when the work fits the frame, 'BOOST_REQUESTED' when it overran and you should shed work."
     }
   ],
-  "example": "import { useADPF } from '@pixelkit-labs/sdk';\n\nasync function runHeavyTask(adpf) {\n  if ((adpf.thermalHeadroom ?? 0) > 0.8) return 'deferred: device is hot';\n  // ... start the work\n}",
+  "example": "import { useADPF } from '@pixelkit-labs/sdk';\n\nasync function runHeavyTask(adpf) {\n  if (adpf.thermalHeadroom === null || adpf.thermalHeadroom > 0.8) return 'deferred: thermal state unknown or hot';\n  // ... start the work\n}",
   "agentNote": "Gate sustained workloads on thermalHeadroom, not on thermalStatus alone; the number moves before the label does."
 }

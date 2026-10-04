@@ -4,7 +4,7 @@
 
 * `PowerManager.getThermalHeadroom(0)`: 0.0 cool → 1.0 severe throttling, polled every **10 s** (Google's minimum; faster polling returns NaN), plus `getThermalHeadroomThresholds()` on Android 15+.
 * `PowerManager` thermal status via a live `OnThermalStatusChangedListener` (`nominal | light | moderate | severe | critical`).
-* Android 16+ `SystemHealthManager.getCpuHeadroom / getGpuHeadroom` (reflection, `null` when the device does not report them).
+* Android 16+ public `SystemHealthManager.getCpuHeadroom / getGpuHeadroom` estimates **available compute capacity**, not thermal headroom or utilization; optional unavailability reasons distinguish missing API, unsupported device, temporary NaN and failed reads.
 * `targetFps` from the display mode, `currentFps` from Choreographer.
 
 Verified on Pixel 11 Pro: headroom 0.55 at status NONE; thresholds `{1: 0.8, 2: 0.933, 3: 1.0, 4: 1.05, 5: 1.233, 6: 1.667}`. Thermal readings poll every 10,000 ms; status changes and frame stats arrive as native events.
@@ -18,6 +18,8 @@ function useADPF(): {
  thermalStatusCode: number;
  cpuHeadroom: number | null;
  gpuHeadroom: number | null;
+ cpuHeadroomUnavailableReason: 'api_unavailable' | 'unsupported' | 'temporarily_unavailable' | 'read_failed' | 'not_sampled' | null;
+ gpuHeadroomUnavailableReason: 'api_unavailable' | 'unsupported' | 'temporarily_unavailable' | 'read_failed' | 'not_sampled' | null;
  targetFps: number | null;
  currentFps: number | null;
  reportWorkDuration: (actualWorkDurationMs: number, targetDurationMs?: number) => 'WITHIN_BUDGET' | 'BOOST_REQUESTED';
@@ -36,7 +38,7 @@ It is a ratio, not a temperature:
 * `1.0` — at the threshold; severe throttling begins here.
 * `> 1.0` — already throttling. Clocks are being cut, and a heavy workload will get slower, not faster.
 
-You never see the underlying temperature: Android deliberately does not expose one, because the threshold differs per device and per skin temperature sensor. The ratio is the portable form of "how much heat budget is left".
+The thermal-headroom API does not expose its underlying skin-temperature inputs; Android does expose the battery-pack temperature separately through `useDevice`. A battery-pack reading is not a calibrated FIR object-surface reading.
 
 `thermalThresholds` is the same scale seen from the other side: the headroom value at which each `thermalStatus` begins on **this** device, e.g. `{1: 0.8, 2: 0.933, 3: 1.0, …}` — light throttling starts at 0.8, moderate at 0.933.
 
@@ -49,8 +51,10 @@ Practical use: read it before starting something expensive, not during. Above ro
 | `thermalThresholds` | `Record<string, number> \| null` | Device-specific headroom value at which each thermal status begins, keyed by status code. `null` below Android 15. |
 | `thermalStatus` | `'nominal' \| 'light' \| 'moderate' \| 'severe' \| 'critical'` | Live thermal state from the status listener. `'critical'` covers `CRITICAL`, `EMERGENCY` and `SHUTDOWN`. |
 | `thermalStatusCode` | `number` | The raw `PowerManager.THERMAL_STATUS_*` integer, 0–6, for when the label is too coarse. |
-| `cpuHeadroom` | `number \| null` | Android 16+ `SystemHealthManager.getCpuHeadroom`: remaining CPU capacity, 0–1. `null` when unsupported. |
-| `gpuHeadroom` | `number \| null` | The same for the GPU. `null` when unsupported. |
+| `cpuHeadroom` | `number \| null` | Android 16+ available CPU capacity fraction (0–1); not thermal headroom or CPU utilization. `null` when no estimate was measured. |
+| `gpuHeadroom` | `number \| null` | Android 16+ available GPU capacity fraction (0–1); not GPU utilization. `null` when no estimate was measured. |
+| `cpuHeadroomUnavailableReason` | `'api_unavailable' \| 'unsupported' \| 'temporarily_unavailable' \| 'read_failed' \| 'not_sampled' \| null` | Why no CPU capacity estimate was measured; temporary NaN can mean insufficient workload or a transient server failure. `null` when the estimate exists. |
+| `gpuHeadroomUnavailableReason` | `'api_unavailable' \| 'unsupported' \| 'temporarily_unavailable' \| 'read_failed' \| 'not_sampled' \| null` | Why no GPU capacity estimate was measured; `null` when the estimate exists. |
 | `targetFps` | `number \| null` | Refresh rate of the active display mode, in Hz. `null` until read. |
 | `currentFps` | `number \| null` | Choreographer-measured frames presented per second. `null` until the first 1 s window. |
 | `source` | `TelemetrySource` | `'hardware'` with the native module present, `'unavailable'` otherwise. |

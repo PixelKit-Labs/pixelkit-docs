@@ -25,7 +25,7 @@ cannot be listed in the wrong section or listed twice.
 | [`useGPU`](./silicon-compute/usegpu.md) | Which GPU this is, and whether your frames are arriving on time. |
 | [`useMemory`](./silicon-compute/usememory.md) | System RAM, this app's heaps, and how close the system is to killing you. |
 | [`usePerfetto`](./silicon-compute/useperfetto.md) | System-level kernel and app performance profiling via Perfetto v54. |
-| [`useTPU`](./silicon-compute/usetpu.md) | Whether the on-device AI stack is installed and usable. |
+| [`useTPU`](./silicon-compute/usetpu.md) | Whether on-device AI host packages are visible and what the hook actually executed. |
 
 ### [Neural and AI](./neural-ai/)
 

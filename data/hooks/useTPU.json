@@ -3,16 +3,16 @@
   "name": "useTPU",
   "category": "silicon",
   "chipBadge": "AICore · Gemini Nano host",
-  "summary": "Whether the on-device AI stack is installed and usable.",
-  "plain": "Answers one question: can this phone run AI locally? It checks that the system services which host on-device models are present, and reports their versions. It does not run inference itself.",
-  "description": "The Tensor TPU is only reachable through AICore (Gemini Nano, via ML Kit) or LiteRT, so this hook reports what is verifiably installed rather than guessing at hardware. AICore and Private Compute Services versions come from PackageManager, which needs a <queries> entry to see them at all. Inference timings deliberately stay null here; real measured latency lives in useGeminiNano. benchmarkTPU runs a genuine matrix multiplication on the JS thread and is labelled CPU fallback, because that is what it is.",
+  "summary": "Whether on-device AI host packages are visible and what the hook actually executed.",
+  "plain": "Checks which system services for on-device models are visible and reports their versions. It does not run inference or prove the TPU is active.",
+  "description": "AICore hosts Gemini Nano and the TPU is reached via AICore or LiteRT. The hook reports package visibility, not model readiness or hardware usage. Unreadable package state is null. Without a benchmark there is no active delegate, so activeDelegate is null rather than claiming NPU use. AICore and Private Compute Services versions come from PackageManager, which needs a <queries> entry. Inference timings stay null here; measured model latency lives in useGeminiNano. benchmarkTPU is a JavaScript matrix multiply explicitly labelled CPU fallback.",
   "signature": "useTPU(): TPUState",
   "params": [],
   "returns": [
     {
       "name": "aicoreInstalled",
-      "type": "boolean",
-      "desc": "Whether AICore, the system service that hosts Gemini Nano, is present."
+      "type": "boolean | null",
+      "desc": "Whether AICore is visible through PackageManager, or null before detection or when it fails; not proof of model availability."
     },
     {
       "name": "aicoreVersion",
@@ -31,8 +31,8 @@
     },
     {
       "name": "activeDelegate",
-      "type": "'Tensor TPU' | 'NPU' | 'GPU' | 'CPU Fallback'",
-      "desc": "What last executed work from this hook. Only ever CPU fallback, because the benchmark is JS."
+      "type": "'CPU Fallback' | null",
+      "desc": "Null until the CPU-only benchmark runs, then CPU Fallback. Never a claim of current TPU activity."
     },
     {
       "name": "isHardwareAccelerated",
@@ -53,6 +53,11 @@
       "name": "isBenchmarking",
       "type": "boolean",
       "desc": "True while the fallback benchmark runs."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Latest package or feature detection failure, if any."
     },
     {
       "name": "source",
@@ -78,6 +83,6 @@
       "output": "Resolves with { activeDelegate: \"CPU Fallback\", isHardwareAccelerated: false, lastInferenceLatencyMs, throughputTokensPerSec: null, memoryFootprintMB: null }. Label it as a CPU number wherever you show it."
     }
   ],
-  "example": "import { useTPU } from '@pixelkit-labs/sdk';\n\nfunction AIStack() {\n  const { aicoreInstalled, aicoreVersion, cpuFallbackLatencyMs, benchmarkTPU } = useTPU();\n  return (\n    <View>\n      <Text>AICore: {aicoreInstalled ? aicoreVersion : 'not installed'}</Text>\n      <Text>CPU matmul: {cpuFallbackLatencyMs ?? '—'} ms</Text>\n      <Button title=\"Run CPU fallback benchmark\" onPress={() => benchmarkTPU()} />\n    </View>\n  );\n}",
-  "agentNote": "Check aicoreInstalled before offering on-device AI. Never present cpuFallbackLatencyMs as TPU performance; it is a JavaScript number."
+  "example": "import { useTPU } from '@pixelkit-labs/sdk';\n\nfunction AIStack() {\n  const { aicoreInstalled, aicoreVersion, cpuFallbackLatencyMs, benchmarkTPU } = useTPU();\n  return (\n    <View>\n      <Text>AICore: {aicoreInstalled === null ? 'unavailable' : aicoreInstalled ? aicoreVersion : 'not installed'}</Text>\n      <Text>CPU matmul: {cpuFallbackLatencyMs ?? '—'} ms</Text>\n      <Button title=\"Run CPU fallback benchmark\" onPress={() => benchmarkTPU()} />\n    </View>\n  );\n}",
+  "agentNote": "Only offer on-device AI after readiness is verified separately; package visibility is not model readiness. Never present cpuFallbackLatencyMs as TPU performance; it is a JavaScript number."
 }

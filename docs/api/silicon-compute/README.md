@@ -17,5 +17,5 @@ Each entry documents its **Inputs** (what you pass in, with defaults and units),
 | [`useGPU`](./usegpu.md) | Which GPU this is, and whether your frames are arriving on time. |
 | [`useMemory`](./usememory.md) | System RAM, this app's heaps, and how close the system is to killing you. |
 | [`usePerfetto`](./useperfetto.md) | System-level kernel and app performance profiling via Perfetto v54. |
-| [`useTPU`](./usetpu.md) | Whether the on-device AI stack is installed and usable. |
+| [`useTPU`](./usetpu.md) | Whether on-device AI host packages are visible and what the hook actually executed. |
 <!-- hooks:end -->

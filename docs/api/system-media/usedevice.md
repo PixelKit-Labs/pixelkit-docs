@@ -2,12 +2,13 @@
 
 **Source:** [packages/sdk/src/hardware/useDevice.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/hardware/useDevice.ts)
 
-Model identity, battery level, fuel gauge thermistor temperature, real-time voltage/current/wattage, and connectivity in one object, with live listeners for battery state and native PMIC telemetry via `PixelNative`. It reads once on mount and then keeps `batteryPercent` and `isCharging` current through `expo-battery` listeners and `PixelNative.getBatteryTelemetry()`.
+Model identity, battery level, fuel gauge thermistor temperature, real-time voltage/current/wattage, and connectivity in one object, with live listeners for battery state and native PMIC telemetry via `PixelNative`. It reads once on mount and updates battery percentage and external-power attachment from native `EXTRA_PLUGGED` when readable, with `expo-battery` listeners as a fallback. A full or paused battery can still be plugged in; unknown attachment remains null.
 
 ## Signature
 ```typescript
 function useDevice(): DeviceTelemetry & {
  batteryPercent: number | null;
+ isCharging: boolean | null;
  batteryTemperatureC: number | null;
  batteryVoltageMv: number | null;
  batteryCurrentMa: number | null;
@@ -33,9 +34,8 @@ function useDevice(): DeviceTelemetry & {
 | `modelName` | `string` | Marketing model name from `expo-device`. |
 | `brand` | `string` | Manufacturer brand, e.g. `"Google"`. |
 | `osVersion` | `string` | Android version string. |
-| `batteryPercent` | `number | null` | Charge as a percentage, 0–100, updated live. `null` until the first read — it is never reported as 0 to fill the gap. |
-| `batteryPercent` | `number \| null` | Honest charge percentage, null until read. |
-| `isCharging` | `boolean` | `true` while charging or full, on AC, USB, wireless or dock. |
+| `batteryPercent` | `number \| null` | Charge as a percentage, 0–100; null until read rather than an invented 0. |
+| `isCharging` | `boolean \| null` | Whether external power (AC, USB, wireless or dock) is attached, including full or paused charging. `false` only when observed unplugged; `null` until determined. |
 | `lowPowerMode` | `boolean` | Whether Android Battery Saver is active. Back off from heavy work when it is. |
 | `networkType` | `string` | Active interface type: `'WIFI'`, `'CELLULAR'`, `'UNKNOWN'`. For carrier detail use `useCellular`. |
 | `isConnected` | `boolean` | Whether the device has an active, reachable network route. |
