@@ -2,27 +2,32 @@
   "id": "useEmbeddings",
   "name": "useEmbeddings",
   "category": "ai",
-  "chipBadge": "EdgeTPU · Embeddings · 512-dim",
-  "summary": "On-device vector embeddings and semantic cosine similarity scoring via Tensor EdgeTPU.",
-  "plain": "Converts text strings into dense 512-dimensional vector embeddings locally on the EdgeTPU for fast offline semantic search, deduplication, and RAG memory without server calls.",
-  "description": "Executes on-device text embedding generation on the Google Tensor EdgeTPU / NPU through ML Kit GenAI. Produces normalized 512-dimensional floating point vectors from input text in milliseconds. Includes an in-memory cosine similarity calculation helper to compare semantic proximity between vectors entirely offline.",
+  "chipBadge": "MediaPipe · Embeddings · CPU",
+  "summary": "On-device text embeddings from a user-supplied TFLite model (MediaPipe TextEmbedder) and cosine similarity scoring.",
+  "plain": "Converts text strings into dense float vectors locally for offline semantic search, deduplication, and RAG memory without server calls. Needs an embedder model file you place in the app's files directory; nothing is bundled or downloaded.",
+  "description": "Runs the MediaPipe Tasks TextEmbedder (TFLite) on the device CPU (XNNPACK; no TPU/NPU delegate is configured). The model is read from filesDir/models/text_embedder.tflite and must be a .tflite embedder with TFLite metadata. Vectors are L2-normalised floats whose length is the model's real output size, reported through vectorDimension. When the file is missing or fails to load the hook reports isAvailable false, source 'unavailable' and the native reason in unavailableReason; embed() rejects instead of returning an empty vector. Includes an in-memory cosine similarity helper.",
   "signature": "useEmbeddings(): EmbeddingsTelemetry",
   "params": [],
   "returns": [
     {
       "name": "isAvailable",
       "type": "boolean",
-      "desc": "Whether the on-device text embedding model is installed and ready for inference."
+      "desc": "True only when the model file exists, loaded, and produced a vector for a probe input."
     },
     {
       "name": "isLoading",
       "type": "boolean",
-      "desc": "Whether an embedding inference operation is actively computing on the NPU/TPU."
+      "desc": "Whether an embedding inference is currently running."
     },
     {
       "name": "vectorDimension",
-      "type": "number",
-      "desc": "Dimension size of the output embedding vector (512)."
+      "type": "number | null",
+      "desc": "Real output length of the model's embedding vector; null until the native side or an embed() call has reported it."
+    },
+    {
+      "name": "unavailableReason",
+      "type": "string | null",
+      "desc": "Why the embedder is unavailable (missing model file, load failure); null when available."
     },
     {
       "name": "error",
@@ -32,24 +37,24 @@
     {
       "name": "source",
       "type": "TelemetrySource",
-      "desc": "Data provenance: 'hardware' or 'unavailable'."
+      "desc": "'hardware' when the model is available and the last embed() did not fail; otherwise 'unavailable'."
     },
     {
       "name": "embed",
       "type": "(text: string) => Promise<number[]>",
-      "desc": "Computes a normalized float vector embedding for the provided text."
+      "desc": "Computes an L2-normalised float vector for the text. Rejects if the model is unavailable, the text is empty, or the model returns no vector."
     },
     {
       "name": "cosineSimilarity",
       "type": "(vecA: number[], vecB: number[]) => number",
-      "desc": "Computes cosine similarity between two float vectors (-1.0 to 1.0)."
+      "desc": "Computes cosine similarity between two float vectors (-1.0 to 1.0); returns 0 for empty or different-length vectors."
     }
   ],
   "actions": [
     {
       "name": "embed(text)",
-      "desc": "Generates a 512-dimensional embedding vector from input text.",
-      "type": "(text: string) => Promise<number[] | null>"
+      "desc": "Generates an embedding vector from input text; rejects rather than returning an empty vector.",
+      "type": "(text: string) => Promise<number[]>"
     },
     {
       "name": "cosineSimilarity(vecA, vecB)",
@@ -57,6 +62,6 @@
       "type": "(vecA: number[], vecB: number[]) => number"
     }
   ],
-  "example": "import { useEmbeddings } from '@pixelkit-labs/sdk/mlkit';\n\nfunction SimilarityDemo() {\n  const { isAvailable, embed, cosineSimilarity } = useEmbeddings();\n  const compare = async () => {\n    const vecA = await embed('Google Pixel 11 Pro');\n    const vecB = await embed('Android Smartphone');\n    const score = cosineSimilarity(vecA, vecB);\n    console.log('Similarity score:', score);\n  };\n  return <Button title=\"Compare Texts\" onPress={compare} />;\n}",
-  "agentNote": "Exported from '@pixelkit-labs/sdk/mlkit'. Operates entirely on-device with zero network latency."
+  "example": "import { useEmbeddings } from '@pixelkit-labs/sdk/mlkit';\n\nfunction SimilarityDemo() {\n  const { isAvailable, unavailableReason, embed, cosineSimilarity } = useEmbeddings();\n  const compare = async () => {\n    try {\n      const vecA = await embed('Google Pixel 11 Pro');\n      const vecB = await embed('Android Smartphone');\n      console.log('Similarity score:', cosineSimilarity(vecA, vecB));\n    } catch (e) {\n      console.warn('Embedding failed:', e);\n    }\n  };\n  if (!isAvailable) return <Text>{unavailableReason}</Text>;\n  return <Button title=\"Compare Texts\" onPress={compare} />;\n}",
+  "agentNote": "Exported from '@pixelkit-labs/sdk/mlkit'. Android only. Requires a text embedder .tflite with TFLite metadata at <app filesDir>/models/text_embedder.tflite (the library neither bundles nor downloads it). Inference runs on CPU via MediaPipe TextEmbedder (XNNPACK), not on the Tensor TPU. Check isAvailable/unavailableReason before calling embed(); embed() rejects on failure, never returns []. vectorDimension is null until a real vector length is known. Vectors from different models are not comparable."
 }

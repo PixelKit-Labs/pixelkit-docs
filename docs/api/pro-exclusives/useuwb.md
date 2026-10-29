@@ -2,9 +2,9 @@
 
 **Source:** [packages/sdk/src/hardware/useUWB.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/hardware/useUWB.ts)
 
-Ultra-Wideband transceiver state and ranging sessions. Chip presence, enabled state, chip id and ranging-service readiness are read from Android `UwbManager` and `PackageManager` through the native module (`source: 'hardware'`). Sessions are created through `UwbManager` / `RangingManager` with `startRanging(sessionId)`.
+Ultra-Wideband transceiver state and ranging sessions. Chip presence, enabled state, chip id and ranging-service readiness are read from Android `UwbManager` and `PackageManager` through the native module (`source: 'hardware'`).
 
-`activeTargets` is populated only by a live session that reports peers; it is empty rather than filled with placeholder anchors. Radio state is read from the native module per render; sessions are started explicitly.
+`startRanging(config)` opens a real `android.ranging.RangingSession` (Android 16, API 36+, RAW UWB session). Ranging needs a second device, so the call takes the peer's configuration: its UWB address, the session id, and optionally the channel, preamble index and key info, all agreed with the peer out of band (BLE, NFC, QR). It resolves `true` only when the platform reports the session open. Otherwise it resolves `false` and `sessionError` carries the status and reason. `measurements` holds the latest `android.ranging.RangingData` sample per peer and stays empty until the peer answers; it is never filled with placeholder anchors.
 
 ## Signature
 ```typescript
@@ -16,11 +16,11 @@ function useUWB(): {
  error: string | null;
  source: TelemetrySource;
  isRanging: boolean;
- activeTargets: UWBSpatialTarget[];
+ measurements: UwbMeasurementEvent[];
  sessionInfo: UwbRangingResult | null;
  sessionError: string | null;
- startRanging: (sessionId?: number) => Promise<boolean>;
- stopRanging: () => void;
+ startRanging: (config: UwbRangingConfig) => Promise<boolean>;
+ stopRanging: () => UwbStopResult | null;
 };
 ```
 
@@ -29,47 +29,61 @@ function useUWB(): {
 | :--- | :--- | :--- |
 | `isSupported` | `boolean` | Whether the UWB chip is present on this device. |
 | `isEnabled` | `boolean` | Whether the UWB radio is switched on in system settings. |
-| `chipId` | `string \| null` | Chip identifier from `UwbManager`, `'default'` on Pixel Pro. `null` when there is no chip. |
-| `rangingApiSupported` | `boolean` | Whether the platform ranging service is available to apps. |
+| `chipId` | `string \| null` | Chip identifier from the native radio probe. `null` when there is no chip. |
+| `rangingApiSupported` | `boolean` | Whether the device declares the `android.hardware.ranging` feature. |
 | `error` | `string \| null` | Latest failure message, or `null`. Failures are also logged and counted. |
 | `source` | `TelemetrySource` | `'hardware'` when the native module is present and the chip exists, `'unavailable'` otherwise. |
-| `isRanging` | `boolean` | Whether a ranging session is currently open. |
-| `activeTargets` | `UWBSpatialTarget[]` | Peers the session reports: `deviceId`, `distanceMeters`, `azimuthDegrees` (−180 to +180), `elevationDegrees` (−90 to +90), `signalQuality` (0–1 line-of-sight score). Empty when nothing is being tracked. |
-| `sessionInfo` | `UwbRangingResult \| null` | Session diagnostics: `{ success, sessionId, technology, serviceAvailable, serviceName, rangingFeature, status, timestampMs }`. `null` before the first attempt. |
-| `sessionError` | `string \| null` | Why the last session failed to start, e.g. no native ranging service or unsupported hardware. |
+| `isRanging` | `boolean` | Whether the platform holds an open ranging session. Follows the platform's session events. |
+| `measurements` | `UwbMeasurementEvent[]` | Latest sample per peer: `deviceId`, `distanceMeters`, `azimuthDegrees`, `elevationDegrees` (`null` when the platform omitted them), a `*Confidence` of `'low' \| 'medium' \| 'high'` for each, `rssi`, `timestampMs`. Empty until the peer answers. |
+| `sessionInfo` | `UwbRangingResult \| null` | Result of the last start request: `{ success, status, error, sessionId, technology, serviceAvailable, serviceName, rangingFeature, timestampMs }`. `null` before the first attempt. |
+| `sessionError` | `string \| null` | Status code and reason when the last start or stop failed, e.g. `needs_peer_configuration: peerAddress must be hex address bytes`. |
+
+`status` is `'opened'` only after the platform's `onOpened`; the refusals are `needs_peer_configuration`, `uwb_unsupported`, `ranging_api_unavailable` (below Android 16), `uwb_disabled`, `permission_denied`, `session_active`, `invalid_parameters` and `open_failed`.
 
 ## Functions
 | Function | Inputs | Returns | Description |
 | :--- | :--- | :--- | :--- |
-| `startRanging(sessionId?)` | `sessionId?: number` — identifier for the session, default `1001`. Use distinct ids for concurrent sessions. | `Promise<boolean>` — `true` when the session opened; `false` with `sessionError` set when the service is missing or the hardware refused | Opens a hardware ranging session and stores the diagnostics in `sessionInfo`. |
-| `stopRanging()` | none | `void` | Closes the session and clears `isRanging`. Safe to call when nothing is running. |
+| `startRanging(config)` | `config: UwbRangingConfig` — `{ sessionId, role: 'initiator' \| 'responder', localAddress, peerAddress, configId?, channel?, preambleIndex?, sessionKeyInfo?, updateRate?, slotDurationMs?, angleOfArrival? }`. Addresses and keys are hex bytes (2-byte short or 8-byte extended addresses); `channel` and `preambleIndex` go together. | `Promise<boolean>` — `true` when the platform reported the session open; `false` with `sessionError` set otherwise | Opens a ranging session with the peer and stores the result in `sessionInfo`. |
+| `stopRanging()` | none | `UwbStopResult \| null` — `{ wasActive, closed, sessionId, error, timestampMs }` | Closes the session. `wasActive` is `false` when nothing was running; `error` carries a failure from the platform's stop or close. |
 
-## Target structure
+Ranging needs `android.permission.RANGING`, which the app must declare in its manifest and request at runtime; without it the status is `permission_denied`.
+
+## Measurement structure
 ```typescript
-interface UWBSpatialTarget {
- deviceId: string; // Identifier of the peer or anchor
- distanceMeters: number; // Range in metres
- azimuthDegrees: number; // Horizontal angle, -180 to +180
- elevationDegrees: number; // Vertical angle, -90 to +90
- signalQuality: number; // 0.0 to 1.0 line-of-sight score
+interface UwbMeasurementEvent {
+ sessionId: number;
+ deviceId: string; // Platform identifier of the peer
+ distanceMeters: number | null;
+ distanceConfidence: 'low' | 'medium' | 'high' | null;
+ azimuthDegrees: number | null; // Needs angleOfArrival and hardware support
+ azimuthConfidence: 'low' | 'medium' | 'high' | null;
+ elevationDegrees: number | null;
+ elevationConfidence: 'low' | 'medium' | 'high' | null;
+ rssi: number | null;
+ technology: 'UWB';
+ timestampMs: number;
 }
 ```
 
 ## Example
 ```tsx
-import { useUWB, HapticButton } from '@pixelkit-labs/sdk';
+import { useUWB } from '@pixelkit-labs/sdk';
 
-export function RadarHUD() {
- const { activeTargets, isRanging, startRanging, stopRanging, sessionError } = useUWB();
+type UwbPeer = Parameters<ReturnType<typeof useUWB>['startRanging']>[0];
+
+export function RadarHUD({ peer }: { peer: UwbPeer }) {
+ const { measurements, isRanging, startRanging, stopRanging, sessionError } = useUWB();
  return (
  <View>
- {activeTargets.map(t => (
- <Text key={t.deviceId}>{t.deviceId}: {t.distanceMeters.toFixed(2)} m @ {t.azimuthDegrees}°</Text>
+ {measurements.map(m => (
+ <Text key={m.deviceId}>
+ {m.deviceId}: {m.distanceMeters == null ? '—' : `${m.distanceMeters.toFixed(2)} m`}
+ </Text>
  ))}
  {sessionError ? <Text>{sessionError}</Text> : null}
- <HapticButton
+ <Button
  title={isRanging ? 'Stop ranging' : 'Start UWB ranging'}
- onPress={() => (isRanging ? stopRanging() : startRanging())}
+ onPress={() => (isRanging ? stopRanging() : startRanging(peer))}
  />
  </View>
  );

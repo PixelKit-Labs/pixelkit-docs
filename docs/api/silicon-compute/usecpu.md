@@ -2,7 +2,7 @@
 
 **Source:** [packages/sdk/src/hardware/useCPU.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/hardware/useCPU.ts)
 
-Reads the CPU topology from `/proc/cpuinfo` (per-core Arm part ids mapped to names such as `Arm C1-Ultra`, `Arm C1-Pro`) and cpufreq sysfs (`cpuinfo_max_freq`, `scaling_cur_freq`, `scaling_governor`). Android does not expose whole-system `/proc/stat` to apps, so the two load signals are (a) cluster frequency utilisation and (b) this app's own CPU share.
+Reads the CPU topology from `/proc/cpuinfo` (per-core Arm part ids mapped to names such as `Arm C1-Ultra`, `Arm C1-Pro`) and cpufreq sysfs (`cpuinfo_max_freq`, `scaling_cur_freq`, `scaling_governor`). Android does not expose whole-system `/proc/stat` to apps, so the two load signals here are (a) cluster frequency utilisation and (b) this app's own CPU share. For whole-system CPU utilisation read from `/proc/stat` by the PixelKit ADB daemon, use [`useSystemLoad`](./usesystemload.md).
 
 Verified on Pixel 11 Pro: `1x Arm C1-Ultra @ 4.11 GHz + 4x Arm C1-Pro @ 3.38 GHz + 2x Arm C1-Pro @ 2.65 GHz`, governor `sched_pixel`. Topology is read once on mount; load polls every 1,000 ms until unmount.
 

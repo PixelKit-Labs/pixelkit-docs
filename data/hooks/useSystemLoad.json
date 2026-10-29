@@ -1,0 +1,116 @@
+{
+  "id": "useSystemLoad",
+  "name": "useSystemLoad",
+  "category": "silicon",
+  "chipBadge": "Tensor G6 · /proc/stat + GPU/TPU tracepoints (ADB daemon)",
+  "summary": "Whole-system CPU, GPU and TPU load, from kernel counters an app cannot read itself.",
+  "plain": "Tells you how busy the whole phone's processor and graphics chip are right now, not just your own app, and which other apps are keeping the GPU busy. It needs a small helper program running on the phone (started over USB or wireless debugging). Without the helper every value is empty and the hook tells you why; it never guesses.",
+  "description": "Android denies apps /proc/stat, /proc/pressure and the GPU and Edge TPU trace events, so whole-system load cannot be measured from inside an app. The PixelKit system-metrics daemon runs as the adb shell user (uid 2000), reads those kernel counters over a rolling one to two second window and serves them as JSON on 127.0.0.1:11081. The hook polls /metrics every two seconds with an 800 ms timeout and validates the response with parseSystemMetrics, which throws naming the offending field when the shape is wrong. CPU utilisation is the non-idle share of /proc/stat jiffies over the window, with iowait counted as idle, overall and per core. GPU utilisation is the summed total_active_duration_ns of the power/gpu_work_period tracepoint over every uid divided by the window, so it is derived from raw trace events; the GPU clock comes from power/gpu_frequency and memory from dumpsys gpu, with the busiest uids listed. TPU utilisation is reported only when the daemon decodes real edgetpu command_start and command_end events; the shell user cannot enable those trace events directly, so on a device where none are observed tpuSource is 'unavailable' and tpuError says why. A section the daemon cannot read, a daemon that is not running, and a sample older than ten seconds all give null values with a stated reason, never a default. useGPU and useCPU are unchanged: they keep reporting what an app can measure about itself.",
+  "signature": "useSystemLoad(): SystemLoadState",
+  "params": [],
+  "returns": [
+    {
+      "name": "isDaemonConnected",
+      "type": "boolean",
+      "desc": "True when the daemon answered the last poll with a response that parsed. False means every value below is null and error says why."
+    },
+    {
+      "name": "windowMs",
+      "type": "number | null",
+      "desc": "Length of the measurement window the percentages refer to, in milliseconds. Null without a current sample."
+    },
+    {
+      "name": "sampledAtMs",
+      "type": "number | null",
+      "desc": "Daemon wall-clock time, in epoch milliseconds, when the current window completed."
+    },
+    {
+      "name": "daemonVersion",
+      "type": "string | null",
+      "desc": "Version string the daemon reported. Null until it has answered."
+    },
+    {
+      "name": "cpuUtilizationPercent",
+      "type": "number | null",
+      "desc": "Whole-system CPU use, 0 to 100, from /proc/stat jiffies over windowMs (iowait counts as idle). Null when unavailable."
+    },
+    {
+      "name": "cpuPerCorePercent",
+      "type": "(number | null)[]",
+      "desc": "Use of each core, 0 to 100, in cpuN order. An entry is null when that core accumulated no jiffies in the window. Empty when unavailable."
+    },
+    {
+      "name": "cpuSource",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "'hardware' when /proc/stat was read, 'unavailable' otherwise."
+    },
+    {
+      "name": "cpuError",
+      "type": "string | null",
+      "desc": "Why the CPU values are null, or null when they were read."
+    },
+    {
+      "name": "gpuUtilizationPercent",
+      "type": "number | null",
+      "desc": "GPU active time over windowMs, 0 to 100, summed from the power/gpu_work_period tracepoint across all uids. Null when unavailable."
+    },
+    {
+      "name": "gpuFrequencyHz",
+      "type": "number | null",
+      "desc": "Current GPU clock in hertz. Null when it could not be read."
+    },
+    {
+      "name": "gpuMemoryUsedMB",
+      "type": "number | null",
+      "desc": "System-wide GPU memory in MiB, from the Global total line of dumpsys gpu. Null when it could not be read."
+    },
+    {
+      "name": "gpuTopProcesses",
+      "type": "{ uid: number, activePercent: number }[]",
+      "desc": "The uids that kept the GPU busiest in the window, highest first. Uids, not package names; resolve them with the package manager if you need a label. Empty when unavailable."
+    },
+    {
+      "name": "gpuSource",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "'derived' when utilisation is summed from raw trace events, 'hardware' for a directly read value, 'unavailable' otherwise."
+    },
+    {
+      "name": "gpuError",
+      "type": "string | null",
+      "desc": "Why some or all GPU values are null, or null when everything was read."
+    },
+    {
+      "name": "tpuUtilizationPercent",
+      "type": "number | null",
+      "desc": "Edge TPU busy share over windowMs, 0 to 100. Null unless real edgetpu command_start/command_end events were decoded."
+    },
+    {
+      "name": "tpuPowerState",
+      "type": "string | null",
+      "desc": "Edge TPU power state from edgetpu_power_state events. Null when none were observed."
+    },
+    {
+      "name": "tpuSource",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "'hardware' only when real edgetpu events were observed, otherwise 'unavailable'."
+    },
+    {
+      "name": "tpuError",
+      "type": "string | null",
+      "desc": "Why the TPU values are null, or null when real events were observed."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Latest failure or the reason no current data is returned (daemon not running, unusable response, stale sample, every section unavailable). Failures are also logged and counted."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "Where the numbers came from. 'hardware' or 'derived' while the daemon supplies at least one section, 'unavailable' otherwise. There is no 'simulated' value."
+    }
+  ],
+  "actions": [],
+  "example": "import { useSystemLoad } from '@pixelkit-labs/sdk';\n\nfunction SystemLoadHUD() {\n  const { cpuUtilizationPercent, gpuUtilizationPercent, gpuFrequencyHz, tpuSource, error } = useSystemLoad();\n  if (error) return <Text>{error}</Text>;\n  return (\n    <View>\n      <Text>CPU {cpuUtilizationPercent?.toFixed(0) ?? '—'}%</Text>\n      <Text>GPU {gpuUtilizationPercent?.toFixed(0) ?? '—'}% @ {gpuFrequencyHz ? gpuFrequencyHz / 1e6 : '—'} MHz</Text>\n      <Text>TPU {tpuSource === 'unavailable' ? 'not observable' : 'active'}</Text>\n    </View>\n  );\n}",
+  "agentNote": "The daemon must be running on the phone: build and start the daemon from the SDK repository with powershell -File scripts/system-metrics-daemon/build.ps1 then powershell -File scripts/system-metrics-daemon/run.ps1 (it is pushed with adb, runs through app_process as the shell user like the HiLight daemon, and run.ps1 forwards tcp:11081), and the app must allow cleartext traffic to 127.0.0.1. Without it isDaemonConnected is false, every number is null and error explains; show an em dash and the reason, never a placeholder. CPU and GPU numbers are real kernel counters measured over windowMs, not estimates; GPU utilisation is derived from summed trace events. TPU values are unavailable unless the daemon decodes real edgetpu command events, so branch on tpuSource and do not assume a TPU reading exists. Use this hook for whole-system load; useCPU and useGPU describe frequency and the app's own frame pacing."
+}

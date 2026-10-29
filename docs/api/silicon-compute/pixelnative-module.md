@@ -30,13 +30,18 @@
 | `stopNfcReader()` | none | `Promise<{ success: boolean }>` | `NfcAdapter.disableReaderMode` |
 | `writeNdefText(text)` | `text: string` — record queued for the next tag presented | `Promise<{ success: boolean; queuedBytes?: number; error?: string }>` | `Ndef.writeNdefMessage` |
 | `isNfcReaderActive()` | none | `boolean` | Reader-mode state |
-| `startUwbRanging(sessionId?)` | `sessionId?: number` — session identifier, default 1001 | `Promise<UwbRangingResult>` — `{ success, sessionId, technology, serviceAvailable, serviceName, rangingFeature, status, timestampMs }` | `UwbManager` / `RangingManager` |
-| `stopUwbRanging()` | none | `boolean` | `UwbManager` |
+| `startUwbRanging(config)` | `config: UwbRangingConfig` — `{ sessionId, role: 'initiator' \| 'responder', localAddress, peerAddress, configId?, channel?, preambleIndex?, sessionKeyInfo?, updateRate?, slotDurationMs?, angleOfArrival? }`, all agreed with the peer out of band | `Promise<UwbRangingResult>` — `{ success, status, error, sessionId, technology, serviceAvailable, serviceName, rangingFeature, timestampMs }`; `status` is `'opened'` only after `RangingSession.Callback.onOpened`, otherwise `needs_peer_configuration`, `uwb_unsupported`, `ranging_api_unavailable`, `uwb_disabled`, `permission_denied`, `session_active`, `invalid_parameters` or `open_failed` | `android.ranging.RangingManager` (Android 16+, `android.permission.RANGING`) |
+| `stopUwbRanging()` | none | `UwbStopResult` — `{ wasActive, closed, sessionId, error, timestampMs }`; `wasActive: false` when nothing was running | `RangingSession.stop` / `close` |
+| `getUwbRangingState()` | none | `{ active, opened, sessionId }` | Session state held by the module |
 | `isOfflineSpeechAvailable()` | none | `boolean` | `SpeechRecognizer.isOnDeviceRecognitionAvailable` |
 | `startSpeechRecognition(requestId, onDevice)` | `requestId: string` — correlates the `onSpeech*` events. `onDevice: boolean` — require the on-device recognizer. | `Promise<boolean>` | `SpeechRecognizer` |
 | `stopSpeechRecognition()` / `cancelSpeechRecognition()` | none | `boolean` | `SpeechRecognizer` |
-| `getAppFunctions()` | none | `AppFunctionInfo[]` — `{ id, name, description, category, target, enabled }` | App Functions registry |
-| `executeAppFunction(functionId, params?)` | `functionId: string` — id from `getAppFunctions()`. `params?: Record<string, any>` — function-specific arguments. | `Promise<any>` — function-specific payload | App Functions dispatch |
+| `getAppFunctions()` | none | `AppFunctionInfo[]` — `{ id, name, description, category, target, enabled }`; lists only functions `executeAppFunction` performs (`triggerHapticEffect`, `setTorchLevel`, `getSiliconStatus`, `scanNearbyRadios`) | App Functions registry |
+| `executeAppFunction(functionId, params?)` | `functionId: string` — id from `getAppFunctions()`. `params?: Record<string, any>` — function-specific arguments. | `Promise<AppFunctionExecution>` — `{ status: 'success' \| 'error', message?, ...function fields }`; `status: 'error'` when the effect did not happen. Rejects with `E_APP_FUNCTION_UNKNOWN` for any other id. | App Functions dispatch |
+| `getPerfettoInfo()` | none | `PerfettoInfo` — `{ isSupported, perfettoVersion, perfettoVersionReason, availableCategories, isTracing, backend, error? }` | `ProfilingManager` (Android 15+), `/system/bin/perfetto --version` |
+| `startPerfettoTrace(categories?, bufferSizeKb?)` | `categories?: string[]` — atrace categories, applied only by the `perfetto_binary` backend. `bufferSizeKb?: number` | `Promise<PerfettoStartResult>` — `{ started, backend, activeCategories, categoriesApplied, error }`; `started: false` with the reason when no backend can start | `ProfilingManager.requestProfiling` (system trace) or `/system/bin/perfetto` |
+| `stopPerfettoTrace()` | none | `Promise<PerfettoStopResult>` — `{ stopped, path, sizeBytes, error }`; `path` only when the file exists with a non-zero length | `CancellationSignal` / process stop, then `File.exists()` and `length()` |
+| `startWifiRttRanging(bssids)` | `bssids: string[]` — BSSIDs of 802.11mc access points present in the latest scan results | `Promise<WifiRttStatusResult>` — `rangingResults` per AP (`distanceMm`, `distanceStdDevMm`, `rssi` null unless `status` is 0), `unresolvedBssids` with reasons, `failureCode`, `error` | `WifiRttManager.startRanging`, `WifiManager.getScanResults` |
 
 ## Events
 | Event | Payload | Meaning |
@@ -51,3 +56,5 @@
 | `onBleDeviceFound` | `DiscoveredBleDevice` | An advertisement was received |
 | `onNfcTag` | `NfcTagEvent` — id, techs, type, capacity, writability, decoded records, write outcome | A tag entered the field |
 | `onNfcError` | `{ id: string; message: string }` | A tag could not be read or written |
+| `onUwbRangingResult` | `UwbMeasurementEvent` — `{ sessionId, deviceId, distanceMeters, distanceConfidence, azimuthDegrees, azimuthConfidence, elevationDegrees, elevationConfidence, rssi, technology, timestampMs }`; nulls where the platform omitted a value | One `android.ranging.RangingData` sample from the peer |
+| `onUwbRangingState` | `UwbSessionEvent` — `{ sessionId, state: 'opened' \| 'started' \| 'stopped' \| 'closed' \| 'open_failed', deviceId, reason, timestampMs }` | The ranging session changed state |

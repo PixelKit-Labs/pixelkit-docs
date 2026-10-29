@@ -5,7 +5,7 @@
   "chipBadge": "Tensor G6 · /proc/cpuinfo + cpufreq",
   "summary": "What the CPU is and how hard it is working right now.",
   "plain": "Tells you the shape of the processor (how many cores, which type, how fast each one can go) and how busy it is at this instant. Use it to decide whether the phone has room for heavy work, or to show a live performance readout.",
-  "description": "Core identity comes from /proc/cpuinfo and per-core frequencies from the cpufreq sysfs tree, both read through the PixelNative module. Two different load signals are reported and they mean different things: cpuLoadPercent is how close the cores are running to their maximum clock, read from hardware; appCpuPercent is this app's own share of CPU time, computed from process time over wall time. Android does not let apps read system-wide /proc/stat, so a true \"system load\" figure does not exist here and is not invented.",
+  "description": "Core identity comes from /proc/cpuinfo and per-core frequencies from the cpufreq sysfs tree, both read through the PixelNative module. Two different load signals are reported and they mean different things: cpuLoadPercent is how close the cores are running to their maximum clock, read from hardware; appCpuPercent is this app's own share of CPU time, computed from process time over wall time. Android does not let apps read system-wide /proc/stat, so this hook has no whole-system load figure and does not invent one. For real whole-system CPU utilisation (read from /proc/stat by the PixelKit ADB daemon) use useSystemLoad.",
   "signature": "useCPU(): CPUState",
   "params": [],
   "returns": [
@@ -69,5 +69,5 @@
     }
   ],
   "example": "import { useCPU } from '@pixelkit-labs/sdk';\n\nfunction CPUWidget() {\n  const { coreTopology, cpuLoadPercent, cores, benchmarkCPU } = useCPU();\n  return (\n    <View>\n      <Text>{coreTopology}</Text>\n      <Text>{cpuLoadPercent ?? '—'}% · {cores.map(c => c.curMHz).join('/')} MHz</Text>\n      <Button title=\"Run benchmark\" onPress={() => benchmarkCPU()} />\n    </View>\n  );\n}",
-  "agentNote": "Values are null until the native module answers; never substitute a default. cpuLoadPercent is frequency utilisation, not scheduler load, so do not label it \"CPU usage\"."
+  "agentNote": "Values are null until the native module answers; never substitute a default. cpuLoadPercent is frequency utilisation, not scheduler load, so do not label it \"CPU usage\". For whole-system CPU utilisation call useSystemLoad, which needs the system-metrics daemon running and returns null with a reason without it."
 }

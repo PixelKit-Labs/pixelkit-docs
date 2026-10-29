@@ -3,51 +3,66 @@
   "name": "usePerfetto",
   "category": "compute",
   "chipBadge": "Perfetto Silicon Tracing",
-  "summary": "System-level kernel and app performance profiling via Perfetto v54.",
-  "plain": "Controls high-precision Linux kernel ftrace and Android atrace performance profiling directly from React Native. Captures Tensor G6 CPU frequency scaling, Choreographer frame rendering, and custom app trace sections into .perfetto-trace files viewable in ui.perfetto.dev.",
-  "description": "Backed by android.os.Trace, the system Perfetto binary (v54), and Android kernel trace categories (sched, freq, idle, gfx, view, am, wm, camera, hal). Emits zero-overhead hardware trace markers and captures system trace buffers without requiring root privileges. Nothing is simulated: operates directly on physical Android tracing infrastructure.",
+  "summary": "Real Android system traces (Perfetto format) of this app, plus os.Trace markers.",
+  "plain": "Starts and stops a system performance trace and hands back the .perfetto-trace file, viewable in ui.perfetto.dev. Custom trace sections and counters from your code appear inside the trace.",
+  "description": "startTrace asks the platform for a real Perfetto system trace. On Android 15+ it uses android.os.ProfilingManager: the platform records a trace of this app and delivers the file; its data sources are chosen by the platform, so the categories you pass are not applied (activeCategories stays empty and availableCategories is empty). Where ProfilingManager is absent it runs /system/bin/perfetto with the requested atrace categories, which many devices refuse to let an app execute. When no backend can start, startTrace resolves false and error says why; it never reports a trace that is not recording. stopTrace returns the file path only after checking the file exists with a non-zero size, with its size in lastTraceSizeBytes; otherwise it returns null and sets error. perfettoVersion is read from `perfetto --version` when the app can execute the binary, and is null with perfettoVersionReason otherwise. beginSection, endSection and setCounter use android.os.Trace and are recorded only while a trace is running.",
   "signature": "usePerfetto(): PerfettoState",
   "params": [],
   "returns": [
     {
       "name": "isSupported",
       "type": "boolean",
-      "desc": "Whether Perfetto and system tracing are available on device."
+      "desc": "Whether a trace backend can be started: ProfilingManager (Android 15+) or an executable perfetto binary."
     },
     {
       "name": "isTracing",
       "type": "boolean",
-      "desc": "Whether an active system trace session is currently recording."
+      "desc": "Whether a trace session is currently recording."
     },
     {
       "name": "perfettoVersion",
       "type": "string | null",
-      "desc": "Perfetto daemon version ('v54.0' on Android 17 / Pixel 11 Pro)."
+      "desc": "Version parsed from `perfetto --version`. Null when the app cannot execute the binary; perfettoVersionReason says why."
+    },
+    {
+      "name": "perfettoVersionReason",
+      "type": "string | null",
+      "desc": "Why perfettoVersion is null (for example the exec was refused for the app process); null when the version was read."
+    },
+    {
+      "name": "backend",
+      "type": "'profiling_manager' | 'perfetto_binary' | null",
+      "desc": "Which backend records traces on this device; null when none is available."
     },
     {
       "name": "availableCategories",
       "type": "string[]",
-      "desc": "Supported trace categories."
+      "desc": "atrace categories the perfetto binary accepts. Empty with the ProfilingManager backend, which picks its own data sources."
     },
     {
       "name": "activeCategories",
       "type": "string[]",
-      "desc": "Categories currently being captured in active trace."
+      "desc": "Categories the running trace was configured with. Empty when the backend ignores the request."
     },
     {
       "name": "lastTraceUri",
       "type": "string | null",
-      "desc": "Local file URI of the last saved .perfetto-trace file."
+      "desc": "Absolute path of the last saved .perfetto-trace file. Set only when the file exists and is not empty."
+    },
+    {
+      "name": "lastTraceSizeBytes",
+      "type": "number | null",
+      "desc": "Size in bytes of the last saved trace file."
     },
     {
       "name": "traceDurationMs",
       "type": "number | null",
-      "desc": "Duration of the last completed trace session in milliseconds."
+      "desc": "Time between startTrace and stopTrace for the last saved trace, in milliseconds."
     },
     {
       "name": "error",
       "type": "string | null",
-      "desc": "Error message if tracing failed."
+      "desc": "Why the last start or stop produced no trace, or why no backend is available."
     },
     {
       "name": "source",
@@ -57,12 +72,12 @@
     {
       "name": "startTrace",
       "type": "(categories?: string[], bufferSizeKb?: number) => Promise<boolean>",
-      "desc": "Start a system trace session with specified categories and buffer size."
+      "desc": "Start a system trace. Resolves false, with the reason in error, when no backend could start one."
     },
     {
       "name": "stopTrace",
       "type": "() => Promise<string | null>",
-      "desc": "Stop the active trace session and write the .perfetto-trace file."
+      "desc": "Stop the active trace. Resolves the file path, or null with the reason in error when no trace file exists."
     },
     {
       "name": "beginSection",
@@ -77,24 +92,26 @@
     {
       "name": "setCounter",
       "type": "(name: string, value: number) => void",
-      "desc": "Emit an android.os.Trace setCounter metric."
+      "desc": "Emit an android.os.Trace setCounter metric (Android 10+)."
     },
     {
       "name": "refresh",
       "type": "() => PerfettoInfo | null",
-      "desc": "Re-probe Perfetto daemon and tracing subsystem."
+      "desc": "Re-probe the trace backends."
     }
   ],
   "actions": [
     {
       "name": "startTrace(categories?, bufferSizeKb?)",
       "type": "(categories?: string[], bufferSizeKb?: number) => Promise<boolean>",
-      "desc": "Start a system trace session with specified categories and buffer size."
+      "desc": "Start a system trace with the optional categories and buffer size.",
+      "output": "Resolves true when a backend accepted the request and reported no failure; false with the reason in error otherwise. With ProfilingManager the categories are not applied and the platform may refuse (rate limit, trace already in progress)."
     },
     {
       "name": "stopTrace()",
       "type": "() => Promise<string | null>",
-      "desc": "Stop the active trace session and write the .perfetto-trace file."
+      "desc": "Stop the active trace and verify the .perfetto-trace file.",
+      "output": "Resolves the absolute path when the file exists with a non-zero size (size in lastTraceSizeBytes); null with error set when there was no trace, the platform delivered no file, or the file is missing or empty."
     },
     {
       "name": "beginSection(name)",
@@ -114,7 +131,7 @@
     {
       "name": "refresh()",
       "type": "() => PerfettoInfo | null",
-      "desc": "Re-probe Perfetto daemon and tracing subsystem."
+      "desc": "Re-probe the trace backends."
     }
   ]
 }

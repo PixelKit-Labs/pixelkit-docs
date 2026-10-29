@@ -19,5 +19,5 @@ This document covers wireless radios, near-field interactions, satellite positio
 | [`useSatelliteNTN`](./usesatellitentn.md) | 3GPP Release-17 Non-Terrestrial Network (satellite SOS) status and alignment telemetry. |
 | [`useSecurity`](./usesecurity.md) | Encrypted storage for secrets, backed by hardware. |
 | [`useWifi7MLO`](./usewifi7mlo.md) | Wi-Fi 7 (802.11be) Multi-Link Operation and 320 MHz channel telemetry. |
-| [`useWifiRTT`](./usewifirtt.md) | Fine Timing Measurement (FTM / 802.11az) indoor centimeter-level positioning. |
+| [`useWifiRTT`](./usewifirtt.md) | Fine Timing Measurement (FTM / 802.11mc) distance to Wi-Fi access points. |
 <!-- hooks:end -->

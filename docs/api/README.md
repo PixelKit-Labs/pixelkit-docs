@@ -10,7 +10,7 @@ on the hook's declared type.
 
 ## Hooks by section
 <!-- hooks:start -->
-53 hooks across 6 sections. This index is generated from `data/hooks`, so a hook
+54 hooks across 6 sections. This index is generated from `data/hooks`, so a hook
 cannot be listed in the wrong section or listed twice.
 
 ### [Silicon and compute](./silicon-compute/)
@@ -24,7 +24,8 @@ cannot be listed in the wrong section or listed twice.
 | [`useCPU`](./silicon-compute/usecpu.md) | What the CPU is and how hard it is working right now. |
 | [`useGPU`](./silicon-compute/usegpu.md) | Which GPU this is, and whether your frames are arriving on time. |
 | [`useMemory`](./silicon-compute/usememory.md) | System RAM, this app's heaps, and how close the system is to killing you. |
-| [`usePerfetto`](./silicon-compute/useperfetto.md) | System-level kernel and app performance profiling via Perfetto v54. |
+| [`usePerfetto`](./silicon-compute/useperfetto.md) | Real Android system traces (Perfetto format) of this app, plus os.Trace markers. |
+| [`useSystemLoad`](./silicon-compute/usesystemload.md) | Whole-system CPU, GPU and TPU load, from kernel counters an app cannot read itself. |
 | [`useTPU`](./silicon-compute/usetpu.md) | Whether on-device AI host packages are visible and what the hook actually executed. |
 
 ### [Neural and AI](./neural-ai/)
@@ -33,7 +34,7 @@ cannot be listed in the wrong section or listed twice.
 | :--- | :--- |
 | [`useAppFunctions`](./neural-ai/useappfunctions.md) | Exposes on-device actions and hardware capabilities to system AI and Gemini Assistant. |
 | [`useCloudHardwareAgent`](./neural-ai/usecloudhardwareagent.md) | Autonomous cloud hardware reasoning loop with multi-turn tool calling and extended thinking. |
-| [`useEmbeddings`](./neural-ai/useembeddings.md) | On-device vector embeddings and semantic cosine similarity scoring via Tensor EdgeTPU. |
+| [`useEmbeddings`](./neural-ai/useembeddings.md) | On-device text embeddings from a user-supplied TFLite model (MediaPipe TextEmbedder) and cosine similarity scoring. |
 | [`useGemini`](./neural-ai/usegemini.md) | Cloud Gemini chat with real multi-turn history. |
 | [`useGeminiLive`](./neural-ai/usegeminilive.md) | Real-time bidirectional streaming audio, camera video frames, text, and hardware tool execution with Gemini 3.8 Multimodal Live API. |
 | [`useGeminiNano`](./neural-ai/usegemininano.md) | Gemini Nano running on the phone, with no network and no API key. |
@@ -73,7 +74,7 @@ cannot be listed in the wrong section or listed twice.
 | [`useSatelliteNTN`](./radios-security/usesatellitentn.md) | 3GPP Release-17 Non-Terrestrial Network (satellite SOS) status and alignment telemetry. |
 | [`useSecurity`](./radios-security/usesecurity.md) | Encrypted storage for secrets, backed by hardware. |
 | [`useWifi7MLO`](./radios-security/usewifi7mlo.md) | Wi-Fi 7 (802.11be) Multi-Link Operation and 320 MHz channel telemetry. |
-| [`useWifiRTT`](./radios-security/usewifirtt.md) | Fine Timing Measurement (FTM / 802.11az) indoor centimeter-level positioning. |
+| [`useWifiRTT`](./radios-security/usewifirtt.md) | Fine Timing Measurement (FTM / 802.11mc) distance to Wi-Fi access points. |
 
 ### [System and media](./system-media/)
 
@@ -94,7 +95,7 @@ cannot be listed in the wrong section or listed twice.
 | Hook | What it reads |
 | :--- | :--- |
 | [`useHiLight`](./pro-exclusives/usehilight.md) | The eight-LED ring around the rear camera flash. Real LEDs or nothing. |
-| [`useUWB`](./pro-exclusives/useuwb.md) | Ultra-wideband radio state, hardware ranging sessions, and spatial diagnostics. |
+| [`useUWB`](./pro-exclusives/useuwb.md) | Ultra-wideband radio state and real ranging sessions against a peer device. |
 
 <!-- hooks:end -->
 

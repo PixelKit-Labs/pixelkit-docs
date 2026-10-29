@@ -5,7 +5,7 @@
   "chipBadge": "PowerVR CXTP-48-1536 · Vulkan 1.4",
   "summary": "Which GPU this is, and whether your frames are arriving on time.",
   "plain": "Identifies the graphics chip and measures how smoothly the interface is drawing. If animations feel rough, this tells you whether frames are actually being missed and by how much.",
-  "description": "The renderer, vendor and OpenGL version are read through a real offscreen EGL context; the Vulkan version comes from the android.hardware.vulkan.version system feature. Frame timing is measured on the UI thread with Choreographer in one-second windows: average and worst frame interval, frames presented per second, and a jank count for frames that took more than 1.5x the expected interval. Android does not expose GPU memory usage to apps, so that field is always null rather than estimated.",
+  "description": "The renderer, vendor and OpenGL version are read through a real offscreen EGL context; the Vulkan version comes from the android.hardware.vulkan.version system feature. Frame timing is measured on the UI thread with Choreographer in one-second windows: average and worst frame interval, frames presented per second, and a jank count for frames that took more than 1.5x the expected interval. Android does not expose GPU utilisation or GPU memory to apps, so gpuMemoryUsageMB is always null here rather than estimated. Real GPU utilisation, clock, memory and the busiest uids come from useSystemLoad, which reads them through the PixelKit ADB daemon; this hook does not use the daemon.",
   "signature": "useGPU(): GPUState",
   "params": [],
   "returns": [
@@ -62,7 +62,7 @@
     {
       "name": "gpuMemoryUsageMB",
       "type": "null",
-      "desc": "Always null. Android does not expose this to apps."
+      "desc": "Always null in this hook: an app cannot read GPU memory. useSystemLoad reports it as gpuMemoryUsedMB when the ADB daemon is running."
     },
     {
       "name": "source",
@@ -72,5 +72,5 @@
   ],
   "actions": [],
   "example": "import { useGPU } from '@pixelkit-labs/sdk';\n\nfunction GPUHUD() {\n  const { measuredFps, frameRenderTimeMs, targetBudgetMs, isStuttering } = useGPU();\n  return (\n    <Text style={{ color: isStuttering ? '#F25C55' : '#46D786' }}>\n      {measuredFps ?? '—'} FPS · {frameRenderTimeMs ?? '—'} / {targetBudgetMs} ms\n    </Text>\n  );\n}",
-  "agentNote": "Check isStuttering before adding animation work. Frame timing measures the UI thread, so heavy JS shows up here even when the GPU is idle."
+  "agentNote": "Check isStuttering before adding animation work. Frame timing measures the UI thread, so heavy JS shows up here even when the GPU is idle. For GPU utilisation, clock or memory use useSystemLoad; do not read gpuMemoryUsageMB from this hook."
 }

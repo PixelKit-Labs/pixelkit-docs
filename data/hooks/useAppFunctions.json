@@ -5,7 +5,7 @@
   "chipBadge": "Android 17 AppFunctions",
   "summary": "Exposes on-device actions and hardware capabilities to system AI and Gemini Assistant.",
   "plain": "Bridges Android 16/17 AppFunctions (API 36+). Allows Gemini and local agents to discover and execute in-app functions, query Tensor silicon thermals, and register custom agentic tool handlers.",
-  "description": "Backed by android.app.appfunctions.IAppFunctionManager (system service 133 on Pixel 11 Pro). Exposes built-in hardware actions ('check_phone_thermals', 'purge_memory_cache', 'get_device_silicon_info') and enables developers to register custom AppFunction schemas and handlers dynamically. Reports source: 'hardware' when backed by the real system service.",
+  "description": "Backed by android.app.appfunctions.IAppFunctionManager (system service 133 on Pixel 11 Pro). Exposes built-in hardware actions ('check_phone_thermals', 'purge_memory_cache', 'get_device_silicon_info') and enables developers to register custom AppFunction schemas and handlers dynamically. An id that is neither custom nor built in is run through the native registry (PixelNative.getAppFunctions: triggerHapticEffect, setTorchLevel, getSiliconStatus, scanNearbyRadios); executeFunction resolves success false with the native message when the effect did not happen (for example an unsupported haptic primitive) and with an unknown-id error for any other id. Reports source: 'hardware' when backed by the real system service.",
   "signature": "useAppFunctions(): AppFunctionsState",
   "params": [],
   "returns": [
@@ -52,7 +52,7 @@
     {
       "name": "executeFunction",
       "type": "(functionId: string, params?: Record<string, any>) => Promise<AppFunctionExecutionResult>",
-      "desc": "Executes a registered AppFunction or built-in hardware action."
+      "desc": "Executes a custom handler, a built-in hardware action, or a native registry function. Resolves success false with the reason in error when the function failed or the id is unknown."
     },
     {
       "name": "registerFunction",
@@ -69,7 +69,7 @@
     {
       "name": "executeFunction(functionId, params?)",
       "type": "(functionId: string, params?: Record<string, any>) => Promise<AppFunctionExecutionResult>",
-      "desc": "Executes a registered AppFunction or built-in hardware action."
+      "desc": "Executes a custom handler, a built-in hardware action, or a native registry function. Resolves success false with the reason in error when the function failed or the id is unknown."
     },
     {
       "name": "registerFunction(schema, handler)",

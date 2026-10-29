@@ -3,9 +3,9 @@
   "name": "useWifiRTT",
   "category": "radios",
   "chipBadge": "Wi-Fi RTT · 802.11az · FTM",
-  "summary": "Fine Timing Measurement (FTM / 802.11az) indoor centimeter-level positioning.",
-  "plain": "Measures round-trip time (RTT) distance between the phone and nearby Wi-Fi access points to determine indoor location within 1 to 2 meters without GPS.",
-  "description": "Utilizes android.net.wifi.rtt.WifiRttManager for 802.11mc / 802.11az Fine Timing Measurement ranging. Discovers RTT-capable access points and measures exact flight time in picoseconds, returning calculated distances in millimeters with standard deviation accuracy metrics. Operates indoors where satellite GNSS signals are obstructed.",
+  "summary": "Fine Timing Measurement (FTM / 802.11mc) distance to Wi-Fi access points.",
+  "plain": "Measures round-trip time (RTT) distance between the phone and nearby Wi-Fi access points that support it, to place the phone indoors within about 1 to 2 meters without GPS.",
+  "description": "startRanging(bssids) runs one real android.net.wifi.rtt.WifiRttManager.startRanging round and waits for the platform's callback. Each BSSID must match an 802.11mc responder in the latest Wi-Fi scan results (WifiManager.getScanResults); BSSIDs that cannot be ranged are never invented into results and are listed in unresolvedBssids with a reason (invalid_bssid, not_in_scan_results, not_80211mc_responder, exceeds_max_peers_N, permission_denied, rtt_unavailable, ranging_timeout, ranging_failed, no_result_returned). Each entry of rangingResults is one access point's RangingResult: status 0 is a measurement, and only then are distanceMm, distanceStdDevMm, rssi and the measurement counters set (they are null for status 1 fail and 2 responder without 802.11mc). When the whole request fails, rangingResults is empty and error carries the onRangingFailure code. Needs ACCESS_FINE_LOCATION, plus NEARBY_WIFI_DEVICES on Android 13+, declared and granted by the app; without them error starts with permission_denied.",
   "signature": "useWifiRTT(): WifiRTTTelemetry",
   "params": [],
   "returns": [
@@ -17,22 +17,27 @@
     {
       "name": "isAvailable",
       "type": "boolean",
-      "desc": "Whether the Wi-Fi RTT ranging service is currently active and available."
+      "desc": "Whether the Wi-Fi RTT ranging service is currently available (Wi-Fi and location on)."
     },
     {
       "name": "isRanging",
       "type": "boolean",
-      "desc": "Whether an active RTT ranging sweep is currently in progress."
+      "desc": "Whether a ranging round is in progress."
     },
     {
       "name": "rangingResults",
       "type": "WifiRttResult[]",
-      "desc": "Latest distance measurements to specified AP BSSIDs in millimeters."
+      "desc": "Per-AP results of the last round: `bssid`, `status`, `statusName`, `distanceMm`, `distanceStdDevMm`, `rssi`, `numAttemptedMeasurements`, `numSuccessfulMeasurements`, `timestampMs`. Distance, deviation, RSSI and counters are null unless `status` is 0."
+    },
+    {
+      "name": "unresolvedBssids",
+      "type": "WifiRttUnresolvedBssid[]",
+      "desc": "BSSIDs of the last request that produced no measurement, each as `{ bssid, reason }`."
     },
     {
       "name": "error",
       "type": "string | null",
-      "desc": "Error message if RTT service probing or ranging execution failed."
+      "desc": "Why probing or the last ranging round failed (missing permission, RTT unavailable, timeout, onRangingFailure code), or null."
     },
     {
       "name": "source",
@@ -42,7 +47,7 @@
     {
       "name": "startRanging",
       "type": "(bssids: string[]) => Promise<WifiRttResult[]>",
-      "desc": "Initiates an active round-trip time ranging request against specified AP BSSIDs."
+      "desc": "Runs one RTT ranging round against the given AP BSSIDs and resolves the platform's per-AP results (empty on failure, with the reason in error)."
     },
     {
       "name": "refresh",
@@ -53,8 +58,9 @@
   "actions": [
     {
       "name": "startRanging(bssids)",
-      "desc": "Performs round-trip time distance ranging to target BSSIDs.",
-      "type": "(bssids: string[]) => Promise<boolean>"
+      "desc": "Performs one round-trip time ranging round to the target BSSIDs.",
+      "type": "(bssids: string[]) => Promise<WifiRttResult[]>",
+      "output": "Resolves the per-AP results. BSSIDs that were not ranged are in unresolvedBssids with the reason; an empty array with error set means the whole request failed."
     },
     {
       "name": "refresh()",
@@ -62,6 +68,6 @@
       "type": "() => void"
     }
   ],
-  "example": "import { useWifiRTT } from '@pixelkit-labs/sdk';\n\nfunction IndoorRadar() {\n  const { isAvailable, rangingResults, startRanging } = useWifiRTT();\n  return (\n    <View>\n      <Text>RTT Service: {isAvailable ? 'Ready' : 'Offline'}</Text>\n      <Button title=\"Range Access Points\" onPress={() => startRanging(['00:11:22:33:44:55'])} />\n    </View>\n  );\n}",
-  "agentNote": "Requires Android 9+ (API 28+) and location permissions. Access points must support 802.11mc or 802.11az FTM responders."
+  "example": "import { useWifiRTT } from '@pixelkit-labs/sdk';\n\nfunction IndoorRadar({ bssids }: { bssids: string[] }) {\n  const { isAvailable, rangingResults, unresolvedBssids, error, startRanging } = useWifiRTT();\n  return (\n    <View>\n      <Text>RTT Service: {isAvailable ? 'Ready' : 'Offline'}</Text>\n      <Button title=\"Range Access Points\" onPress={() => startRanging(bssids)} />\n      {error ? <Text>{error}</Text> : null}\n      {rangingResults.map((r) => (\n        <Text key={r.bssid}>{r.bssid}: {r.distanceMm == null ? r.statusName : `${r.distanceMm} mm`}</Text>\n      ))}\n      {unresolvedBssids.map((u) => (\n        <Text key={u.bssid}>{u.bssid}: not ranged ({u.reason})</Text>\n      ))}\n    </View>\n  );\n}",
+  "agentNote": "Requires Android 9+ (API 28) and ACCESS_FINE_LOCATION (plus NEARBY_WIFI_DEVICES on Android 13+) granted by the app. Pass BSSIDs taken from a Wi-Fi scan; only access points that are 802.11mc responders can be ranged. Do not assume a distance for a BSSID missing from rangingResults: it is in unresolvedBssids with the reason."
 }

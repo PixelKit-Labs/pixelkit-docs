@@ -3,9 +3,9 @@
   "name": "useUWB",
   "category": "pro",
   "chipBadge": "Ultra-Wideband (Pro)",
-  "summary": "Ultra-wideband radio state, hardware ranging sessions, and spatial diagnostics.",
-  "plain": "Reports whether this phone has the short-range precision radio used for precision spatial tracking and car keys, and manages hardware ranging sessions via UwbManager and RangingManager.",
-  "description": "Chip presence, enabled state, chip id and ranging service readiness are queried from Android UwbManager and PackageManager through the native module, carrying source hardware. Hardware ranging sessions are initiated via startRanging(), exposing session diagnostics (session ID, protocol status, HAL direct vs declared feature) without mock placeholders.",
+  "summary": "Ultra-wideband radio state and real ranging sessions against a peer device.",
+  "plain": "Reports whether this phone has the short-range precision radio used for precision spatial tracking and car keys, and ranges against a second UWB device whose address and channel you supply.",
+  "description": "Chip presence, enabled state, chip id and ranging service readiness are queried from Android UwbManager and PackageManager through the native module, carrying source hardware. startRanging(config) opens a real android.ranging.RangingSession (Android 16, API 36+, RAW UWB session) with the peer described by the config: its address, the session id, and optionally the channel, preamble index and key info, all agreed with the peer out of band (BLE, NFC, QR). The call resolves true only when the platform reports the session open; otherwise it resolves false and sessionError carries a status such as needs_peer_configuration, uwb_unsupported, ranging_api_unavailable, uwb_disabled, permission_denied (android.permission.RANGING must be declared and granted by the app), session_active, invalid_parameters or open_failed. measurements holds the latest android.ranging.RangingData sample per peer (distance in meters, azimuth and elevation in degrees, each with the platform's confidence level) and stays empty until the peer answers.",
   "signature": "useUWB(): UWBState",
   "params": [],
   "returns": [
@@ -22,32 +22,32 @@
     {
       "name": "chipId",
       "type": "string | null",
-      "desc": "Chip identifier the platform reports, \"default\" on this Pixel."
+      "desc": "Chip identifier from the native radio probe."
     },
     {
       "name": "rangingApiSupported",
       "type": "boolean",
-      "desc": "Whether the Android 16 RangingManager feature is declared. False on this unit."
+      "desc": "Whether the device declares the android.hardware.ranging feature."
     },
     {
       "name": "isRanging",
       "type": "boolean",
-      "desc": "Whether a ranging session is actively running."
+      "desc": "Whether the platform holds an open ranging session. Follows the platform's session events, not the last call."
+    },
+    {
+      "name": "measurements",
+      "type": "UwbMeasurementEvent[]",
+      "desc": "Latest platform sample per peer device: `deviceId`, `distanceMeters`, `azimuthDegrees`, `elevationDegrees` (null when the platform omitted them), a `*Confidence` of 'low', 'medium' or 'high' for each, `rssi` and `timestampMs`. Empty until the peer answers."
     },
     {
       "name": "sessionInfo",
       "type": "UwbRangingResult | null",
-      "desc": "Hardware session diagnostics: status, serviceName, technology, and timestamp."
+      "desc": "Result of the last start request: `status`, `error`, `sessionId`, `serviceName`, `serviceAvailable`, `rangingFeature`, `timestampMs`."
     },
     {
       "name": "sessionError",
       "type": "string | null",
-      "desc": "Error message if session creation or ranging fails."
-    },
-    {
-      "name": "activeTargets",
-      "type": "UWBSpatialTarget[]",
-      "desc": "Tracked responder anchors and devices with distance and angles."
+      "desc": "Status code and reason when the last start or stop did not succeed, for example `needs_peer_configuration: peerAddress must be hex address bytes`."
     },
     {
       "name": "source",
@@ -62,25 +62,25 @@
   ],
   "actions": [
     {
-      "name": "startRanging(sessionId?)",
-      "type": "(sessionId?: number) => Promise<boolean>",
-      "desc": "Initiates a hardware UWB ranging session through UwbManager and RangingManager.",
+      "name": "startRanging(config)",
+      "type": "(config: UwbRangingConfig) => Promise<boolean>",
+      "desc": "Opens a real UWB ranging session with the peer described by config.",
       "inputs": [
         {
-          "name": "sessionId",
-          "type": "number | undefined",
-          "desc": "Identifier for the session, default 1001. Use distinct ids for concurrent sessions."
+          "name": "config",
+          "type": "UwbRangingConfig",
+          "desc": "`{ sessionId: number, role: 'initiator' | 'responder', localAddress: string, peerAddress: string, configId?: number (1..6, default 1), channel?: number, preambleIndex?: number, sessionKeyInfo?: string, updateRate?: 'normal' | 'infrequent' | 'frequent', slotDurationMs?: 1 | 2, angleOfArrival?: boolean }`. Addresses and keys are hex bytes (2-byte short or 8-byte extended addresses); channel and preambleIndex go together. All values must match what the peer was given."
         }
       ],
-      "output": "Resolves true when the session opened; false with the reason in sessionError when the service is missing or the hardware refused. Diagnostics land in sessionInfo either way."
+      "output": "Resolves true when the platform reported the session open; false with the status and reason in sessionError when the peer configuration is missing or invalid, the device or OS cannot range, a permission is missing, or the platform refused to open. sessionInfo is updated either way."
     },
     {
       "name": "stopRanging()",
-      "type": "() => void",
-      "desc": "Ends the active UWB ranging session. Safe to call when nothing is running.",
-      "output": "Returns nothing; isRanging becomes false."
+      "type": "() => UwbStopResult | null",
+      "desc": "Closes the running UWB ranging session.",
+      "output": "Returns `{ wasActive, closed, sessionId, error, timestampMs }`: wasActive is false when nothing was running, and error carries a failure from the platform's stop or close. Returns null when the native module is absent."
     }
   ],
-  "example": "import { useUWB } from '@pixelkit-labs/sdk';\n\nfunction Radar() {\n  const { isSupported, isRanging, sessionInfo, startRanging, stopRanging } = useUWB();\n  if (!isSupported) return <Text>No UWB radio</Text>;\n  return (\n    <View>\n      <Text>Session: {sessionInfo?.status ?? 'Inactive'}</Text>\n      <Button\n        title={isRanging ? 'Stop session' : 'Start hardware session'}\n        onPress={() => isRanging ? stopRanging() : startRanging(1001)}\n      />\n    </View>\n  );\n}",
-  "agentNote": "UWB chip status and sessions are backed by physical hardware. Note that this preview build declares android.hardware.uwb but not android.hardware.ranging."
+  "example": "import { useUWB } from '@pixelkit-labs/sdk';\n\nfunction Radar({ peer }: { peer: { address: string; sessionId: number; channel: number; preambleIndex: number } }) {\n  const { isSupported, isRanging, measurements, sessionError, startRanging, stopRanging } = useUWB();\n  if (!isSupported) return <Text>No UWB radio</Text>;\n  return (\n    <View>\n      <Button\n        title={isRanging ? 'Stop session' : 'Range with peer'}\n        onPress={() => isRanging ? stopRanging() : startRanging({\n          sessionId: peer.sessionId,\n          role: 'initiator',\n          localAddress: '0x1234',\n          peerAddress: peer.address,\n          channel: peer.channel,\n          preambleIndex: peer.preambleIndex,\n        })}\n      />\n      {sessionError ? <Text>{sessionError}</Text> : null}\n      {measurements.map((m) => (\n        <Text key={m.deviceId}>{m.distanceMeters == null ? '—' : `${m.distanceMeters.toFixed(2)} m`}</Text>\n      ))}\n    </View>\n  );\n}",
+  "agentNote": "UWB ranging needs a peer. Never invent addresses, session ids or channels: they come from the device you are ranging with. Without a peer configuration startRanging resolves false with needs_peer_configuration. The ranging API is android.ranging (Android 16+) and requires android.permission.RANGING, which the app must declare in its manifest and request at runtime; without it the status is permission_denied. Report an empty measurements list as 'no peer answered', not as zero distance."
 }

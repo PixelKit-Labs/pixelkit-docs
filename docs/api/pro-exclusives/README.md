@@ -8,5 +8,5 @@ This document covers hardware exclusive to Google's flagship Pro models. Each en
 | Hook | What it reads |
 | :--- | :--- |
 | [`useHiLight`](./usehilight.md) | The eight-LED ring around the rear camera flash. Real LEDs or nothing. |
-| [`useUWB`](./useuwb.md) | Ultra-wideband radio state, hardware ranging sessions, and spatial diagnostics. |
+| [`useUWB`](./useuwb.md) | Ultra-wideband radio state and real ranging sessions against a peer device. |
 <!-- hooks:end -->

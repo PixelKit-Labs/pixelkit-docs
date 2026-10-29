@@ -20,7 +20,7 @@ const CATEGORY_META = {
   },
   'neural-ai': {
     name: 'Neural & AI',
-    description: 'Gemini Nano on-device AICore, ML Kit vision and NLP, speech recognition/synthesis, and EdgeTPU embeddings.',
+    description: 'Gemini Nano on-device AICore, ML Kit vision and NLP, speech recognition/synthesis, and on-device text embeddings (MediaPipe TextEmbedder, CPU).',
   },
   'sensors-actuators': {
     name: 'Sensors & Actuators',

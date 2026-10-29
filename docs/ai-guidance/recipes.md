@@ -213,39 +213,42 @@ export function CredentialVault() {
 
 ## Recipe 5: UWB Spatial Target Tracker
 
-Opens a ranging session and renders distance and angle to each peer.
+Opens a ranging session with a peer and renders the distance and angle the platform measures.
 
 | | |
 | :--- | :--- |
-| **Takes** | An optional `sessionId` (default `1001`). Note the arrow function on `onPress`: passing `startRanging` directly would hand it the press event as the session id. |
-| **Gives back** | `startRanging` resolves `true` when the session opened, `false` with the reason in `sessionError`. `activeTargets` fills only when paired responders report; it stays empty rather than showing placeholder anchors. |
-| **Guard** | `isSupported` and `isEnabled` come from `UwbManager`. Hide the control when there is no chip. |
+| **Takes** | The peer's UWB configuration (`sessionId`, `role`, `localAddress`, `peerAddress`, and the channel and preamble index when the peer chose them), exchanged out of band. Never invent these values. Note the arrow function on `onPress`: it keeps the press event out of the config. |
+| **Gives back** | `startRanging` resolves `true` when the platform reported the session open, `false` with the status and reason in `sessionError` (`needs_peer_configuration`, `uwb_unsupported`, `ranging_api_unavailable`, `uwb_disabled`, `permission_denied`, `open_failed`, ...). `measurements` fills only when the peer answers; it stays empty rather than showing placeholder anchors, and any angle or distance the platform omitted is `null`. |
+| **Guard** | `isSupported` and `isEnabled` come from `UwbManager`. Hide the control when there is no chip. Ranging needs Android 16+ and `android.permission.RANGING`, which the app must declare and request. |
 
 ```tsx
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useUWB } from '@pixelkit-labs/sdk';
 
-export function SpatialRadarView() {
- const { activeTargets, isRanging, isSupported, startRanging, stopRanging, sessionError } = useUWB();
+type UwbPeer = Parameters<ReturnType<typeof useUWB>['startRanging']>[0];
+
+export function SpatialRadarView({ peer }: { peer: UwbPeer }) {
+ const { measurements, isRanging, isSupported, startRanging, stopRanging, sessionError } = useUWB();
 
  if (!isSupported) return <Text>This device has no ultra-wideband radio.</Text>;
 
  return (
  <View style={{ padding: 16 }}>
- <Pressable onPress={() => (isRanging ? stopRanging() : startRanging())}>
+ <Pressable onPress={() => (isRanging ? stopRanging() : startRanging(peer))}>
  <Text>{isRanging ? 'Stop ranging' : 'Start UWB ranging'}</Text>
  </Pressable>
  {sessionError ? <Text style={{ color: '#F28B82' }}>{sessionError}</Text> : null}
- {activeTargets.map(t => (
- <View key={t.deviceId} style={{ marginTop: 8 }}>
- <Text style={{ color: '#8AB4F8', fontWeight: '700' }}>{t.deviceId}</Text>
+ {measurements.map(m => (
+ <View key={m.deviceId} style={{ marginTop: 8 }}>
+ <Text style={{ color: '#8AB4F8', fontWeight: '700' }}>{m.deviceId}</Text>
  <Text style={{ color: '#9398A8' }}>
- {t.distanceMeters.toFixed(2)} m · azimuth {t.azimuthDegrees}° · quality {Math.round(t.signalQuality * 100)}%
+ {m.distanceMeters == null ? '—' : `${m.distanceMeters.toFixed(2)} m`}
+ {m.azimuthDegrees == null ? '' : ` · azimuth ${m.azimuthDegrees.toFixed(0)}°`}
  </Text>
  </View>
  ))}
- {isRanging && activeTargets.length === 0 && <Text>Session open, no responders in range.</Text>}
+ {isRanging && measurements.length === 0 && <Text>Session open, the peer has not answered yet.</Text>}
  </View>
  );
 }

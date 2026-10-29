@@ -2,7 +2,7 @@
 
 **Source:** [packages/sdk/src/hardware/useGPU.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/hardware/useGPU.ts)
 
-GPU identity comes from an offscreen EGL context (`GL_RENDERER`, `GL_VENDOR`, `GL_VERSION`) plus the `android.hardware.vulkan.version` feature. Frame pacing is measured on the UI thread with `Choreographer` in 1 s windows: presented FPS, average and max frame interval, jank frames (interval > 1.5× the display's expected frame time). GPU memory is not exposed by Android and is always `null`.
+GPU identity comes from an offscreen EGL context (`GL_RENDERER`, `GL_VENDOR`, `GL_VERSION`) plus the `android.hardware.vulkan.version` feature. Frame pacing is measured on the UI thread with `Choreographer` in 1 s windows: presented FPS, average and max frame interval, jank frames (interval > 1.5× the display's expected frame time). An app cannot read GPU utilisation or GPU memory, so `gpuMemoryUsageMB` is always `null` here. [`useSystemLoad`](./usesystemload.md) reports real GPU utilisation, clock, memory and the busiest uids when the PixelKit ADB daemon is running; this hook does not use the daemon.
 
 Verified on Pixel 11 Pro: `ANGLE (Imagination Technologies, Vulkan 1.4.317 (PowerVR C-Series CXTP-48-1536 MC1))`, 114 FPS presented in a 120 Hz mode. Identity is read once on mount; the hook then subscribes to the native `onFrameStats` event, which fires once per second while mounted.
 
@@ -37,7 +37,7 @@ function useGPU(): {
 | `jankFramesLastSecond` | `number` | Jank frames in the most recent window only, for a live indicator. |
 | `targetBudgetMs` | `number` | Frame budget of the current display mode: 8.33 ms at 120 Hz, 16.67 ms at 60 Hz. Defaults to 8.33 before the first window. |
 | `isStuttering` | `boolean` | `true` when the average frame interval exceeds 1.5× the budget. `false` before any measurement. |
-| `gpuMemoryUsageMB` | `null` | Android does not expose GPU memory to apps. Always `null`; never estimate it. |
+| `gpuMemoryUsageMB` | `null` | Always `null`: apps cannot read GPU memory. Never estimated; `useSystemLoad().gpuMemoryUsedMB` is the daemon-sourced value. |
 | `source` | `TelemetrySource` | `'hardware'` with the native module present, `'unavailable'` otherwise. |
 
 ## Functions

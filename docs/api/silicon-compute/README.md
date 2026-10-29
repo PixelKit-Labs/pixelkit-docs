@@ -16,6 +16,7 @@ Each entry documents its **Inputs** (what you pass in, with defaults and units),
 | [`useCPU`](./usecpu.md) | What the CPU is and how hard it is working right now. |
 | [`useGPU`](./usegpu.md) | Which GPU this is, and whether your frames are arriving on time. |
 | [`useMemory`](./usememory.md) | System RAM, this app's heaps, and how close the system is to killing you. |
-| [`usePerfetto`](./useperfetto.md) | System-level kernel and app performance profiling via Perfetto v54. |
+| [`usePerfetto`](./useperfetto.md) | Real Android system traces (Perfetto format) of this app, plus os.Trace markers. |
+| [`useSystemLoad`](./usesystemload.md) | Whole-system CPU, GPU and TPU load, from kernel counters an app cannot read itself. |
 | [`useTPU`](./usetpu.md) | Whether on-device AI host packages are visible and what the hook actually executed. |
 <!-- hooks:end -->

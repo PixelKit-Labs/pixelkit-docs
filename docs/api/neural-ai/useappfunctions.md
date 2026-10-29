@@ -12,6 +12,9 @@ Every installation pre-registers core silicon actions:
 2. **`purge_memory_cache`**: Requests an explicit Android Runtime (ART) garbage collection pass and reports freed heap memory.
 3. **`get_device_silicon_info`**: Returns SoC model, GPU renderer, and confirmed hardware feature flags.
 
+## Native registry functions
+An id that is neither a custom handler nor a built-in is run through `PixelNative.executeAppFunction`, which performs only the functions `PixelNative.getAppFunctions()` lists: `triggerHapticEffect` (a `VibrationEffect` composition primitive, refused with an error when the vibrator does not support it), `setTorchLevel`, `getSiliconStatus` and `scanNearbyRadios`. `executeFunction` resolves `success: false` with the native message when the effect did not happen, and with an unknown-id error for any other id. The HiLight ring is not an AppFunction; use `useHiLight`.
+
 ## Custom AppFunctions
 Developers can declare custom schemas and handlers dynamically with `registerFunction(schema, handler)`. When Gemini or a local workflow invokes that function ID, `executeFunction` dispatches to your handler and tracks execution latency in milliseconds.
 
