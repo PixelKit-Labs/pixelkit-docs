@@ -31,12 +31,12 @@ function useDevice(): DeviceTelemetry & {
 ## Outputs
 | Field | Type | Description |
 | :--- | :--- | :--- |
-| `modelName` | `string` | Marketing model name from `expo-device`. |
-| `brand` | `string` | Manufacturer brand, e.g. `"Google"`. |
-| `osVersion` | `string` | Android version string. |
+| `modelName` | `string \| null` | Marketing model name from `expo-device`; `null` when the platform does not report it. |
+| `brand` | `string \| null` | Manufacturer brand, e.g. `"Google"`; `null` when not reported. |
+| `osVersion` | `string \| null` | Android version string; `null` when not reported. |
 | `batteryPercent` | `number \| null` | Charge as a percentage, 0–100; null until read rather than an invented 0. |
 | `isCharging` | `boolean \| null` | Whether external power (AC, USB, wireless or dock) is attached, including full or paused charging. `false` only when observed unplugged; `null` until determined. |
-| `lowPowerMode` | `boolean` | Whether Android Battery Saver is active. Back off from heavy work when it is. |
+| `lowPowerMode` | `boolean \| null` | Whether Android Battery Saver is active; `null` until read or when the read failed. Back off from heavy work when it is `true`. |
 | `networkType` | `string` | Active interface type: `'WIFI'`, `'CELLULAR'`, `'UNKNOWN'`. For carrier detail use `useCellular`. |
 | `isConnected` | `boolean` | Whether the device has an active, reachable network route. |
 | `totalMemoryMB` | `number \| undefined` | Total system RAM in MB from `expo-device`. For live memory use `useMemory`. |

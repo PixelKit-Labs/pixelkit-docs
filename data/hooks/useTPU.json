@@ -62,7 +62,7 @@
     {
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
-      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+      "desc": "'hardware' when the AICore package is installed and visible; 'unavailable' when it is not installed, not visible to this app, or the native module is absent. There is no 'simulated' value."
     },
     {
       "name": "throughputTokensPerSec",

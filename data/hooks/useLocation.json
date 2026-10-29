@@ -2,22 +2,22 @@
   "id": "useLocation",
   "name": "useLocation",
   "category": "radios",
-  "chipBadge": "Multi-band GNSS",
-  "summary": "Position, altitude, heading and speed from the satellite receiver.",
-  "plain": "Where the phone is, how accurate that is, which way it is pointing and how fast it is moving. Always check accuracy before trusting a fix, and check permission before assuming you will get one at all.",
-  "description": "Streams from expo-location using the high-accuracy provider, which on a Pixel uses the dual-band receiver. The accuracy value is the radius in metres that the platform believes the position lies within; indoors it can be tens of metres and should gate any decision made from the coordinates. Heading and speed are only meaningful while actually moving.",
+  "chipBadge": "expo-location",
+  "summary": "Position, altitude, heading and speed from expo-location.",
+  "plain": "Where the phone is, how accurate that is, which way it is pointing and how fast it is moving. Latitude and longitude are null until the first fix. Always check accuracy before trusting a fix, and check permission before assuming you will get one at all.",
+  "description": "Takes one fix from expo-location (getCurrentPositionAsync, Accuracy.Highest); it does not report which receiver or band produced it. Latitude and longitude are null until the first fix arrives, including when permission is denied. The accuracy value is the radius in metres that the platform believes the position lies within; indoors it can be tens of metres and should gate any decision made from the coordinates. Heading and speed are only meaningful while actually moving.",
   "signature": "useLocation(): LocationTelemetry & { refreshLocation }",
   "params": [],
   "returns": [
     {
       "name": "latitude",
-      "type": "number",
-      "desc": "Decimal degrees north."
+      "type": "number | null",
+      "desc": "Decimal degrees north; null until the first fix."
     },
     {
       "name": "longitude",
-      "type": "number",
-      "desc": "Decimal degrees east."
+      "type": "number | null",
+      "desc": "Decimal degrees east; null until the first fix."
     },
     {
       "name": "altitude",
@@ -78,6 +78,6 @@
       "output": "Resolves true when a fix arrived, false when permission was denied or the fix failed, with the reason in error. Coordinates never reach the log."
     }
   ],
-  "example": "import { useLocation } from '@pixelkit-labs/sdk';\n\nfunction Position() {\n  const { latitude, longitude, accuracy, hasPermission } = useLocation();\n  if (!hasPermission) return <Text>Location permission needed</Text>;\n  return <Text>{latitude.toFixed(5)}, {longitude.toFixed(5)} ±{accuracy ?? '—'} m</Text>;\n}",
+  "example": "import { useLocation } from '@pixelkit-labs/sdk';\n\nfunction Position() {\n  const { latitude, longitude, accuracy, hasPermission } = useLocation();\n  if (!hasPermission) return <Text>Location permission needed</Text>;\n  if (latitude == null || longitude == null) return <Text>Locating…</Text>;\n  return <Text>{latitude.toFixed(5)}, {longitude.toFixed(5)} ±{accuracy ?? '—'} m</Text>;\n}",
   "agentNote": "Never present coordinates without their accuracy. Request permission in response to a user action, not on mount."
 }

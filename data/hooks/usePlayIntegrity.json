@@ -2,57 +2,52 @@
   "id": "usePlayIntegrity",
   "name": "usePlayIntegrity",
   "category": "radios",
-  "chipBadge": "Titan M2 & Play Integrity",
-  "summary": "Hardware Key Attestation and Google Play Integrity verdicts via Titan M2.",
-  "plain": "Generates cryptographic hardware attestation tokens and queries Google Play Integrity and Titan M2 StrongBox KeyMint security. Verifies genuine device integrity, hardware-backed key protection, and bootloader status.",
-  "description": "Backed by android.hardware.strongbox_keystore (Titan M2 KeyMint 400), android.hardware.hardware_keystore (500), and Android KeyStore KeyGenParameterSpec attestation. Provides cryptographic hardware verification proving the device is a genuine physical Pixel without root compromise or simulation.",
+  "chipBadge": "Keystore attestation",
+  "summary": "Hardware security feature flags and Android Keystore key attestation. No Play Integrity verdict is produced.",
+  "plain": "Reports which hardware keystore features the device declares and whether Google Play Services is installed, and can generate an attested key and return its real certificate chain. It does not call the Play Integrity API and does not say whether the device is rooted.",
+  "description": "Reads the android.hardware.strongbox_keystore, android.hardware.hardware_keystore (FeatureInfo.version), android.hardware.keystore.app_attest_key and android.hardware.security.model.compatible system features and whether com.google.android.gms is installed. requestAttestation generates an EC key with an attestation challenge (StrongBox when the device declares it, with a fallback to the default keystore), reads KeyInfo.getSecurityLevel() (API 31+), and returns the certificate chain (base64, leaf first), its length, the leaf subject and issuer, and the challenge bytes actually used (generated when none is passed). The chain is returned as produced by the Keystore: this hook does not verify it. Verify it on a server against the challenge and Google's attestation roots. No Play Integrity API call is made and no integrity verdict is produced.",
   "signature": "usePlayIntegrity(): PlayIntegrityState",
   "params": [],
   "returns": [
     {
       "name": "isSupported",
       "type": "boolean",
-      "desc": "Whether hardware attestation and Play Integrity are supported on device."
+      "desc": "True when the device declares StrongBox or hardware keystore, or Google Play Services is installed."
     },
     {
       "name": "hasStrongBox",
       "type": "boolean",
-      "desc": "Whether Titan M2 hardware StrongBox security chip is present."
+      "desc": "Whether the device declares the StrongBox keystore feature."
     },
     {
       "name": "strongBoxVersion",
       "type": "number | null",
-      "desc": "StrongBox KeyMint version (400 on Pixel 11 Pro)."
+      "desc": "StrongBox keystore feature version (FeatureInfo.version), or null when not declared."
     },
     {
       "name": "hardwareKeystoreVersion",
       "type": "number | null",
-      "desc": "Hardware KeyStore version (500 on Android 17 / Pixel 11 Pro)."
+      "desc": "Hardware keystore feature version (FeatureInfo.version), or null when not declared."
     },
     {
       "name": "hasAppAttestKey",
       "type": "boolean",
-      "desc": "Whether device supports individual key attestation (android.hardware.keystore.app_attest_key)."
+      "desc": "Whether the device declares android.hardware.keystore.app_attest_key."
     },
     {
       "name": "securityModelCompatible",
       "type": "boolean",
-      "desc": "Whether device satisfies Android hardware security model."
+      "desc": "Whether the device declares android.hardware.security.model.compatible."
     },
     {
       "name": "playServicesAvailable",
       "type": "boolean",
-      "desc": "Whether Google Play Services is available and active."
+      "desc": "Whether the Google Play Services package is installed."
     },
     {
       "name": "playServicesVersion",
       "type": "string | null",
       "desc": "Google Play Services version string."
-    },
-    {
-      "name": "deviceIntegrity",
-      "type": "'MEETS_STRONG_INTEGRITY' | 'MEETS_DEVICE_INTEGRITY' | 'MEETS_BASIC_INTEGRITY' | 'UNVERIFIED'",
-      "desc": "Hardware integrity tier verdict."
     },
     {
       "name": "isAttesting",
@@ -62,7 +57,7 @@
     {
       "name": "lastAttestation",
       "type": "HardwareAttestationResult | null",
-      "desc": "Result of last hardware key attestation."
+      "desc": "Result of the last key attestation, including certificateChainBase64 and the challenge used."
     },
     {
       "name": "error",
@@ -77,24 +72,24 @@
     {
       "name": "requestAttestation",
       "type": "(challenge?: string) => Promise<HardwareAttestationResult | null>",
-      "desc": "Request hardware-backed key attestation from Titan M2 StrongBox KeyStore."
+      "desc": "Generates an attested EC key in the Android Keystore (StrongBox when available) and returns its certificate chain."
     },
     {
       "name": "refresh",
       "type": "() => PlayIntegrityInfo | null",
-      "desc": "Re-probe device security features and Play Integrity status."
+      "desc": "Re-reads the device security features."
     }
   ],
   "actions": [
     {
       "name": "requestAttestation(challenge?)",
       "type": "(challenge?: string) => Promise<HardwareAttestationResult | null>",
-      "desc": "Request hardware-backed key attestation from Titan M2 StrongBox KeyStore."
+      "desc": "Generates an attested EC key and returns the certificate chain (base64), the key's security level from KeyInfo (null when unreadable) and the challenge used. Resolves null on failure with the reason in error."
     },
     {
       "name": "refresh()",
       "type": "() => PlayIntegrityInfo | null",
-      "desc": "Re-probe device security features and Play Integrity status."
+      "desc": "Re-reads the device security features."
     }
   ]
 }

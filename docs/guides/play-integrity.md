@@ -1,51 +1,42 @@
-# Play Integrity & Titan M2 Hardware Key Attestation
+# Keystore Key Attestation with usePlayIntegrity
 
-> **Hardware-backed security verdicts and StrongBox Keystore 400 EC keypair attestation via `usePlayIntegrity`.**
+> **Hardware security feature flags and Android Keystore key attestation via `usePlayIntegrity`. The hook does not call the Play Integrity API and returns no integrity verdict.**
 
 ---
 
 ## Overview
 
-Securing mobile applications against malicious tampering, app cloning, reverse engineering, and rooted environments requires verifiable hardware roots of trust.
-
-Google Pixel 11 Pro includes Google's custom **Titan M2** security chip, providing a dedicated **StrongBox KeyStore** (KeyMint 400). The [`usePlayIntegrity`](/api/radios-security/useplayintegrity/) hook pairs Google Play Integrity API verdicts with on-chip StrongBox asymmetric keypair attestation.
+The [`usePlayIntegrity`](/api/radios-security/useplayintegrity/) hook reports which hardware keystore features the device declares and whether Google Play Services is installed, and can generate an attested EC key and return its real certificate chain.
 
 ```tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { usePlayIntegrity } from '@pixelkit-labs/sdk';
 
-export function SecurityAuditor() {
-  const {
-    isSupported,
-    isAttesting,
-    lastAttestation,
-    requestAttestation,
-    verifyIntegrityToken,
-  } = usePlayIntegrity();
+export function KeyAttestationAuditor() {
+  const { isSupported, isAttesting, lastAttestation, requestAttestation } = usePlayIntegrity();
 
   const handleAttest = async () => {
     const nonce = 'session_' + Date.now();
     const result = await requestAttestation(nonce);
-    console.log('Attestation Result:', result);
+    console.log('Attestation Result:', result?.securityLevel, result?.certificateChainBase64.length);
   };
 
   return (
     <View>
-      <Text>Play Integrity Supported: {isSupported ? 'Yes' : 'No'}</Text>
-      <Text>Status: {isAttesting ? 'Generating Key & Attesting...' : 'Ready'}</Text>
+      <Text>Keystore features declared: {isSupported ? 'Yes' : 'No'}</Text>
+      <Text>Status: {isAttesting ? 'Generating key & attesting...' : 'Ready'}</Text>
 
       {lastAttestation && (
         <View>
-          <Text>StrongBox Backed: {lastAttestation.isStrongBoxBacked ? 'Titan M2 Active' : 'Software Fallback'}</Text>
+          <Text>Security level: {lastAttestation.securityLevel ?? 'unknown'}</Text>
           <Text>Key Alias: {lastAttestation.keyAlias}</Text>
           <Text>Cert Chain Length: {lastAttestation.certificateChainLength}</Text>
-          <Text>Verdict: {lastAttestation.verdict}</Text>
         </View>
       )}
 
       <TouchableOpacity onPress={handleAttest} disabled={isAttesting}>
-        <Text>Request Titan M2 Attestation</Text>
+        <Text>Request key attestation</Text>
       </TouchableOpacity>
     </View>
   );
@@ -54,20 +45,15 @@ export function SecurityAuditor() {
 
 ---
 
-## Play Integrity Verdicts
-
-| Verdict | Significance |
-| :--- | :--- |
-| `MEETS_BASIC_INTEGRITY` | App runs on an Android device that passes basic system integrity checks (no obvious rooting or hooks). |
-| `MEETS_DEVICE_INTEGRITY` | Device is certified by Google Play Services and passes CTS (Compatibility Test Suite). |
-| `MEETS_STRONG_INTEGRITY` | Hardware-backed guarantees: locked bootloader, factory OS keys, and hardware keystore proofs. |
-| `MEETS_VIRTUAL_INTEGRITY` | Detected inside an emulator or virtual container. |
-
----
-
-## Titan M2 StrongBox Integration
+## What the attestation contains
 
 When `requestAttestation()` is invoked:
-1. PixelKit requests an isolated EC P-256 keypair from Android KeyStore with `setIsStrongBoxBacked(true)`.
-2. The key generation occurs inside Titan M2 physical silicon with independent RAM, flash, and crypto accelerators.
-3. Titan M2 produces an X.509 certificate chain signed by the Google Root CA, proving that the private key has never left the hardware security module.
+1. PixelKit generates an EC P-256 keypair in the Android Keystore with the supplied challenge (a nonce is generated and returned in `challenge` when you pass none). If the device declares the StrongBox feature, a StrongBox-backed key is requested first and the default keystore is used when that fails.
+2. `KeyInfo.getSecurityLevel()` (API 31+) is read from the generated key and returned as `securityLevel` (`STRONGBOX`, `TRUSTED_ENVIRONMENT`, `SOFTWARE`, `UNKNOWN_SECURE`, or `null` when it cannot be read).
+3. The certificate chain the Keystore produced is returned as `certificateChainBase64` (DER, base64, leaf first) together with the leaf certificate's subject and issuer. The key is deleted afterwards.
+
+The hook does **not** verify the chain. To establish that the key lives in secure hardware, send the chain and the challenge to your server and verify the chain against Google's attestation roots and the Key Attestation extension in the leaf certificate.
+
+## What is not provided
+
+Play Integrity verdicts (`MEETS_BASIC_INTEGRITY`, `MEETS_DEVICE_INTEGRITY`, `MEETS_STRONG_INTEGRITY`) come from the Google Play Integrity API, which this SDK does not call. Use the Play Integrity API directly if you need them.

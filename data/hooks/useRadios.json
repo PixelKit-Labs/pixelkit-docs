@@ -5,7 +5,7 @@
   "chipBadge": "Unified radio telemetry",
   "summary": "Every radio subsystem in one read.",
   "plain": "A single snapshot of all the wireless hardware: NFC, Bluetooth, ultra-wideband, Wi-Fi precise ranging and satellite messaging. Use this for a status overview instead of calling four separate hooks.",
-  "description": "One native call gathers state from NfcAdapter, BluetoothManager, UwbManager, WifiRttManager and PackageManager, refreshed every five seconds. Everything here is read from the platform, so the whole object carries source hardware. It overlaps with useNFC, useBLE and useUWB on purpose: those add per-radio actions, this one is purely for reading state.",
+  "description": "One native call gathers state from NfcAdapter, BluetoothAdapter, UwbManager (reflection), WifiRttManager and PackageManager features, refreshed every five seconds. Values that Android does not let the app read are null rather than guessed: uwb.enabled (read through UwbManager.isUwbEnabled() by reflection) and thread.serviceFound (a hidden ServiceManager lookup). Bonded device names are null when unnamed or when BLUETOOTH_CONNECT is not granted. Until the first read completes the returned values are all-false defaults and source is 'unavailable'; source becomes 'hardware' after the first successful read, and a later success clears error. It overlaps with useNFC, useBLE and useUWB on purpose: those add per-radio actions, this one is purely for reading state.",
   "signature": "useRadios(): RadioTelemetry",
   "params": [],
   "returns": [
@@ -21,8 +21,8 @@
     },
     {
       "name": "uwb",
-      "type": "{ supported, enabled, chipId, rangingApiSupported }",
-      "desc": "Ultra-wideband chip state."
+      "type": "{ supported, enabled, rangingApiSupported }",
+      "desc": "Ultra-wideband state: the android.hardware.uwb feature, whether UwbManager reports it enabled (null when not readable by apps) and whether the Android 16 RangingManager service exists."
     },
     {
       "name": "wifiRtt",
@@ -31,18 +31,18 @@
     },
     {
       "name": "thread",
-      "type": "{ supported, serviceFound, chipId }",
-      "desc": "Thread 802.15.4 mesh radio (chip0) and Android ThreadNetworkManager state."
+      "type": "{ supported, serviceFound }",
+      "desc": "Thread 802.15.4 radio feature flag and whether a ServiceManager lookup finds the Thread network service (null when the hidden lookup is not possible)."
     },
     {
       "name": "satellite",
-      "type": "{ supported, sosSupported, provider }",
-      "desc": "Satellite radio and Google Satellite SOS provider state."
+      "type": "{ supported, sosSupported }",
+      "desc": "Satellite and Google Satellite SOS provider system feature flags."
     },
     {
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
-      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+      "desc": "'hardware' after the first successful read, 'unavailable' before it or without the native module. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
     }
   ],
   "actions": [
@@ -50,9 +50,9 @@
       "name": "refresh()",
       "type": "() => void",
       "desc": "Forces an immediate re-read instead of waiting for the next five-second poll.",
-      "output": "Returns nothing; the nfc, bluetooth, uwb, wifiRtt and satellite blocks update. Call it after sending the user to Settings."
+      "output": "Returns nothing; the nfc, bluetooth, uwb, wifiRtt, thread and satellite blocks update. Call it after sending the user to Settings."
     }
   ],
-  "example": "import { useRadios } from '@pixelkit-labs/sdk';\n\nfunction RadioPanel() {\n  const radios = useRadios();\n  return <Text>NFC {radios.nfc.enabled ? 'on' : 'off'} · UWB {radios.uwb.enabled ? 'on' : 'off'}</Text>;\n}",
-  "agentNote": "Use this for a status overview and the individual hooks when you need to act. All fields here are real platform reads."
+  "example": "import { useRadios } from '@pixelkit-labs/sdk';\n\nfunction RadioPanel() {\n  const radios = useRadios();\n  const uwb = radios.uwb.enabled === null ? 'unknown' : radios.uwb.enabled ? 'on' : 'off';\n  return <Text>NFC {radios.nfc.enabled ? 'on' : 'off'} · UWB {uwb}</Text>;\n}",
+  "agentNote": "Use this for a status overview and the individual hooks when you need to act. Check uwb.enabled and thread.serviceFound for null before treating them as off."
 }

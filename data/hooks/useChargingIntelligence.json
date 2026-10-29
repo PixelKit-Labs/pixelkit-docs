@@ -5,7 +5,7 @@
   "chipBadge": "battery · health · SoH",
   "summary": "Deep battery health, cycle count, manufacturing dates, and charging wattage tiers.",
   "plain": "Surfaces low-level battery health indicators: lifetime physical charge cycles, maximum state of health (SoH) capacity relative to design, manufacture and first-activation dates, and USB-PD PPS fast charging tiers.",
-  "description": "Reads Android 14+ battery health metrics and Google Pixel power supply sysfs telemetry. Provides lifetime charge cycles (BatteryManager.EXTRA_CYCLE_COUNT), state of health percentage (/sys/class/power_supply/battery/soh), factory manufacture date, first-use date, real-time charging wattage, and classifies charging speed into tiers (slow, standard, rapid, ultra_rapid > 30W).",
+  "description": "Reads Android 14+ battery health metrics and Google Pixel power supply sysfs telemetry. Provides lifetime charge cycles (BatteryManager.EXTRA_CYCLE_COUNT), state of health percentage (/sys/class/power_supply/battery/soh), manufacture date, first-use date, charging wattage (BATTERY_PROPERTY_CURRENT_NOW times the battery voltage, only while the current is positive), and a tier classified from that wattage (slow, standard, rapid, ultra_rapid at 30 W and above). Values the app cannot read are null.",
   "signature": "useChargingIntelligence(): ChargingIntelligenceTelemetry",
   "params": [],
   "returns": [
@@ -36,13 +36,13 @@
     },
     {
       "name": "chargingTier",
-      "type": "'slow' | 'standard' | 'rapid' | 'ultra_rapid'",
-      "desc": "Classification of charging speed based on delivered wattage."
+      "type": "'slow' | 'standard' | 'rapid' | 'ultra_rapid' | null",
+      "desc": "Classification of chargingWattage (under 5 W slow, 5 W up to 18 W standard, 18 W up to 30 W rapid, 30 W and above ultra_rapid). Null when no wattage was read."
     },
     {
-      "name": "chargeLimitActive",
-      "type": "boolean",
-      "desc": "Whether the Android battery protect 80% charge limit is currently engaged."
+      "name": "chargeLimitAvailable",
+      "type": "boolean | null",
+      "desc": "Whether the charge_limit_available sysfs node reads \"1\"; null when it cannot be read. The node says the limit is offered, not that it is switched on."
     },
     {
       "name": "error",
@@ -67,6 +67,6 @@
       "type": "() => void"
     }
   ],
-  "example": "import { useChargingIntelligence } from '@pixelkit-labs/sdk';\n\nfunction BatteryHealthCard() {\n  const { stateOfHealthPercent, cycleCount, chargingTier } = useChargingIntelligence();\n  return <Text>Health: {stateOfHealthPercent ?? '—'}% · Cycles: {cycleCount ?? '—'} · Tier: {chargingTier}</Text>;\n}",
-  "agentNote": "Battery cycle counts require Android 14+ (API 34+). State of health % and manufacture dates are read from Pixel battery sysfs."
+  "example": "import { useChargingIntelligence } from '@pixelkit-labs/sdk';\n\nfunction BatteryHealthCard() {\n  const { stateOfHealthPercent, cycleCount, chargingTier } = useChargingIntelligence();\n  return <Text>Health: {stateOfHealthPercent ?? '—'}% · Cycles: {cycleCount ?? '—'} · Tier: {chargingTier ?? '—'}</Text>;\n}",
+  "agentNote": "Battery cycle counts require Android 14+ (API 34+). State of health % and manufacture dates are read from Pixel battery sysfs nodes and are null where the app cannot read them; chargingTier is null when no wattage was read, so never show a default tier. chargeLimitAvailable says the charge limit is offered, not that it is on."
 }

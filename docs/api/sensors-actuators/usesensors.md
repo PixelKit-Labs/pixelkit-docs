@@ -30,7 +30,7 @@ function useSensors(updateIntervalMs?: number): SensorTelemetry & {
 | `magnetometer` | `Vector3D` | Geomagnetic field strength in microteslas (μT), one decimal. This is what a compass heading is computed from. |
 | `barometer` | `BarometerData` — `{ pressure: number \| null; relativeAltitude?: number \| null }` | Air pressure in hectopascals and the altitude derived from it in metres, relative to standard sea-level pressure (1013.25 hPa). Both `null` until a sample arrives or when the device has no barometer. |
 | `lightLux` | `number \| undefined` | Ambient illuminance in lux from the front photodiode, one decimal so a dark room reads 0.4 rather than 0. `undefined` until the first sample. |
-| `isAvailable` | `boolean` | Whether the sensor subscriptions were attached successfully. `false` before setup completes and after a failure. |
+| `isAvailable` | `boolean` | `true` when at least one motion sensor (accelerometer, gyroscope or magnetometer) reported itself present through `isAvailableAsync()` and was subscribed. `false` before setup completes and after a failure. |
 | `hasMotionSample` | `boolean` | `true` once a real accelerometer sample has arrived. Until then the vectors are zeroed, so use this to distinguish "still" from "not started". |
 | `barometerAvailable` | `boolean \| null` | Whether this device has a barometer. `null` until probed. |
 | `lightAvailable` | `boolean \| null` | Whether this device has an ambient light sensor. `null` until probed. |

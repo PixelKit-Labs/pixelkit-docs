@@ -32,13 +32,13 @@ function useSpeechAI(): {
 | `isListening` | `boolean` | Whether the microphone is open, in either mode. |
 | `isTranscribing` | `boolean` | Cloud mode only: `true` while audio is being sent and transcribed. |
 | `recognitionMode` | `'on-device' \| 'cloud'` | Which engine will be used for the next take. |
-| `isOfflineAvailable` | `boolean` | Whether on-device recognition is installed. When `false`, use cloud mode. |
+| `isOfflineAvailable` | `boolean` | Whether the platform reports an on-device recogniser (`SpeechRecognizer.isOnDeviceRecognitionAvailable`, API 31+). It is not language specific, so a start can still fail for a language the recogniser lacks. When `false`, use cloud mode. |
 | `streamingPartial` | `string` | Interim text from the on-device recognizer while the user is still speaking. Empty in cloud mode. |
 | `voiceDecibels` | `number` | Live microphone level in dBFS: the recognizer's RMS on-device, the recorder's metering in cloud mode. |
 | `lastTranscript` | `SpeechTranscriptionResult \| null` | `{ transcript, confidence, durationSeconds, latencyMs, language }`. `confidence` is `null` for cloud transcripts because Gemini does not report one. |
 | `lastRecordingUri` | `string \| null` | Cloud mode: the audio file, kept even when transcription failed so nothing is lost. |
 | `error` | `string \| null` | Why recognition failed, or the "no API key" message in cloud mode. |
-| `source` | `TelemetrySource` | Provenance of the transcript: on-device or cloud; `'unavailable'` before either is ready. |
+| `source` | `TelemetrySource` | `'hardware'` when the platform reports an on-device recogniser (`isOfflineAvailable`); `'unavailable'` otherwise, including in cloud mode, where the transcript comes from Gemini and not from the device. |
 | `model` | `string` | Which engine produced the last transcript: `'Android System Intelligence (On-Device)'` or the cloud model id. |
 
 ## Functions

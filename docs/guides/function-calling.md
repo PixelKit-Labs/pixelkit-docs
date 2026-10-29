@@ -93,7 +93,7 @@ import type { useHaptics } from '../../hardware/useHaptics';
 import type { HiLightState } from '../../hardware/useHiLight';
 import type { useADPF } from '../../hardware/useADPF';
 
-type Torch = ReturnType<typeof useTorch>; // { isTorchOn, isStrobing, toggleTorch, startStrobe, stopStrobe }
+type Torch = ReturnType<typeof useTorch>; // { isTorchOn, isStrobing, setTorch(on) → Promise<boolean>, toggleTorch, startStrobe, stopStrobe }
 type Haptics = ReturnType<typeof useHaptics>; // { triggerHaptic(type), selection(), light(), ... }
 type ADPF = ReturnType<typeof useADPF>; // { cpuHeadroom, gpuHeadroom, thermalStatus, targetFps, currentFps, reportWorkDuration }
 
@@ -103,9 +103,9 @@ export function registerHardwareTools(h: { torch: Torch; haptics: Haptics; hilig
  description: 'Turn the rear LED flashlight on or off, optionally as an emergency strobe.',
  schema: z.object({ on: z.boolean(), strobe: z.boolean().optional().describe('Emergency SOS strobe pattern') }),
  execute: async ({ on, strobe }) => {
- if (strobe) { await h.torch.startStrobe(); return { on: true, strobe: true }; }
+ if (strobe) { await h.torch.startStrobe(); return { on: null, strobe: true }; } // the strobe is a timer; individual toggles are not reported back
  if (h.torch.isStrobing) await h.torch.stopStrobe();
- if (on !== h.torch.isTorchOn) await h.torch.toggleTorch(); // hook exposes a toggle, so reconcile to the requested state
+ if (!(await h.torch.setTorch(on))) throw new Error('torch_set_failed'); // setTorch resolves false when the native call failed
  return { on, strobe: false };
  },
  });
@@ -114,7 +114,10 @@ export function registerHardwareTools(h: { torch: Torch; haptics: Haptics; hilig
  name: 'haptic',
  description: 'Play a tactile haptic pattern on the linear resonant actuator.',
  schema: z.object({ pattern: z.enum(['selection', 'light', 'medium', 'heavy', 'success', 'warning', 'error']) }),
- execute: async ({ pattern }) => { await h.haptics.triggerHaptic(pattern); return { played: pattern }; },
+ execute: async ({ pattern }) => {
+ if ((await h.haptics.triggerHaptic(pattern)) === false) throw new Error('haptic_not_played'); // false on web or when the call threw
+ return { played: pattern };
+ },
  });
 
  defineTool({
@@ -124,7 +127,10 @@ export function registerHardwareTools(h: { torch: Torch; haptics: Haptics; hilig
  mode: z.enum(['off', 'glow', 'breathing', 'pulse', 'gemini_thinking', 'incoming_call', 'notification']),
  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
  }),
- execute: async ({ mode, color }) => { if (color) h.hilight.setColor(color); h.hilight.setMode(mode); return { mode, color: color ?? h.hilight.currentColor }; },
+ execute: async ({ mode, color }) => {
+ if (!(await h.hilight.setMode(mode, color))) throw new Error('hilight_command_rejected'); // false when the daemon is down or rejected it
+ return { mode, color: mode === 'off' ? null : (color ?? h.hilight.currentColor) };
+ },
  });
 
  defineTool({
@@ -161,9 +167,9 @@ The registered hardware tools, as the model sees them.
 
 | Tool | Inputs | Returns | Description |
 | :--- | :--- | :--- | :--- |
-| `set_torch` | `on: boolean` — desired state. `strobe?: boolean` — emergency SOS strobe instead of a steady light. | `{ on: boolean, strobe: boolean }` — the state after the call | Reconciles the torch to the requested state, stopping a strobe first when needed. |
-| `haptic` | `pattern: 'selection' \| 'light' \| 'medium' \| 'heavy' \| 'success' \| 'warning' \| 'error'` — which tactile pattern to play | `{ played: string }` — the pattern played | An enum, not a free string, so the model cannot invent a pattern. |
-| `set_hilight` | `mode: 'off' \| 'glow' \| 'breathing' \| 'pulse' \| 'gemini_thinking' \| 'incoming_call' \| 'notification'` — the animation. `color?: string` — `#RRGGBB`, validated by regex. | `{ mode: string, color: string }` — the state after the call | Requires the ADB daemon; refuses otherwise, and the refusal is what the model gets back. |
+| `set_torch` | `on: boolean` — desired state. `strobe?: boolean` — emergency SOS strobe instead of a steady light. | `{ on: boolean \| null, strobe: boolean }` — `on` is the requested state after `setTorch` resolved true; `null` while strobing | Fails with `torch_set_failed` when the native call failed, so the model is never told the light is on when it is not. |
+| `haptic` | `pattern: 'selection' \| 'light' \| 'medium' \| 'heavy' \| 'success' \| 'warning' \| 'error'` — which tactile pattern to play | `{ played: string }` — the pattern, returned only when `triggerHaptic` did not report failure | An enum, not a free string, so the model cannot invent a pattern. Fails with `haptic_not_played` on web or when the platform call threw. |
+| `set_hilight` | `mode: 'off' \| 'glow' \| 'breathing' \| 'pulse' \| 'gemini_thinking' \| 'incoming_call' \| 'notification'` — the animation. `color?: string` — `#RRGGBB`, validated by regex. | `{ mode: string, color: string \| null }` — returned only when the daemon accepted the command | Requires the ADB daemon; fails with `hilight_command_rejected` otherwise, and that failure is what the model gets back. |
 | `get_thermal_headroom` | none (`z.object({})`) | `{ cpuHeadroom, gpuHeadroom, thermalStatus, currentFps }` — any of which may be `null` when the device does not report it | Read-only, so it is safe to expose on-device (`onDevice: true`). |
 
 Return a `null` rather than a plausible number: the model will say "unknown" if you let it, and invent one if you do not.

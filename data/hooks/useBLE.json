@@ -2,10 +2,10 @@
   "id": "useBLE",
   "name": "useBLE",
   "category": "radios",
-  "chipBadge": "Bluetooth 5.4 LE",
+  "chipBadge": "Bluetooth LE",
   "summary": "Bluetooth adapter state, Channel Sounding, bonded devices, and active BLE peripheral discovery.",
-  "plain": "Reports whether Bluetooth is on, which devices are already paired, whether this phone supports Channel Sounding, and performs live RF peripheral discovery with real RSSI values.",
-  "description": "Adapter state, Channel Sounding support and the bonded device list are read from Android BluetoothAdapter through the native module with source hardware. Live peripheral discovery scans for nearby BLE beacons using Android BluetoothLeScanner, returning verified MAC addresses, RSSI (dBm), and log-distance path loss distance estimations.",
+  "plain": "Reports whether Bluetooth is on, which devices are already paired, whether this phone declares Channel Sounding, and performs live peripheral discovery with real RSSI values and a derived distance estimate.",
+  "description": "Adapter state and the bonded device list are read from Android BluetoothAdapter through the native module (useRadios); channelSounding is whether the device declares the android.hardware.bluetooth_le.channel_sounding feature, and ranging a peer is useChannelSounding. Live peripheral discovery uses Android BluetoothLeScanner: each peripheral has its address (results without an address are skipped), name (null when neither BluetoothDevice.getName() nor the advertised local name is available), RSSI in dBm, lastSeenTimestamp (wall-clock ms computed from ScanResult.getTimestampNanos() against SystemClock.elapsedRealtimeNanos()) and estimatedDistanceMeters. The distance is derived, not measured: log-distance path loss with an assumed -59 dBm at 1 m and exponent 2. A failed scan (ScanCallback.onScanFailed) is reported in scanError with its code.",
   "signature": "useBLE(): BLEState",
   "params": [],
   "returns": [
@@ -27,12 +27,12 @@
     {
       "name": "channelSounding",
       "type": "boolean",
-      "desc": "Whether Bluetooth 5.4 Channel Sounding, used for accurate distance, is supported."
+      "desc": "Whether the device declares android.hardware.bluetooth_le.channel_sounding. Ranging itself is in useChannelSounding."
     },
     {
       "name": "bondedDevices",
       "type": "BondedDevice[]",
-      "desc": "Devices already paired with this phone. Real data."
+      "desc": "Devices already paired with this phone; name is null when unnamed or BLUETOOTH_CONNECT is not granted."
     },
     {
       "name": "isScanning",
@@ -42,12 +42,12 @@
     {
       "name": "peripherals",
       "type": "BLEPeripheral[]",
-      "desc": "Discovered nearby BLE peripherals with genuine RSSI and distance estimate."
+      "desc": "Discovered nearby BLE peripherals: id (address), name (or null), RSSI in dBm, lastSeenTimestamp (wall-clock ms) and a derived distance estimate."
     },
     {
       "name": "scanError",
       "type": "string | null",
-      "desc": "Error message if scanning fails to start or times out."
+      "desc": "Why the scan could not start or failed, including the ScanCallback.onScanFailed error code."
     },
     {
       "name": "source",
@@ -72,7 +72,7 @@
           "desc": "How long to scan before stopping automatically, in milliseconds. Defaults to 10000."
         }
       ],
-      "output": "Resolves true when the scan started; false with the reason in scanError otherwise. Results appear in peripherals, polled every 500 ms."
+      "output": "Resolves true when the scan started; false with the reason in scanError otherwise. Results appear in peripherals, polled every 500 ms; an asynchronous scan failure ends the scan and sets scanError."
     },
     {
       "name": "stopScan()",
@@ -82,5 +82,5 @@
     }
   ],
   "example": "import { useBLE } from '@pixelkit-labs/sdk';\n\nfunction Bluetooth() {\n  const { isEnabled, bondedDevices, peripherals, isScanning, startScan, stopScan } = useBLE();\n  return (\n    <View>\n      <Text>{isEnabled ? `${bondedDevices.length} paired · ${peripherals.length} discovered` : 'Bluetooth off'}</Text>\n      <Button\n        title={isScanning ? 'Stop scan' : 'Scan for peripherals'}\n        onPress={() => isScanning ? stopScan() : startScan(8000)}\n      />\n    </View>\n  );\n}",
-  "agentNote": "BLE scanning uses Android BluetoothLeScanner directly on physical hardware. Call startScan with a finite timeout to preserve battery."
+  "agentNote": "BLE scanning uses Android BluetoothLeScanner. Call startScan with a finite timeout to preserve battery. Treat estimatedDistanceMeters as a rough proximity figure: it assumes -59 dBm at 1 m."
 }

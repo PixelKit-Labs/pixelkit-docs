@@ -10,8 +10,8 @@ Each entry documents its **Inputs** (what you pass in, with defaults and units),
 | Hook | What it reads |
 | :--- | :--- |
 | [`useADPF`](./useadpf.md) | How much thermal room is left before the phone slows itself down. |
-| [`useADPFHintSession`](./useadpfhintsession.md) | Active frame workload negotiation with Android Dynamic Performance Framework and Tensor EAS. |
-| [`useBatteryShare`](./usebatteryshare.md) | Google Pixel Battery Share (Reverse Wireless Qi Charging) telemetry and actuator. |
+| [`useADPFHintSession`](./useadpfhintsession.md) | PerformanceHintManager hint session: report how long work took against a target duration for the session's threads. |
+| [`useBatteryShare`](./usebatteryshare.md) | Google Pixel Battery Share (reverse wireless Qi charging) state and toggle. |
 | [`useChargingIntelligence`](./usechargingintelligence.md) | Deep battery health, cycle count, manufacturing dates, and charging wattage tiers. |
 | [`useCPU`](./usecpu.md) | What the CPU is and how hard it is working right now. |
 | [`useGPU`](./usegpu.md) | Which GPU this is, and whether your frames are arriving on time. |

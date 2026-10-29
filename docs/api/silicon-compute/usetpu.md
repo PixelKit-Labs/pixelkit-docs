@@ -34,14 +34,14 @@ function useTPU(): {
 | `privateComputeServicesVersion` | `string \| null` | Version of `com.google.android.as.oss`, which brokers private model downloads. `null` when not installed. |
 | `hasNpuFeature` | `boolean \| null` | The `android.hardware.neural_processing_unit` feature flag as the device declares it. `null` before the read. |
 | `activeDelegate` | `'CPU Fallback' \| null` | Null before the hook runs its JS-only benchmark; `'CPU Fallback'` after a measured run. Never claims current TPU use. |
-| `isHardwareAccelerated` | `false` | Always `false`: this hook runs nothing on the TPU. Accelerated inference is `useGeminiNano`. |
+| `isHardwareAccelerated` | `false` | Always `false`: this hook runs nothing on the TPU. On-device inference is `useGeminiNano`; AICore decides where it runs. |
 | `lastInferenceLatencyMs` | `number \| null` | Always `null` here. See `useGeminiNano().lastLatencyMs` for a measured on-device figure. |
 | `throughputTokensPerSec` | `number \| null` | Always `null` here. See `useGeminiNano().lastDecodeTokensPerSec`. |
 | `memoryFootprintMB` | `number \| null` | Always `null`: AICore does not report model memory to apps. |
 | `cpuFallbackLatencyMs` | `number \| null` | Duration in ms of the last `benchmarkTPU()` matmul, explicitly labelled a CPU number. `null` until run. |
 | `isBenchmarking` | `boolean` | `true` while the matmul occupies the JS thread. |
 | `error` | `string \| null` | Latest package/feature detection failure, if any. |
-| `source` | `TelemetrySource` | `'hardware'` when the native module is present, `'unavailable'` otherwise. |
+| `source` | `TelemetrySource` | `'hardware'` when the AICore package is installed and visible, `'unavailable'` when it is not installed, not visible to this app, or the native module is absent. |
 
 ## Functions
 | Function | Inputs | Returns | Description |

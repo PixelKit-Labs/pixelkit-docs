@@ -2,99 +2,111 @@
   "id": "useChannelSounding",
   "name": "useChannelSounding",
   "category": "radios",
-  "chipBadge": "BLE 6.0 Channel Sounding",
-  "summary": "Bluetooth Core 6.0 high-accuracy centimeter-precision Phase-Based Ranging (PBR).",
-  "plain": "Inspects hardware Bluetooth Low Energy 6.0 Channel Sounding transceiver state and manages high-precision spatial distance estimation. Uses multi-channel phase-based ranging (PBR) and round-trip time (RTT) across 79 Bluetooth channels without requiring line of sight.",
-  "description": "Backed by android.hardware.bluetooth_le.channel_sounding and the Android 16/17 Ranging HAL service (IBluetoothChannelSounding). Measures distance with sub-decimeter accuracy, complementing UWB for non-line-of-sight spatial positioning. Nothing is simulated: queries actual device hardware capabilities.",
+  "chipBadge": "BLE Channel Sounding",
+  "summary": "Bluetooth LE Channel Sounding availability and real ranging sessions against a Bluetooth peer.",
+  "plain": "Reports whether this phone declares Bluetooth Channel Sounding, and measures the distance to a second Bluetooth device whose address you supply. Nothing is measured without a peer.",
+  "description": "Support, adapter state and ranging service readiness come from the android.hardware.bluetooth_le.channel_sounding feature flag, a lookup of the ranging HAL service (IBluetoothChannelSounding) and the Bluetooth adapter, carrying source hardware. rangingAvailability and supportedSecurityLevels are what android.ranging.RangingManager reports for BLE Channel Sounding (BleCsRangingCapabilities); they are null when the platform did not deliver them. startRanging(config) opens a real android.ranging.RangingSession (Android 16, API 36+, RAW session with BleCsRangingParams) with the peer at config.peerAddress. The call resolves true only when the platform reports the session open; otherwise it resolves false and sessionError carries a status such as needs_peer_address, channel_sounding_unsupported, channel_sounding_disabled, ranging_api_unavailable, bluetooth_disabled, permission_denied (android.permission.RANGING must be declared and granted), session_active, invalid_parameters or open_failed. Every measurement is an android.ranging.RangingData sample: a distance in metres, a confidence ('low', 'medium', 'high'), an RSSI when the platform supplied one, and a timestamp, each null when omitted. RangingData does not say whether phase-based ranging or round-trip time produced a sample, so the hook reports no method, channel count or accuracy figure. Nothing is simulated: with no peer answering, measurements stays empty.",
   "signature": "useChannelSounding(): ChannelSoundingState",
   "params": [],
   "returns": [
     {
       "name": "isSupported",
       "type": "boolean",
-      "desc": "Whether the hardware physically supports BLE 6.0 Channel Sounding."
+      "desc": "Whether the device declares android.hardware.bluetooth_le.channel_sounding."
     },
     {
       "name": "isEnabled",
       "type": "boolean",
-      "desc": "Whether Channel Sounding is enabled (requires Bluetooth enabled and hardware support)."
+      "desc": "Whether the feature is declared and the Bluetooth adapter is on."
     },
     {
       "name": "serviceFound",
       "type": "boolean",
-      "desc": "Whether the underlying Android Ranging HAL service is active on device."
+      "desc": "Whether the lookup of the ranging HAL service found a service."
     },
     {
-      "name": "supportsPbr",
-      "type": "boolean",
-      "desc": "Whether Phase-Based Ranging (PBR) is supported."
+      "name": "rangingAvailability",
+      "type": "ChannelSoundingAvailability | null",
+      "desc": "RangingManager availability for BLE Channel Sounding: 'enabled', 'not_supported', 'disabled_user', 'disabled_regulatory' or 'disabled_user_restrictions'. Null until read, below Android 16, or when the platform did not report it."
     },
     {
-      "name": "supportsRtt",
-      "type": "boolean",
-      "desc": "Whether Round-Trip Time (RTT) ranging is supported."
-    },
-    {
-      "name": "channelCount",
-      "type": "number",
-      "desc": "Number of BLE channels utilized (79 on Bluetooth 6.0)."
-    },
-    {
-      "name": "precision",
-      "type": "'centimeter' | 'decimeter' | 'unsupported'",
-      "desc": "Distance measurement precision level."
+      "name": "supportedSecurityLevels",
+      "type": "number[] | null",
+      "desc": "Channel Sounding security levels (1 and/or 4) from BleCsRangingCapabilities. Null when the platform did not report them."
     },
     {
       "name": "isRanging",
       "type": "boolean",
-      "desc": "Whether an active ranging session is currently underway."
+      "desc": "Whether the platform holds an open ranging session. Follows the platform's session events, not the last call."
     },
     {
-      "name": "targets",
-      "type": "ChannelSoundingTarget[]",
-      "desc": "List of tracked ranging targets."
+      "name": "measurements",
+      "type": "ChannelSoundingMeasurementEvent[]",
+      "desc": "Latest platform sample per peer: `deviceAddress`, `distanceMeters` (null when the platform omitted it), `confidence` ('low', 'medium' or 'high', else null), `rssi`, `sessionId` and `timestampMs`. Empty until the peer answers."
+    },
+    {
+      "name": "sessionInfo",
+      "type": "ChannelSoundingRangingResult | null",
+      "desc": "Result of the last start request: `status`, `error`, `sessionId`, `peerAddress`, `serviceName`, `serviceAvailable`, `channelSoundingFeature`, `timestampMs`."
+    },
+    {
+      "name": "sessionError",
+      "type": "string | null",
+      "desc": "Status code and reason when the last start or stop did not succeed, for example `needs_peer_address: peerAddress is required`."
     },
     {
       "name": "error",
       "type": "string | null",
-      "desc": "Latest error message if operation failed."
+      "desc": "Latest failure message, or `null`. Failures are also logged and counted."
     },
     {
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
-      "desc": "Telemetry provenance: 'hardware' when read from physical device."
+      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
     },
     {
       "name": "startRanging",
-      "type": "(targetAddress?: string) => Promise<boolean>",
-      "desc": "Starts a Channel Sounding ranging session against paired or discovered BLE devices."
+      "type": "(config: ChannelSoundingRangingConfig) => Promise<boolean>",
+      "desc": "Opens a Channel Sounding ranging session with the peer at config.peerAddress."
     },
     {
       "name": "stopRanging",
-      "type": "() => boolean",
-      "desc": "Stops an active ranging session."
+      "type": "() => ChannelSoundingStopResult | null",
+      "desc": "Closes the running ranging session and returns what the platform did."
     },
     {
       "name": "refresh",
       "type": "() => ChannelSoundingInfo | null",
-      "desc": "Re-probes hardware channel sounding status."
+      "desc": "Re-probes the feature flag, HAL service and adapter state."
     }
   ],
   "actions": [
     {
-      "name": "startRanging(targetAddress?)",
-      "type": "(targetAddress?: string) => Promise<boolean>",
-      "desc": "Starts a Channel Sounding ranging session against paired or discovered BLE devices."
+      "name": "startRanging(config)",
+      "type": "(config: ChannelSoundingRangingConfig) => Promise<boolean>",
+      "desc": "Opens a real BLE Channel Sounding ranging session with the peer at config.peerAddress.",
+      "inputs": [
+        {
+          "name": "config",
+          "type": "ChannelSoundingRangingConfig",
+          "desc": "`{ peerAddress: string, role?: 'initiator' | 'responder' (default 'initiator'), securityLevel?: 1 | 4, sightType?: 'unknown' | 'line_of_sight' | 'non_line_of_sight', locationType?: 'unknown' | 'indoor' | 'outdoor', updateRate?: 'normal' | 'infrequent' | 'frequent' }`. peerAddress is required: six colon-separated hex bytes such as \"AA:BB:CC:DD:EE:FF\". The optional fields are passed to BleCsRangingParams; omitted means the platform default."
+        }
+      ],
+      "output": "Resolves true when the platform reported the session open; false with the status and reason in sessionError when the peer address is missing or malformed, the device or OS cannot range, Bluetooth is off, a permission is missing, another session is running, or the platform refused to open. sessionInfo is updated either way."
     },
     {
       "name": "stopRanging()",
-      "type": "() => boolean",
-      "desc": "Stops an active ranging session."
+      "type": "() => ChannelSoundingStopResult | null",
+      "desc": "Closes the running Channel Sounding ranging session.",
+      "output": "Returns `{ wasActive, closed, sessionId, error, timestampMs }`: wasActive is false when nothing was running, and error carries a failure from the platform's stop or close. Returns null when the native module is absent."
     },
     {
       "name": "refresh()",
       "type": "() => ChannelSoundingInfo | null",
-      "desc": "Re-probes hardware channel sounding status."
+      "desc": "Re-probes the feature flag, HAL service and adapter state.",
+      "output": "Returns `{ isSupported, isEnabled, serviceFound, hasChannelSoundingFeature, error }`, or null when the native module is absent."
     }
-  ]
+  ],
+  "example": "import { useChannelSounding } from '@pixelkit-labs/sdk';\n\nfunction FindAccessory({ address }: { address: string }) {\n  const { isSupported, isRanging, measurements, sessionError, startRanging, stopRanging } = useChannelSounding();\n  if (!isSupported) return <Text>This device does not declare Channel Sounding</Text>;\n  const latest = measurements.find((m) => m.deviceAddress === address.toUpperCase());\n  return (\n    <View>\n      <Button\n        title={isRanging ? 'Stop ranging' : 'Range accessory'}\n        onPress={() => (isRanging ? stopRanging() : startRanging({ peerAddress: address }))}\n      />\n      {sessionError && <Text>{sessionError}</Text>}\n      <Text>{latest?.distanceMeters != null ? `${latest.distanceMeters.toFixed(2)} m (${latest.confidence ?? 'confidence unknown'})` : '—'}</Text>\n    </View>\n  );\n}",
+  "agentNote": "Channel Sounding ranges a specific Bluetooth peer that itself supports Channel Sounding. Never invent a peer address: it comes from the device you are ranging with (a scan result, a bonded device). Without one startRanging resolves false with needs_peer_address. The ranging API is android.ranging (Android 16+) and requires android.permission.RANGING, which the app must declare in its manifest and request at runtime; without it the status is permission_denied. Report an empty measurements list as 'no peer answered', not as zero distance, and do not state a phase-based or round-trip method, a channel count or a centimetre accuracy: the platform reports none of them."
 }

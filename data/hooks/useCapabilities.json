@@ -5,8 +5,8 @@
   "chipBadge": "PackageManager verified",
   "summary": "What this particular phone actually has.",
   "plain": "The first hook to call. It answers \"does this device have that?\" so your interface can hide features the phone does not support, instead of showing a control that will fail.",
-  "description": "Resolution starts from a model table keyed on the device name, then upgrades to real PackageManager feature checks when the native module is present, at which point verification changes from model-table to device. Fields that can only be answered by the device are null until that upgrade happens. Evaluates verified platform features including android.hardware.npu, BLE Channel Sounding, and StrongBox KeyStore.",
-  "signature": "useCapabilities(): DeviceCapabilities",
+  "description": "Resolution starts from a model table keyed on the device name (inference, not a device read), then upgrades the PackageManager-probed flags (UWB, NFC, BLE Channel Sounding, Wi-Fi RTT, satellite, StrongBox, NPU) and the AICore version when the native module is present, at which point verification changes from model-table to device. Only those probed fields come from the device. hasHiLight, hasTitanM3, geminiNanoTier, isPixel, pixelGeneration, isProModel, isFoldable and the supports* flags are always derived from the model name or the API level, even after device verification; the provenance map reports that per field. Fields that can only be answered by the device are null until verification happens.",
+  "signature": "useCapabilities(): CapabilitiesState",
   "params": [],
   "returns": [
     {
@@ -83,9 +83,24 @@
       "name": "hasTitanM3",
       "type": "boolean",
       "desc": "Whether the Titan M3 security chip is expected, per Google's specification. It is not readable from the device."
+    },
+    {
+      "name": "source",
+      "type": "'hardware' | 'derived' | 'unavailable'",
+      "desc": "'hardware' once PackageManager verification ran, 'derived' while everything comes from the model table. Even then the table-only fields stay derived; read provenance per field."
+    },
+    {
+      "name": "provenance",
+      "type": "Record<keyof DeviceCapabilities, 'hardware' | 'derived' | 'unavailable'>",
+      "desc": "Per-field origin: 'hardware' (platform read or feature probe), 'derived' (model table or API level) or 'unavailable' (probe failed or not run)."
+    },
+    {
+      "name": "error",
+      "type": "string | null",
+      "desc": "Why device verification failed, if it did."
     }
   ],
   "actions": [],
   "example": "import { useCapabilities } from '@pixelkit-labs/sdk';\n\nfunction ProFeatures() {\n  const caps = useCapabilities();\n  return (\n    <View>\n      <Text>{caps.modelName} · API {caps.androidApiLevel} · {caps.verification}</Text>\n      {caps.hasHiLight && <HiLightCard />}\n      {caps.hasUWB && <UWBCard />}\n    </View>\n  );\n}",
-  "agentNote": "Never hardcode a device assumption; read this first. Treat null as unknown rather than false, and prefer acting once verification is device."
+  "agentNote": "Never hardcode a device assumption; read this first. Treat null as unknown rather than false, prefer acting once verification is device, and check provenance before presenting hasHiLight, hasTitanM3 or geminiNanoTier as hardware facts: they come from the model name."
 }

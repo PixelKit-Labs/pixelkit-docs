@@ -2,7 +2,7 @@
 
 **Source:** [packages/sdk/src/hardware/useUWB.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/hardware/useUWB.ts)
 
-Ultra-Wideband transceiver state and ranging sessions. Chip presence, enabled state, chip id and ranging-service readiness are read from Android `UwbManager` and `PackageManager` through the native module (`source: 'hardware'`).
+Ultra-Wideband transceiver state and ranging sessions. Chip presence (the `android.hardware.uwb` feature), the enabled state (`UwbManager.isUwbEnabled()` by reflection, `null` when apps cannot read it) and ranging-service readiness (whether the Android 16 `RangingManager` service exists) are read through the native module (`source: 'hardware'`).
 
 `startRanging(config)` opens a real `android.ranging.RangingSession` (Android 16, API 36+, RAW UWB session). Ranging needs a second device, so the call takes the peer's configuration: its UWB address, the session id, and optionally the channel, preamble index and key info, all agreed with the peer out of band (BLE, NFC, QR). It resolves `true` only when the platform reports the session open. Otherwise it resolves `false` and `sessionError` carries the status and reason. `measurements` holds the latest `android.ranging.RangingData` sample per peer and stays empty until the peer answers; it is never filled with placeholder anchors.
 
@@ -10,8 +10,7 @@ Ultra-Wideband transceiver state and ranging sessions. Chip presence, enabled st
 ```typescript
 function useUWB(): {
  isSupported: boolean;
- isEnabled: boolean;
- chipId: string | null;
+ isEnabled: boolean | null;
  rangingApiSupported: boolean;
  error: string | null;
  source: TelemetrySource;
@@ -28,9 +27,8 @@ function useUWB(): {
 | Field | Type | Description |
 | :--- | :--- | :--- |
 | `isSupported` | `boolean` | Whether the UWB chip is present on this device. |
-| `isEnabled` | `boolean` | Whether the UWB radio is switched on in system settings. |
-| `chipId` | `string \| null` | Chip identifier from the native radio probe. `null` when there is no chip. |
-| `rangingApiSupported` | `boolean` | Whether the device declares the `android.hardware.ranging` feature. |
+| `isEnabled` | `boolean \| null` | Whether the UWB radio is switched on in system settings; `null` when Android does not let apps read it. |
+| `rangingApiSupported` | `boolean` | Whether the Android 16 `android.ranging.RangingManager` service exists. |
 | `error` | `string \| null` | Latest failure message, or `null`. Failures are also logged and counted. |
 | `source` | `TelemetrySource` | `'hardware'` when the native module is present and the chip exists, `'unavailable'` otherwise. |
 | `isRanging` | `boolean` | Whether the platform holds an open ranging session. Follows the platform's session events. |

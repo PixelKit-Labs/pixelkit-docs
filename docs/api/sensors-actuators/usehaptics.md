@@ -2,21 +2,21 @@
 
 **Source:** [packages/sdk/src/hardware/useHaptics.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/hardware/useHaptics.ts)
 
-Drives the Linear Resonant Actuator: standard Pixel patterns through `expo-haptics`, plus the vibrator's real capabilities and **Android 16 envelope effects** (`VibrationEffect.BasicEnvelopeBuilder`) and primitive compositions through the PixelNative module. Capabilities are read once per app, not once per button.
+Standard Pixel patterns through `expo-haptics`, plus the vibrator's reported capabilities and **Android 16 envelope effects** (`VibrationEffect.BasicEnvelopeBuilder`) and primitive compositions through the PixelNative module. Capabilities are read once per app, not once per button.
 
-Verified on Pixel 11 Pro: resonant **134.4 Hz**, Q 14.5, amplitude control, `CAP_COMPOSE_PWLE_EFFECTS_V2` (envelopes supported), primitives `CLICK, TICK, QUICK_RISE, SLOW_RISE, QUICK_FALL, THUD, SPIN, LOW_TICK`. Vibrator capabilities are read once per app process and cached.
+Vibrator capabilities (amplitude control, resonant frequency, envelope support, primitives) are whatever `Vibrator` reports on the running device; they are read once per app process and cached.
 
 ## Signature
 ```typescript
 function useHaptics(): {
- triggerHaptic: (type?: HapticType) => Promise<void>;
- selection: () => Promise<void>;
- light: () => Promise<void>;
- medium: () => Promise<void>;
- heavy: () => Promise<void>;
- success: () => Promise<void>;
- warning: () => Promise<void>;
- error: () => Promise<void>;
+ triggerHaptic: (type?: HapticType) => Promise<boolean>;
+ selection: () => Promise<boolean>;
+ light: () => Promise<boolean>;
+ medium: () => Promise<boolean>;
+ heavy: () => Promise<boolean>;
+ success: () => Promise<boolean>;
+ warning: () => Promise<boolean>;
+ error: () => Promise<boolean>;
  playEnvelope: (points: EnvelopePoint[], initialSharpness?: number) => boolean;
  playPrimitives: (steps: PrimitiveStep[]) => boolean;
  cancel: () => void;
@@ -36,15 +36,15 @@ type PrimitiveStep = { primitive: 'CLICK' | 'TICK' | 'THUD' | 'SPIN' | 'QUICK_RI
 | :--- | :--- | :--- |
 | `hasAmplitudeControl` | `boolean \| null` | Whether the actuator can vary intensity rather than only on/off. `null` before the capability read or when the native module is absent. |
 | `envelopeSupported` | `boolean` | Whether `playEnvelope` will do anything: Android 16+ with PWLE v2 support. `false` when unknown. |
-| `resonantFrequencyHz` | `number \| null` | The actuator's resonant frequency, 134.4 Hz here. Effects near it feel strongest. `null` when not reported. |
+| `resonantFrequencyHz` | `number \| null` | The actuator's resonant frequency in Hz as the vibrator reports it. Effects near it feel strongest. `null` when not reported. |
 | `supportedPrimitives` | `string[]` | Primitive names `playPrimitives` accepts on this device. Empty when none are reported. |
-| `source` | `TelemetrySource` | `'hardware'` on device, `'unavailable'` on web. |
+| `source` | `TelemetrySource` | `'hardware'` once the vibrator capability read succeeded; `'unavailable'` before it, on web, or without the native module. |
 
 ## Functions
 | Function | Inputs | Returns | Description |
 | :--- | :--- | :--- | :--- |
-| `triggerHaptic(type?)` | `type?: HapticType` — `'selection' \| 'light' \| 'medium' \| 'heavy' \| 'success' \| 'warning' \| 'error'`, default `'light'` | `Promise<void>` — resolves when dispatched; failures are logged, not thrown | Plays a standard platform pattern. No-op on web. |
-| `selection()` `light()` `medium()` `heavy()` `success()` `warning()` `error()` | none | `Promise<void>` | Named shorthands for `triggerHaptic` with that type. |
+| `triggerHaptic(type?)` | `type?: HapticType` — `'selection' \| 'light' \| 'medium' \| 'heavy' \| 'success' \| 'warning' \| 'error'`, default `'light'` | `Promise<boolean>` — `true` when the platform call completed without throwing (the platform does not confirm the actuator moved); `false` on web or when the call threw (failures are logged, not thrown) | Plays a standard platform pattern through expo-haptics. |
+| `selection()` `light()` `medium()` `heavy()` `success()` `warning()` `error()` | none | `Promise<boolean>` | Named shorthands for `triggerHaptic` with that type. |
 | `playEnvelope(points, initialSharpness?)` | `points: EnvelopePoint[]` — each `{ intensity 0..1, sharpness 0..1, durationMs }`; the envelope must end at intensity 0, which the module appends. `initialSharpness?: number` — sharpness to start from, 0..1. | `boolean` — `false` when envelopes are unsupported or the call threw, `true` when dispatched | Android 16+ amplitude/sharpness curve. Check `envelopeSupported` first. |
 | `playPrimitives(steps)` | `steps: PrimitiveStep[]` — each `{ primitive, scale?: number 0..1, delayMs?: number }`; `scale` sets strength, `delayMs` the gap before that step | `boolean` — `false` when the native module is absent or the call threw | Android 11+ composition of hardware primitives. |
 | `cancel()` | none | `void` | Stops any vibration in progress, including an envelope or composition. |

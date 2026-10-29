@@ -3,16 +3,16 @@
   "name": "useAppFunctions",
   "category": "ai",
   "chipBadge": "Android 17 AppFunctions",
-  "summary": "Exposes on-device actions and hardware capabilities to system AI and Gemini Assistant.",
-  "plain": "Bridges Android 16/17 AppFunctions (API 36+). Allows Gemini and local agents to discover and execute in-app functions, query Tensor silicon thermals, and register custom agentic tool handlers.",
-  "description": "Backed by android.app.appfunctions.IAppFunctionManager (system service 133 on Pixel 11 Pro). Exposes built-in hardware actions ('check_phone_thermals', 'purge_memory_cache', 'get_device_silicon_info') and enables developers to register custom AppFunction schemas and handlers dynamically. An id that is neither custom nor built in is run through the native registry (PixelNative.getAppFunctions: triggerHapticEffect, setTorchLevel, getSiliconStatus, scanNearbyRadios); executeFunction resolves success false with the native message when the effect did not happen (for example an unsupported haptic primitive) and with an unknown-id error for any other id. Reports source: 'hardware' when backed by the real system service.",
+  "summary": "In-process registry and runner for device actions, plus a probe of the Android AppFunctions service.",
+  "plain": "Lists the actions this hook can run, runs them, and lets your own code register more handlers. It also reports whether the Android AppFunctions service exists. It does not make your app callable by Gemini.",
+  "description": "isSupported is an API-level check (36 and above); serviceFound and serviceName come from a lookup of the Android app_function system service. The hook keeps an in-process registry: built-in actions ('check_phone_thermals', 'purge_memory_cache', 'get_device_silicon_info') and custom schemas and handlers added with registerFunction are listed in functions and run by executeFunction, but none of them is registered with the system service, so Gemini and other assistants cannot see them (that needs a native AppFunctionService in your app). An id that is neither custom nor built in is run through the native registry (PixelNative.getAppFunctions: triggerHapticEffect, setTorchLevel, getSiliconStatus, scanNearbyRadios); executeFunction resolves success false with the native message when the effect did not happen (for example an unsupported haptic primitive) and with an unknown-id error for any other id. source is 'hardware' only when the system service was found.",
   "signature": "useAppFunctions(): AppFunctionsState",
   "params": [],
   "returns": [
     {
       "name": "isSupported",
       "type": "boolean",
-      "desc": "Whether AppFunctions subsystem is supported on this Android OS version (API 36+ / Android 16 QPR & Android 17)."
+      "desc": "Whether the device runs Android 16 (API 36) or later. An API-level check, not a service probe."
     },
     {
       "name": "serviceFound",
@@ -22,17 +22,17 @@
     {
       "name": "apiLevel",
       "type": "number | null",
-      "desc": "Android platform API level reported by the device (37 on Pixel 11 Pro)."
+      "desc": "Android platform API level reported by the device."
     },
     {
       "name": "serviceName",
       "type": "string | null",
-      "desc": "System service name ('app_function')."
+      "desc": "System service name ('app_function'); null when the service was not found."
     },
     {
       "name": "functions",
       "type": "AppFunctionSchema[]",
-      "desc": "All registered AppFunction schemas available to Gemini, agents, or local invocation."
+      "desc": "The hook's built-in schemas plus custom ones registered through this hook. An in-process list, not the system registry."
     },
     {
       "name": "error",

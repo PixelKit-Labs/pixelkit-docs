@@ -2,7 +2,7 @@
 
 **Source:** [packages/sdk/src/ai/useGenAITasks.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/ai/useGenAITasks.ts)
 
-Dedicated on-device GenAI task clients on ML Kit and AICore, separate from the chat surface: summarize, proofread, rewrite and describe an image. Every call is measured and reported with hardware provenance. Unlike `useGeminiNano`'s equivalents, these resolve to `null` on failure instead of throwing, and keep the last result in state. Each task takes its own text or image input; nothing is read on mount.
+On-device text and image tasks through the PixelNano module, separate from the chat surface: summarize, proofread, rewrite and describe an image. `summarize`, `proofread` and `rewrite` use the ML Kit GenAI task model when it is available and fall back to a Gemini Nano prompt when it is not or it throws; the result's `engine` field says which one answered (`'mlkit-summarization'`, `'mlkit-proofreading'`, `'mlkit-rewriting'` or `'gemini-nano-prompt'`). `describeImage` is a Gemini Nano multimodal prompt. AICore decides where inference runs; the hook does not report the processor. Each call reports its measured latency. Unlike `useGeminiNano`'s equivalents, these resolve to `null` on failure instead of throwing, and keep the last result in state. Each task takes its own text or image input; nothing is read on mount.
 
 ## Signature
 ```typescript
@@ -26,7 +26,7 @@ function useGenAITasks(): {
 | :--- | :--- | :--- |
 | `isRunning` | `boolean` | `true` while any of the four tasks is in flight. They share one flag, so run them one at a time. |
 | `error` | `string \| null` | Why the last task failed, including "PixelNano module is unavailable in this environment" on web. |
-| `source` | `TelemetrySource` | `'hardware'` when the PixelNano module is present, `'unavailable'` otherwise. |
+| `source` | `TelemetrySource` | `'hardware'` once a task has produced a result, `'unavailable'` before the first successful call or when the PixelNano module is absent. |
 | `summaryResult` | `SummarizeResult \| null` | Last summary: `{ summary, latencyMs, engine, source }`. |
 | `proofreadResult` | `ProofreadResult \| null` | Last proofread: `{ correctedText, suggestions, latencyMs, engine, source }`. |
 | `rewriteResult` | `RewriteResult \| null` | Last rewrite: `{ rewrittenText, suggestions, latencyMs, engine, source }`. |

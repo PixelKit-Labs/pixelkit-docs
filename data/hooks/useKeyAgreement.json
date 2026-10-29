@@ -2,17 +2,17 @@
   "id": "useKeyAgreement",
   "name": "useKeyAgreement",
   "category": "radios",
-  "chipBadge": "Titan M2 · StrongBox · ECDH",
-  "summary": "Hardware-isolated Elliptic Curve Diffie-Hellman session key derivation via Titan M2.",
-  "plain": "Generates hardware-bound EC keypairs in the Titan M2 security enclave and derives high-entropy shared secrets via ECDH without ever exposing the private key to software memory.",
-  "description": "Utilizes AndroidKeyStore and Java Cryptography Architecture (JCA) backed by the Google Titan M2 StrongBox hardware security module. Implements Elliptic Curve Diffie-Hellman (ECDH) on the NIST P-256 (secp256r1) curve with PURPOSE_AGREE_KEY. Generates hardware-isolated keypairs and derives symmetrical AES shared secrets against external peer public keys.",
+  "chipBadge": "Keystore · ECDH",
+  "summary": "ECDH session key derivation with a private key generated in the Android Keystore; the achieved security level is read from KeyInfo.",
+  "plain": "Generates an EC keypair in the Android Keystore (StrongBox when requested and declared by the device) and derives a shared secret via ECDH. The private key stays in the Keystore. The level the key really got (StrongBox, trusted environment, software) is read back from KeyInfo and is null when it cannot be read.",
+  "description": "Uses AndroidKeyStore and the Java Cryptography Architecture. Generates an EC keypair with PURPOSE_AGREE_KEY (the Keystore default curve) and derives an ECDH shared secret against an external peer public key. When preferStrongBox is true and the device declares android.hardware.strongbox_keystore, StrongBox is requested; the achieved level is read with KeyInfo.getSecurityLevel() (API 31+) and returned as securityLevel (STRONGBOX, TRUSTED_ENVIRONMENT, SOFTWARE, UNKNOWN_SECURE), or null with securityLevelReason when it cannot be read or generation failed.",
   "signature": "useKeyAgreement(): KeyAgreementTelemetry",
   "params": [],
   "returns": [
     {
       "name": "isStrongBoxSupported",
       "type": "boolean",
-      "desc": "Whether the device hardware includes a dedicated StrongBox Keymaster module (Titan M2)."
+      "desc": "Whether the device declares the android.hardware.strongbox_keystore feature."
     },
     {
       "name": "error",
@@ -27,26 +27,26 @@
     {
       "name": "generateKeyPair",
       "type": "(alias: string, preferStrongBox?: boolean) => Promise<KeyAgreementKeyPairResult>",
-      "desc": "Generates an EC keypair inside the hardware enclave with PURPOSE_AGREE_KEY."
+      "desc": "Generates an EC keypair in the Android Keystore with PURPOSE_AGREE_KEY; securityLevel is read from KeyInfo."
     },
     {
       "name": "deriveSharedSecret",
       "type": "(alias: string, peerPublicKeyBase64: string) => Promise<SharedSecretResult>",
-      "desc": "Computes an ECDH shared secret using the hardware private key and peer's public key."
+      "desc": "Computes an ECDH shared secret using the Keystore private key and the peer's public key."
     }
   ],
   "actions": [
     {
       "name": "generateKeyPair(alias, preferStrongBox)",
-      "desc": "Generates an EC keypair inside the hardware enclave.",
-      "type": "(alias: string, preferStrongBox?: boolean) => Promise<{ publicKeyBase64: string; securityLevel: string } | null>"
+      "desc": "Generates an EC keypair in the Android Keystore. Resolves with publicKeyBase64 and securityLevel (null when unreadable or when generation failed, with the reason in error).",
+      "type": "(alias: string, preferStrongBox?: boolean) => Promise<KeyAgreementKeyPairResult>"
     },
     {
       "name": "deriveSharedSecret(alias, peerPublicKeyBase64)",
-      "desc": "Derives a shared secret via ECDH with a peer's public key.",
-      "type": "(alias: string, peerPublicKeyBase64: string) => Promise<string | null>"
+      "desc": "Derives a shared secret via ECDH with a peer's public key. Resolves with sharedSecretBase64 (null on failure, with the reason in error).",
+      "type": "(alias: string, peerPublicKeyBase64: string) => Promise<SharedSecretResult>"
     }
   ],
-  "example": "import { useKeyAgreement } from '@pixelkit-labs/sdk';\n\nfunction KeyExchange() {\n  const { isStrongBoxSupported, generateKeyPair, deriveSharedSecret } = useKeyAgreement();\n  const handleExchange = async () => {\n    const pair = await generateKeyPair('session_key_1', true);\n    console.log('Public Key:', pair.publicKeyBase64);\n  };\n  return <Button title=\"Generate StrongBox Key\" onPress={handleExchange} />;\n}",
-  "agentNote": "Titan M2 StrongBox backed on Google Pixel 3 and newer. Hardware isolation guarantees private keys cannot be extracted even by rooted or compromised kernels."
+  "example": "import { useKeyAgreement } from '@pixelkit-labs/sdk';\n\nfunction KeyExchange() {\n  const { isStrongBoxSupported, generateKeyPair } = useKeyAgreement();\n  const handleExchange = async () => {\n    const pair = await generateKeyPair('session_key_1', true);\n    console.log('Public Key:', pair.publicKeyBase64, 'Level:', pair.securityLevel ?? 'unknown');\n  };\n  return <Button title=\"Generate key\" onPress={handleExchange} />;\n}",
+  "agentNote": "securityLevel is what the platform reported for the generated key, not what was requested: a request for StrongBox on a device without the feature yields a different level or null. The private key is not exported by this API."
 }

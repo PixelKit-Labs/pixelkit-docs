@@ -57,7 +57,7 @@
     {
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
-      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+      "desc": "'hardware' once at least one value (generation, carrier, codes or VoIP flag) was answered by the platform, 'unavailable' before that or when every read returned nothing."
     }
   ],
   "actions": [

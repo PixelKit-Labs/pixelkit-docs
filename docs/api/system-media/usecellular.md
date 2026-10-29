@@ -36,7 +36,7 @@ function useCellular(): {
 | `allowsVoip` | `boolean \| null` | Whether the carrier permits voice over IP. `null` when it cannot be determined. |
 | `permissionGranted` | `boolean` | Whether the phone-state permission has been granted. |
 | `error` | `string \| null` | Why the last read or permission request failed. |
-| `source` | `TelemetrySource` | `'hardware'` once a read has completed, `'unavailable'` before that. |
+| `source` | `TelemetrySource` | `'hardware'` once the platform answered at least one value, `'unavailable'` before that or when every read returned nothing. |
 
 ## Functions
 | Function | Inputs | Returns | Description |

@@ -8,7 +8,7 @@ Google ML Kit on-device computer vision plus Gemini multimodal scene understandi
 * **Barcode & QR scanning** — 1D and 2D formats, on-device.
 * **Image labelling** — visual entity and scene classification, on-device.
 * **Face detection & 3D mesh** — landmarks, smile and eye-open probabilities, 468-point meshes, on-device.
-* **Object detection & tracking** — bounding boxes with tracking ids, on-device.
+* **Object detection** — bounding boxes and labels, on-device, in single-image mode (no tracking ids across frames).
 * **Pose detection** — 33 skeletal landmarks, on-device.
 * **Selfie & subject segmentation** — foreground and background masks, on-device.
 * **Digital ink recognition** — handwriting from stroke data, on-device.
@@ -55,16 +55,16 @@ function useVisionAI(): {
 | `isOnDeviceProcessing` | `boolean` | `true` while any ML Kit call is running. They share one flag. |
 | `barcodeResult` | `BarcodeScanResult \| null` | `{ barcodes: [{ rawValue, displayValue, format, valueType, boundingBox }], latencyMs, source }`. |
 | `ocrResult` | `TextRecognitionResult \| null` | `{ text, blocks: [{ text, lines, boundingBox }], latencyMs, source }`. |
-| `facesResult` | `FaceDetectionResult \| null` | `{ faces: [{ trackingId, smilingProbability, leftEyeOpenProbability, rightEyeOpenProbability, headEulerAngleX/Y/Z, boundingBox }], latencyMs, source }`; probabilities are `null` when classification is off. |
+| `facesResult` | `FaceDetectionResult \| null` | `{ faces: [{ trackingId, smilingProbability, leftEyeOpenProbability, rightEyeOpenProbability, headEulerAngleX/Y/Z, boundingBox }], latencyMs, source }`; `trackingId` is always `null` (the detector is created without tracking); classification is always requested. |
 | `faceMeshResult` | `FaceMeshResult \| null` | `{ meshes, latencyMs, source }` — 468 3D contour points per close-range face. |
 | `labelsResult` | `ImageLabelResult \| null` | `{ labels: [{ text, confidence, index }], latencyMs, source }`. |
-| `objectsResult` | `ObjectDetectionResult \| null` | `{ objects: [{ trackingId, boundingBox, labels }], latencyMs, source }`. |
+| `objectsResult` | `ObjectDetectionResult \| null` | `{ objects: [{ trackingId, boundingBox, labels }], latencyMs, source }`; `trackingId` is always `null` because detection runs in single-image mode. |
 | `poseResult` | `PoseDetectionResult \| null` | `{ landmarks: [{ type, x, y, inFrameLikelihood }], latencyMs, source }` — 33 landmarks. |
 | `selfieResult` | `SelfieSegmentationResult \| null` | `{ width, height, latencyMs, source }` — mask dimensions. |
-| `subjectResult` | `SubjectSegmentationResult \| null` | `{ subjectsCount, foregroundConfidence, latencyMs, source }`. |
+| `subjectResult` | `SubjectSegmentationResult \| null` | `{ subjectsCount, foregroundConfidence, latencyMs, source }`; `foregroundConfidence` is a boolean (a foreground confidence mask was returned), not a confidence value. |
 | `digitalInkResult` | `DigitalInkResult \| null` | `{ candidates: [{ text, score }], latencyMs, source }`, best candidate first. |
 | `error` | `string \| null` | Why the last call failed, including the "no API key" message for the cloud path. |
-| `source` | `TelemetrySource` | `'hardware'` when the PixelNano module is present, `'unavailable'` otherwise. |
+| `source` | `TelemetrySource` | `'hardware'` once an on-device operation has returned a result, `'unavailable'` before that or when the PixelNano module is absent. |
 
 ## Functions
 | Function | Inputs | Returns | Description |
@@ -73,10 +73,10 @@ function useVisionAI(): {
 | `captureAndAnalyze(useCamera?)` | `useCamera?: boolean` — as above, default `true` | `Promise<VisionAnalysisResult \| null>` — `{ description, labels, latencyMs, timestamp }`, or `null` when cancelled, unconfigured or failed | Picks an image, then asks Gemini for a two-sentence description and 3–5 labels using a JSON schema so the reply parses reliably. |
 | `scanBarcodes(imageInput)` | `imageInput: string` — file URI or base64 | `Promise<BarcodeScanResult \| null>` — `null` on failure with `error` set | Decodes 1D and 2D barcodes including QR, on-device. |
 | `recognizeText(imageInput)` | `imageInput: string` | `Promise<TextRecognitionResult \| null>` | OCR with block and line structure preserved. |
-| `detectFaces(imageInput)` | `imageInput: string` | `Promise<FaceDetectionResult \| null>` | Faces with tracking ids, head angles and smile/eye probabilities. |
+| `detectFaces(imageInput)` | `imageInput: string` | `Promise<FaceDetectionResult \| null>` | Faces with head angles and smile/eye probabilities. `trackingId` is always `null`. |
 | `detectFaceMesh(imageInput)` | `imageInput: string` | `Promise<FaceMeshResult \| null>` | 468-point 3D mesh; needs a close-range face. |
 | `labelImage(imageInput)` | `imageInput: string` | `Promise<ImageLabelResult \| null>` | Classifies entities and scenes with confidences. |
-| `detectObjects(imageInput)` | `imageInput: string` | `Promise<ObjectDetectionResult \| null>` | Bounding boxes with tracking ids and labels. |
+| `detectObjects(imageInput)` | `imageInput: string` | `Promise<ObjectDetectionResult \| null>` | Bounding boxes and labels. `trackingId` is always `null` (single-image mode). |
 | `detectPose(imageInput)` | `imageInput: string` | `Promise<PoseDetectionResult \| null>` | 33 skeletal landmarks with in-frame likelihoods. |
 | `segmentSelfie(imageInput)` | `imageInput: string` | `Promise<SelfieSegmentationResult \| null>` | Foreground portrait mask. |
 | `segmentSubject(imageInput)` | `imageInput: string` | `Promise<SubjectSegmentationResult \| null>` | Separates subjects from the background. |

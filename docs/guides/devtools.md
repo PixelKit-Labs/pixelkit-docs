@@ -37,7 +37,8 @@ In its default collapsed state, the HUD occupies minimal screen area and can be 
   - `🟠 MOD` (Moderate): Moderate CPU/GPU pacing active.
   - `🔴 SVR` (Severe): Aggressive thermal throttling in effect.
   - `🚨 CRIT` (Critical): Near-emergency thermal state.
-- **Tensor CPU Share**: Instantaneous percentage of CPU cluster frequency utilization.
+- **CPU share**: Cluster frequency utilization (`cpuLoadPercent`); when that is unreadable the pill shows the app's own CPU share prefixed with `app`.
+- **Missing values**: Any value that has not been read yet, or cannot be read, renders as `—`. The HUD never substitutes a default frame rate, refresh rate, percentage or thermal colour; the thermal dot is grey until a thermal sample exists.
 
 ### 2. Expanded Inspection Tray
 Tapping the floating pill opens a full-featured diagnostics panel:
@@ -59,13 +60,14 @@ Tapping the floating pill opens a full-featured diagnostics panel:
  └──────────────────────────────────────────────┘
 ```
 
-- **Display & Refresh Rate**: Displays measured FPS against the active screen refresh rate (e.g. 60 Hz or 120 Hz on Pixel 11 Pro Smooth Display).
+- **Display & Refresh Rate**: Displays measured FPS (Choreographer) against the active display mode's refresh rate; each side shows `—` until it has been read.
+- **Source badge**: The badge in the header prints the `source` reported by `useCPU` (`HARDWARE` or `UNAVAILABLE`), which says whether the native module is present, not whether the device is physical or an emulator.
 - **ADPF Thermal Headroom**: Exact headroom percentage before throttling begins (`PowerManager.getThermalHeadroom()`).
 - **Tensor CPU Topology**: Cluster frequency load across Cortex-X big cores, mid cores, and efficiency cores.
-- **Memory Consumption**: Total device RAM vs. current app heap allocation.
+- **Memory Consumption**: System RAM used / total from `useMemory`; `—` until the first read.
 - **Quick Action Controls**:
   - **Purge GC**: Invokes `PixelNative.requestGc()` to clean app garbage and measure reclaimed memory.
-  - **Pulse HiLight**: Triggers camera-bar RGB LED test pulses on supported hardware.
+  - **Pulse HiLight**: Sends a 2 s `gemini_thinking` pulse to the HiLight daemon. The button is shown only when `useHiLight().availability` is `'hardware'`.
 
 ---
 

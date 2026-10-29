@@ -5,7 +5,7 @@
   "chipBadge": "HiLight · 8 LEDs (Pro)",
   "summary": "The eight-LED ring around the rear camera flash. Real LEDs or nothing.",
   "plain": "Controls the coloured lights around the rear camera. Useful as a glanceable signal when the phone is face down: a colour for an incoming call, a pulse while an assistant is thinking. Either it drives the physical LEDs or it reports that it cannot; there is no on-screen substitute.",
-  "description": "Android 17 exposes the array as eight lights of type Light.LIGHT_TYPE_APPLICATION, but every lights session needs CONTROL_DEVICE_LIGHTS, which is signature|privileged and cannot be held by a normal app. PixelKit therefore ships a small Java daemon that runs as the adb shell user and listens on 127.0.0.1:11080; start it with npm run hilight:daemon. With the daemon up, availability is hardware and the calls drive real LEDs. Without it, availability is simulated: the colour and pattern state is still tracked and mirrored on screen with haptics, and nothing pretends the lights are on.",
+  "description": "Android 17 exposes the array as eight lights of type Light.LIGHT_TYPE_APPLICATION, but every lights session needs CONTROL_DEVICE_LIGHTS, which is signature|privileged and cannot be held by a normal app. PixelKit therefore ships a small Java daemon that runs as the adb shell user and listens on 127.0.0.1:11080; start it with npm run hilight:daemon. With the daemon up, availability is hardware and the calls drive real LEDs. Without it, availability is unavailable and every control function refuses: it resolves false and sets error. Nothing is mirrored on screen. mode, isActive and currentColor change only after the daemon answered a command with a 2xx status.",
   "signature": "useHiLight(): HiLightState",
   "params": [],
   "returns": [
@@ -42,12 +42,7 @@
     {
       "name": "brightness",
       "type": "number",
-      "desc": "0 to 1. The hardware has no brightness channel, so this scales the RGB values."
-    },
-    {
-      "name": "isFaceDownMode",
-      "type": "boolean",
-      "desc": "Whether glanceable face-down behaviour is engaged."
+      "desc": "0 to 1, sent to the daemon with the next lit command. The initial 0.85 is the hook's default request, not a value read from the LEDs."
     },
     {
       "name": "source",
@@ -57,7 +52,7 @@
     {
       "name": "error",
       "type": "string | null",
-      "desc": "Latest failure message, or `null`. Failures are also logged and counted."
+      "desc": "Latest failure message from a refused or failed control call, or `null` after the next accepted command."
     }
   ],
   "actions": [
@@ -69,34 +64,39 @@
     },
     {
       "name": "setColor(hex)",
-      "type": "(hexColor: string) => void",
-      "desc": "Sets a solid colour and turns the ring on, switching the mode from off to glow when needed.",
+      "type": "(hexColor: string) => Promise<boolean>",
+      "desc": "Sets a solid colour and turns the ring on, switching the mode from off to glow when needed. Refuses when the daemon is not connected.",
       "inputs": [
         {
           "name": "hexColor",
           "type": "string",
-          "desc": "RGB hex string such as \"#81C995\". Sent to the daemon as-is, scaled by brightness."
+          "desc": "RGB hex string such as \"#81C995\". Sent to the daemon as-is together with the brightness."
         }
       ],
-      "output": "Returns nothing. Nothing lights unless availability is hardware."
+      "output": "Resolves true when the daemon accepted the command; currentColor, mode and isActive update only then. Resolves false and sets error otherwise."
     },
     {
-      "name": "setMode(mode)",
-      "type": "(mode: HiLightMode) => void",
-      "desc": "Switches the animation pattern.",
+      "name": "setMode(mode, hex?)",
+      "type": "(mode: HiLightMode, hexColor?: string) => Promise<boolean>",
+      "desc": "Switches the animation pattern, optionally with a colour sent in the same daemon command. Refuses when the daemon is not connected.",
       "inputs": [
         {
           "name": "mode",
           "type": "HiLightMode",
           "desc": "One of off, glow, breathing, pulse, gemini_thinking, incoming_call, notification. Passing 'off' extinguishes the ring."
+        },
+        {
+          "name": "hexColor",
+          "type": "string | undefined",
+          "desc": "RGB hex colour to light the pattern with. Defaults to currentColor. Ignored for 'off'."
         }
       ],
-      "output": "Returns nothing; mode and isActive update immediately."
+      "output": "Resolves true when the daemon accepted the command; mode, isActive and (when lit) currentColor update only then. Resolves false and sets error otherwise."
     },
     {
       "name": "setBrightness(level)",
-      "type": "(level: number) => void",
-      "desc": "Scales the RGB values sent to the LEDs. The hardware has no separate brightness channel.",
+      "type": "(level: number) => Promise<boolean>",
+      "desc": "Sets the brightness sent to the daemon. While the ring is lit the level is sent immediately; while it is off the level is kept for the next lit command.",
       "inputs": [
         {
           "name": "level",
@@ -104,25 +104,25 @@
           "desc": "0.0 to 1.0; values outside are clamped."
         }
       ],
-      "output": "Returns nothing. Applied immediately when the ring is lit, stored otherwise."
+      "output": "While lit: true when the daemon accepted it, false and error otherwise. While off: true, because nothing is sent until the next lit command."
     },
     {
       "name": "triggerGeminiPulse(ms?)",
-      "type": "(durationMs?: number) => void",
-      "desc": "Cyan gemini_thinking hold that clears itself. Pair it with a model call.",
+      "type": "(durationMs?: number) => Promise<boolean>",
+      "desc": "Cyan gemini_thinking hold that clears itself. Pair it with a model call. Refuses when the daemon is not connected.",
       "inputs": [
         {
           "name": "durationMs",
           "type": "number | undefined",
-          "desc": "How long to hold before clearing, in milliseconds. Defaults to 4000."
+          "desc": "How long to hold before clearing, in milliseconds. Defaults to 4000. The same duration is sent to the daemon."
         }
       ],
-      "output": "Returns nothing. A pending timer from an earlier call is cancelled first."
+      "output": "Resolves true when the daemon accepted the command; a timer from an earlier hold is cancelled then and a new one starts. Resolves false and sets error otherwise."
     },
     {
       "name": "triggerContactAlert(hex, ms?)",
-      "type": "(hexColor: string, durationMs?: number) => void",
-      "desc": "Coloured incoming_call hold for a caller or event, then clears itself.",
+      "type": "(hexColor: string, durationMs?: number) => Promise<boolean>",
+      "desc": "Coloured incoming_call hold for a caller or event, then clears itself. Refuses when the daemon is not connected.",
       "inputs": [
         {
           "name": "hexColor",
@@ -135,21 +135,21 @@
           "desc": "Hold time in milliseconds. Defaults to 5000."
         }
       ],
-      "output": "Returns nothing. Replaces any hold already running."
+      "output": "Resolves true when the daemon accepted the command and replaces any hold already running. Resolves false and sets error otherwise."
     },
     {
       "name": "turnOff()",
-      "type": "() => void",
-      "desc": "Clears the ring and cancels any pending auto-off timer.",
-      "output": "Returns nothing; mode becomes off and isActive false."
+      "type": "() => Promise<boolean>",
+      "desc": "Sends the off command and cancels any pending auto-off timer.",
+      "output": "Resolves true when the daemon accepted it; mode becomes off and isActive false only then. Resolves false and sets error otherwise."
     },
     {
       "name": "toggle()",
-      "type": "() => void",
-      "desc": "Switches between off and a default blue glow.",
-      "output": "Returns nothing; isActive flips."
+      "type": "() => Promise<boolean>",
+      "desc": "Switches between off and a default blue glow. Refuses when the daemon is not connected.",
+      "output": "Resolves true when the daemon accepted the command and isActive flipped. Resolves false and sets error otherwise."
     }
   ],
   "example": "import { useHiLight } from '@pixelkit-labs/sdk';\n\nfunction StatusRing() {\n  const hilight = useHiLight();\n  return (\n    <View>\n      <Text>{hilight.availability} · {hilight.mode}</Text>\n      <Button title=\"Thinking pulse\" onPress={() => hilight.triggerGeminiPulse(4000)} />\n    </View>\n  );\n}",
-  "agentNote": "Read availability before promising light. Only 'hardware' drives the LEDs; 'unavailable' means the daemon is not running and the control functions refuse rather than pretending."
+  "agentNote": "Read availability before promising light. Only 'hardware' drives the LEDs; 'unavailable' means the daemon is not running and the control functions resolve false and set error rather than pretending. Check the boolean the call returns before telling the user the light is on."
 }

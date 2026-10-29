@@ -2,27 +2,27 @@
   "id": "usePrivateSpace",
   "name": "usePrivateSpace",
   "category": "radios",
-  "chipBadge": "Android 15 · Private Space · Vault",
-  "summary": "Android 15+ Private Space profile isolation detection and vault policy.",
-  "plain": "Detects whether the running app instance is executing inside Android 15's isolated Private Space vault or the primary profile, and inspects vault auto-lock settings.",
-  "description": "Utilizes android.os.UserManager.isPrivateProfile() introduced in Android 15 (API 35). Identifies whether the current application process has been launched within the isolated user profile partition (Private Space), detects whether Private Space has been set up on the device, and reports the active lock policy (immediate, screen_off, device_reboot).",
+  "chipBadge": "Android 15 · Private Space",
+  "summary": "Whether the app process runs inside Android 15+'s Private Space profile. Existence of the profile is not readable from outside it.",
+  "plain": "Tells you whether this app instance runs inside the Private Space profile. Android hides the Private Space from other apps and has no public auto-lock setting, so what cannot be read is null and reason says why.",
+  "description": "A process outside any user profile (UserManager.isProfile() is false) is reported as not inside Private Space. Inside a profile, the user type is read through LauncherApps.getLauncherUserInfo(Process.myUserHandle()) and compared with UserManager.USER_TYPE_PROFILE_PRIVATE (API 35+); when that read is refused isInsidePrivateSpace is null. Android does not list the Private Space profile to third-party apps, so isPrivateSpaceConfigured is true only when the app itself runs inside it and null otherwise. No public API exposes the auto-lock setting, so it is not reported.",
   "signature": "usePrivateSpace(): PrivateSpaceTelemetry",
   "params": [],
   "returns": [
     {
       "name": "isInsidePrivateSpace",
-      "type": "boolean",
-      "desc": "Whether the current application process is executing inside the isolated Private Space profile."
+      "type": "boolean | null",
+      "desc": "Whether the current application process runs inside the Private Space profile. False below Android 15 and outside any profile; null when it runs in a profile whose type cannot be read."
     },
     {
       "name": "isPrivateSpaceConfigured",
-      "type": "boolean",
-      "desc": "Whether the device currently has a Private Space secure profile configured."
+      "type": "boolean | null",
+      "desc": "True when the app runs inside the Private Space; null otherwise because Android hides the profile from apps (false below Android 15)."
     },
     {
-      "name": "autoLockPolicy",
-      "type": "'immediate' | 'screen_off' | 'device_reboot' | 'unknown'",
-      "desc": "Configured auto-lock timeout policy for the private space vault."
+      "name": "reason",
+      "type": "string | null",
+      "desc": "Why unreadable values are null; null before the first read."
     },
     {
       "name": "error",
@@ -32,21 +32,21 @@
     {
       "name": "source",
       "type": "TelemetrySource",
-      "desc": "Data provenance: 'hardware' or 'unavailable'."
+      "desc": "'hardware' once a read returned isInsidePrivateSpace, 'unavailable' otherwise."
     },
     {
       "name": "refresh",
       "type": "() => void",
-      "desc": "Re-reads user profile isolation state."
+      "desc": "Re-reads the user profile type."
     }
   ],
   "actions": [
     {
       "name": "refresh()",
-      "desc": "Requests an updated check of Private Space status.",
+      "desc": "Re-reads the user profile type.",
       "type": "() => void"
     }
   ],
-  "example": "import { usePrivateSpace } from '@pixelkit-labs/sdk';\n\nfunction VaultStatus() {\n  const { isInsidePrivateSpace, isPrivateSpaceConfigured } = usePrivateSpace();\n  return <Text>Vault: {isInsidePrivateSpace ? 'Inside Private Space' : 'Main Profile'} (Configured: {String(isPrivateSpaceConfigured)})</Text>;\n}",
-  "agentNote": "Introduced in Android 15 (API 35). Earlier Android versions return isInsidePrivateSpace: false and autoLockPolicy: 'unknown'."
+  "example": "import { usePrivateSpace } from '@pixelkit-labs/sdk';\n\nfunction VaultStatus() {\n  const { isInsidePrivateSpace, reason } = usePrivateSpace();\n  const label = isInsidePrivateSpace === null ? 'Unknown' : isInsidePrivateSpace ? 'Inside Private Space' : 'Main profile';\n  return <Text>{label}{reason ? ` · ${reason}` : ''}</Text>;\n}",
+  "agentNote": "Introduced in Android 15 (API 35); below it isInsidePrivateSpace is false and isPrivateSpaceConfigured is false. Do not use isPrivateSpaceConfigured === null to mean 'no Private Space': it means 'not readable'. The auto-lock policy cannot be read and is not part of this hook."
 }

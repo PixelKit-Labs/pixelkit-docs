@@ -1,6 +1,6 @@
 # Health Connect & Direct Hardware Sensor Bridges
 
-> **Unified Android Health Connect encrypted data storage and real-time physical sensor streams via `useHealthConnect`.**
+> **Health Connect availability and the device's step counter and heart rate sensors via `useHealthConnect`. The hook does not read Health Connect records.**
 
 ---
 
@@ -8,11 +8,11 @@
 
 Android 14 and later integrated **Health Connect** into the core operating system, replacing fragmented Google Fit APIs with an on-device, encrypted health and fitness storage architecture.
 
-The [`useHealthConnect`](/api/sensors-actuators/usehealthconnect/) hook provides a unified bridge: it connects to the AndroidX Health Connect client for historical record management, while simultaneously exposing direct zero-latency hardware HAL feeds from physical step counters and photoplethysmography (PPG) heart rate sensors.
+The [`useHealthConnect`](/api/sensors-actuators/usehealthconnect/) hook reports whether Health Connect looks available (the `healthconnect` system service on Android 14+ or the Health Connect package; inferred, not `HealthConnectClient.getSdkStatus()`) and whether the device has a step counter and a heart rate sensor, with the sensor names `SensorManager` reports. It does not read steps, heart rate or any Health Connect record; use the AndroidX Health Connect client for that.
 
 ```tsx
-import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text } from 'react-native';
 import { useHealthConnect } from '@pixelkit-labs/sdk';
 
 export function FitnessDashboard() {
@@ -23,28 +23,15 @@ export function FitnessDashboard() {
     hasHeartRateSensor,
     stepSensorName,
     heartRateSensorName,
-    checkAvailability,
-    queryDailySteps,
+    refresh,
   } = useHealthConnect();
-
-  useEffect(() => {
-    checkAvailability();
-  }, []);
 
   return (
     <View>
-      <Text>Health Connect Status: {sdkStatus}</Text>
+      <Text>Health Connect: {isAvailable ? 'available' : 'unavailable'} ({sdkStatus})</Text>
       <Text>Step Sensor: {hasStepCounter ? stepSensorName : 'Unavailable'}</Text>
       <Text>Heart Rate Sensor: {hasHeartRateSensor ? heartRateSensorName : 'Unavailable'}</Text>
-
-      <TouchableOpacity
-        onPress={async () => {
-          const steps = await queryDailySteps();
-          console.log('Daily Steps:', steps);
-        }}
-      >
-        <Text>Query Daily Steps</Text>
-      </TouchableOpacity>
+      <Text onPress={() => refresh()}>Re-check</Text>
     </View>
   );
 }

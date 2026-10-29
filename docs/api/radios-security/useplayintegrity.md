@@ -2,9 +2,9 @@
 
 **Source:** [packages/sdk/src/hardware/usePlayIntegrity.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/hardware/usePlayIntegrity.ts)
 
-Hardware-backed Key Attestation and Google Play Integrity verdicts via the Titan M2 security coprocessor.
+Hardware security feature flags and Android Keystore key attestation. No Play Integrity verdict is produced.
 
-Backed by `android.hardware.strongbox_keystore` (Titan M2 KeyMint 400), `android.hardware.hardware_keystore` (500), and `android.hardware.keystore.app_attest_key`. Generates EC keypairs within the isolated Titan M2 security enclave with user-provided cryptographic challenge nonces, verifying the resulting certificate chain and confirming that the runtime environment satisfies `MEETS_STRONG_INTEGRITY`. Nothing is simulated: reads directly from the Android KeyStore and system security services.
+Reads the `android.hardware.strongbox_keystore`, `android.hardware.hardware_keystore` (`FeatureInfo.version`), `android.hardware.keystore.app_attest_key` and `android.hardware.security.model.compatible` system features, and whether `com.google.android.gms` is installed. `requestAttestation` generates an EC key with an attestation challenge (StrongBox when the device declares it, with a fallback to the default keystore), reads `KeyInfo.getSecurityLevel()` (API 31+), and returns the certificate chain (base64, leaf first), its length, the leaf subject and issuer, and the challenge actually used (generated when none is passed). The chain is returned as produced by the Keystore: this hook does not verify it. Verify it on a server against the challenge and Google's attestation roots. No Play Integrity API call is made.
 
 ## Signature
 ```typescript
@@ -14,43 +14,41 @@ function usePlayIntegrity(): PlayIntegrityState;
 ## Outputs
 | Field | Type | Description |
 | :--- | :--- | :--- |
-| `isSupported` | `boolean` | Whether hardware attestation and Play Integrity are supported on device. |
-| `hasStrongBox` | `boolean` | Whether Titan M2 hardware StrongBox security chip is present. |
-| `strongBoxVersion` | `number \| null` | StrongBox KeyMint version (400 on Pixel 11 Pro). |
-| `hardwareKeystoreVersion` | `number \| null` | Hardware KeyStore version (500 on Android 17 / Pixel 11 Pro). |
-| `hasAppAttestKey` | `boolean` | Whether device supports individual key attestation (`android.hardware.keystore.app_attest_key`). |
-| `securityModelCompatible` | `boolean` | Whether device satisfies Android hardware security model. |
-| `playServicesAvailable` | `boolean` | Whether Google Play Services is available and active. |
+| `isSupported` | `boolean` | `true` when the device declares StrongBox or hardware keystore, or Google Play Services is installed. |
+| `hasStrongBox` | `boolean` | Whether the device declares the StrongBox keystore feature. |
+| `strongBoxVersion` | `number \| null` | StrongBox keystore feature version (`FeatureInfo.version`), or `null` when not declared. |
+| `hardwareKeystoreVersion` | `number \| null` | Hardware keystore feature version (`FeatureInfo.version`), or `null` when not declared. |
+| `hasAppAttestKey` | `boolean` | Whether the device declares `android.hardware.keystore.app_attest_key`. |
+| `securityModelCompatible` | `boolean` | Whether the device declares `android.hardware.security.model.compatible`. |
+| `playServicesAvailable` | `boolean` | Whether the Google Play Services package is installed. |
 | `playServicesVersion` | `string \| null` | Google Play Services version string. |
-| `deviceIntegrity` | `'MEETS_STRONG_INTEGRITY' \| 'MEETS_DEVICE_INTEGRITY' \| 'MEETS_BASIC_INTEGRITY' \| 'UNVERIFIED'` | Hardware integrity tier verdict. |
 | `isAttesting` | `boolean` | Whether a cryptographic attestation operation is running. |
-| `lastAttestation` | `HardwareAttestationResult \| null` | Result of last hardware key attestation. |
+| `lastAttestation` | `HardwareAttestationResult \| null` | Result of the last key attestation, including `certificateChainBase64` and the `challenge` used. |
 | `error` | `string \| null` | Latest error if attestation failed. |
-| `source` | `TelemetrySource` | `'hardware'` when read from physical device, `'unavailable'` otherwise. |
+| `source` | `TelemetrySource` | `'hardware'` when read from the physical device, `'unavailable'` otherwise. |
 
 ## Functions
 | Function | Inputs | Returns | Description |
 | :--- | :--- | :--- | :--- |
-| `requestAttestation(challenge?)` | `challenge?: string` — cryptographic nonce string | `Promise<HardwareAttestationResult \| null>` | Generates an EC keypair inside Titan M2 StrongBox, extracts signed X.509 cert chain, and returns attestation details. |
-| `refresh()` | none | `PlayIntegrityInfo \| null` | Re-queries system security features and Play Services state. |
+| `requestAttestation(challenge?)` | `challenge?: string` — nonce string | `Promise<HardwareAttestationResult \| null>` | Generates an attested EC key, returns the certificate chain (base64), the key's security level from `KeyInfo` (`null` when unreadable) and the challenge used. Resolves `null` on failure with the reason in `error`. |
+| `refresh()` | none | `PlayIntegrityInfo \| null` | Re-reads the device security features. |
 
 ## Example
 ```tsx
 import { usePlayIntegrity, HapticButton } from '@pixelkit-labs/sdk';
 import { View, Text } from 'react-native';
 
-export function TitanM2AttestationCard() {
-  const { hasStrongBox, deviceIntegrity, strongBoxVersion, isAttesting, lastAttestation, requestAttestation } = usePlayIntegrity();
+export function KeyAttestationCard() {
+  const { hasStrongBox, strongBoxVersion, isAttesting, lastAttestation, requestAttestation } = usePlayIntegrity();
 
   return (
     <View>
-      <Text>Titan M2 HSM: {hasStrongBox ? `Active (KeyMint v${strongBoxVersion})` : 'Unavailable'}</Text>
-      <Text>Integrity Tier: {deviceIntegrity}</Text>
+      <Text>StrongBox feature: {hasStrongBox ? `declared (v${strongBoxVersion})` : 'not declared'}</Text>
       {lastAttestation && (
-        <Text>Attested {lastAttestation.algorithm} key via {lastAttestation.securityLevel} (chain: {lastAttestation.certificateChainLength} certs)</Text>
+        <Text>Attested {lastAttestation.algorithm} key, level {lastAttestation.securityLevel ?? 'unknown'} (chain: {lastAttestation.certificateChainLength} certs)</Text>
       )}
       <HapticButton
-        title={isAttesting ? "Attesting with Titan M2..." : "Generate Hardware Attestation"}
+        title={isAttesting ? "Attesting..." : "Generate key attestation"}
         onPress={() => requestAttestation("session_nonce_xyz")}
         disabled={isAttesting}
       />

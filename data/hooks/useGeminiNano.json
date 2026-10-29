@@ -122,7 +122,7 @@
     {
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
-      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+      "desc": "'hardware' once AICore has answered (model info was read, or status is 'available'); 'unavailable' before that, when AICore reported an error, or when the native module is absent. There is no 'simulated' value."
     }
   ],
   "actions": [

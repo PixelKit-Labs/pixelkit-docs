@@ -35,7 +35,7 @@ function useNFC(): {
 | `observeModeSupported` | `boolean` | Whether Android 15 Observe Mode is available on this adapter. |
 | `antennaState` | `'ENABLED' \| 'DISABLED' \| 'UNAVAILABLE'` | Antenna state as the adapter reports it. |
 | `isReading` | `boolean` | Whether reader mode is running. It stops when the app leaves the foreground. |
-| `lastScannedTag` | `ScannedTag \| null` | The last tag read: `id` (hex UID), `payload` (best single string: a URI if present, else the first text record), `tech`, `timestamp`, `techs[]`, `records[]` (`{ tnf, type, payload, bytes, uri }`), `maxSize` (capacity in bytes), `writable`, `ndefType`. `null` before the first tag. |
+| `lastScannedTag` | `ScannedTag \| null` | The last tag read: `id` (hex UID), `payload` (best single string: a URI if present, else the first text record), `tech` (`'Ndef'` when the tag is NDEF-formatted, otherwise the first entry of `Tag.getTechList()` such as `'NfcA'` or `'MifareClassic'`; `null` when the list is empty), `timestamp`, `techs[]` (the full list), `records[]` (`{ tnf, type, payload, bytes, uri }`), `maxSize` (capacity in bytes), `writable`, `ndefType`. `null` before the first tag. |
 | `tagCount` | `number` | How many tags have been read since mount. |
 | `pendingWrite` | `string \| null` | Text waiting to be written to the next tag presented, or `null` when nothing is queued. |
 | `lastWriteOk` | `boolean \| null` | Whether the last queued write succeeded. `null` when none has been attempted. |

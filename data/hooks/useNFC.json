@@ -37,7 +37,7 @@
     {
       "name": "lastScannedTag",
       "type": "ScannedTag | null",
-      "desc": "The last physical tag read: id, technologies, capacity, writability and decoded NDEF records."
+      "desc": "The last physical tag read: id, tech ('Ndef' when NDEF-formatted, otherwise the first entry of the tag's technology list, null when empty), the full techs list, capacity, writability and decoded NDEF records."
     },
     {
       "name": "tagCount",

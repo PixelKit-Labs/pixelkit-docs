@@ -3,21 +3,21 @@
   "name": "useHealthConnect",
   "category": "sensors",
   "chipBadge": "Health Connect & Sensor Vitals",
-  "summary": "Platform health records, steps, and sensor vitals telemetry.",
-  "plain": "Inspects Android Health Connect framework availability, system step counter hardware, and sensor vitals. Integrates unified health telemetry on Android 14+ without simulation.",
-  "description": "Backed by android.health.connect system framework on Android 14+, PackageManager healthdata provider detection, and hardware Sensor.TYPE_STEP_COUNTER / Sensor.TYPE_HEART_RATE HAL drivers. Nothing is simulated: reports real device health telemetry availability.",
+  "summary": "Health Connect availability and the device's step counter and heart rate sensors. Does not read health records.",
+  "plain": "Tells you whether Health Connect looks available on the device and whether the phone has a step counter and heart rate sensor. It does not read steps, heart rate or any Health Connect record.",
+  "description": "isAvailable and sdkStatus are inferred: the healthconnect system service (Context.HEALTHCONNECT_SERVICE, Android 14+) or the com.google.android.apps.healthdata package is present. They are not the result of HealthConnectClient.getSdkStatus(), which this SDK does not call, so no provider-update state is reported. hasStepCounter / hasHeartRateSensor and the sensor names come from the step counter system feature and SensorManager.getDefaultSensor (TYPE_STEP_COUNTER, TYPE_HEART_RATE).",
   "signature": "useHealthConnect(): HealthConnectState",
   "params": [],
   "returns": [
     {
       "name": "isAvailable",
       "type": "boolean",
-      "desc": "Whether Health Connect is available on the device."
+      "desc": "Inferred: the healthconnect system service or the com.google.android.apps.healthdata package exists."
     },
     {
       "name": "sdkStatus",
-      "type": "'SDK_AVAILABLE' | 'SDK_UNAVAILABLE' | 'SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED'",
-      "desc": "Platform SDK availability status."
+      "type": "'SDK_AVAILABLE' | 'SDK_UNAVAILABLE'",
+      "desc": "'SDK_AVAILABLE' when isAvailable, otherwise 'SDK_UNAVAILABLE'. Not read from HealthConnectClient.getSdkStatus(); no provider-update state is reported."
     },
     {
       "name": "hasStepCounter",
@@ -42,7 +42,7 @@
     {
       "name": "isFrameworkIntegrated",
       "type": "boolean",
-      "desc": "Whether Health Connect is built into the OS (Android 14+)."
+      "desc": "Whether the healthconnect system service exists (Android 14+)."
     },
     {
       "name": "error",

@@ -2,17 +2,17 @@
 
 **Source:** [packages/sdk/src/hardware/useRadios.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/hardware/useRadios.ts)
 
-Unified hardware radio telemetry, queried directly from Android system services (`NfcAdapter`, `BluetoothManager`, `UwbManager`, `WifiRttManager`, `PackageManager`) and refreshed every 5 s. Use it to decide which radio features to show at all; use the per-radio hooks to drive them. It reads on mount and every 5,000 ms thereafter.
+Radio state read from Android system services and PackageManager features (`NfcAdapter`, `BluetoothAdapter`, `UwbManager` by reflection, `WifiRttManager`, system feature flags) and refreshed every 5 s. Values Android does not let the app read are `null` rather than guessed. Use it to decide which radio features to show at all; use the per-radio hooks to drive them. It reads on mount and every 5,000 ms thereafter; before the first read the values are all-false defaults and `source` is `'unavailable'`.
 
 ## Signature
 ```typescript
 function useRadios(): {
   nfc: { supported: boolean; enabled: boolean; observeModeSupported: boolean; antennaState: 'ENABLED' | 'DISABLED' | 'UNAVAILABLE' };
   bluetooth: { supported: boolean; bleSupported: boolean; enabled: boolean; state: 'ON' | 'OFF' | 'TURNING_ON' | 'TURNING_OFF'; channelSounding: boolean; bondedDevices: BondedDevice[] };
-  uwb: { supported: boolean; enabled: boolean; chipId: string | null; rangingApiSupported: boolean };
+  uwb: { supported: boolean; enabled: boolean | null; rangingApiSupported: boolean };
   wifiRtt: { supported: boolean; available: boolean };
-  thread: { supported: boolean; serviceFound: boolean; chipId: string | null };
-  satellite: { supported: boolean; sosSupported?: boolean; provider?: string | null };
+  thread: { supported: boolean; serviceFound: boolean | null };
+  satellite: { supported: boolean; sosSupported?: boolean };
   source: TelemetrySource;
   refresh: () => void;
 };
@@ -26,19 +26,17 @@ function useRadios(): {
 | `nfc.antennaState` | `'ENABLED' \| 'DISABLED' \| 'UNAVAILABLE'` | Antenna state from the adapter. |
 | `bluetooth.supported` / `bluetooth.bleSupported` | `boolean` | Classic Bluetooth and Low Energy support, which are separate features. |
 | `bluetooth.enabled` / `bluetooth.state` | `boolean` / `'ON' \| 'OFF' \| 'TURNING_ON' \| 'TURNING_OFF'` | Adapter power, including transitional states. |
-| `bluetooth.channelSounding` | `boolean` | Whether the silicon supports Channel Sounding fine ranging. |
-| `bluetooth.bondedDevices` | `BondedDevice[]` | Paired devices: `{ name, address, type, bondState }`. |
-| `uwb.supported` / `uwb.enabled` | `boolean` | Whether the UWB chip exists and is switched on. |
-| `uwb.chipId` | `string \| null` | Chip identifier from `UwbManager`, `"default"` on Pixel Pro. `null` when absent. |
-| `uwb.rangingApiSupported` | `boolean` | Whether the platform ranging service is present. |
+| `bluetooth.channelSounding` | `boolean` | Whether the device declares `android.hardware.bluetooth_le.channel_sounding`. |
+| `bluetooth.bondedDevices` | `BondedDevice[]` | Paired devices: `{ name, address, type, bondState }`; `name` is `null` when unnamed or `BLUETOOTH_CONNECT` is not granted. |
+| `uwb.supported` | `boolean` | Whether the device declares `android.hardware.uwb`. |
+| `uwb.enabled` | `boolean \| null` | `UwbManager.isUwbEnabled()` read by reflection; `null` when that call is not reachable by apps. |
+| `uwb.rangingApiSupported` | `boolean` | Whether the Android 16 `android.ranging.RangingManager` service exists. |
 | `wifiRtt.supported` / `wifiRtt.available` | `boolean` | Whether Wi-Fi RTT (802.11mc) exists, and whether it is available right now. |
 | `thread.supported` | `boolean` | Whether hardware 802.15.4 Thread radio is present (`android.hardware.thread_network`). |
-| `thread.serviceFound` | `boolean` | Whether `thread_network` / `IThreadChip` HAL is active on device. |
-| `thread.chipId` | `string \| null` | Hardware Thread chip identifier (`"chip0"` on Pixel 11 Pro). |
+| `thread.serviceFound` | `boolean \| null` | Whether a `ServiceManager` lookup finds the Thread network service; `null` when that hidden lookup is not possible. |
 | `satellite.supported` | `boolean` | Whether the device declares satellite messaging support. |
-| `satellite.sosSupported` | `boolean` | Whether Google Satellite SOS hardware provider is active. |
-| `satellite.provider` | `string \| null` | Name of satellite service provider (`"Google Satellite SOS"`). |
-| `source` | `TelemetrySource` | `'hardware'` with the native module present, `'unavailable'` otherwise (all blocks then read their conservative defaults). |
+| `satellite.sosSupported` | `boolean` | Whether the device declares the Google Satellite SOS provider feature. |
+| `source` | `TelemetrySource` | `'hardware'` after the first successful read; `'unavailable'` before it or without the native module. |
 
 ## Functions
 | Function | Inputs | Returns | Description |

@@ -4,8 +4,8 @@
   "category": "ai",
   "chipBadge": "ML Kit GenAI · on-device",
   "summary": "Four focused text tasks that run locally: summarise, proofread, rewrite, describe.",
-  "plain": "Purpose-built text helpers that run on the phone. Each does one job well and is faster and more reliable than prompting a general model for the same thing. No network, no key.",
-  "description": "Wraps the ML Kit GenAI task modules on AICore through pixel-nano: genai-summarization, genai-proofreading and genai-rewriting, plus image description. Because each task ships a tuned model rather than a free-form prompt, the output is more consistent than asking a chat model, and it works on more devices. Every call reports its own measured latency and the engine that served it.",
+  "plain": "Text helpers that run on the phone: summarise, proofread, rewrite and describe an image. Each call reports which engine served it. No network, no key.",
+  "description": "Wraps the ML Kit GenAI task modules on AICore through pixel-nano: genai-summarization, genai-proofreading and genai-rewriting, plus image description. summarize, proofread and rewrite use the ML Kit task model when it is available; when it is not, or it throws, the module falls back to a Gemini Nano prompt and the result's engine field says so ('mlkit-summarization', 'mlkit-proofreading', 'mlkit-rewriting' or 'gemini-nano-prompt'). describeImage is a Gemini Nano multimodal prompt (engine 'gemini-nano-vision'). AICore decides where inference runs; the hook does not select or report the processor. Every call reports its own measured latency and the engine that served it.",
   "signature": "useGenAITasks(): GenAITasksState",
   "params": [],
   "returns": [
@@ -42,7 +42,7 @@
     {
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
-      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+      "desc": "'hardware' once a task has produced a result; 'unavailable' before the first successful call or when the native module is absent. There is no 'simulated' value."
     }
   ],
   "actions": [
@@ -115,5 +115,5 @@
     }
   ],
   "example": "import { useGenAITasks } from '@pixelkit-labs/sdk';\n\nasync function tidy(dictated: string, tasks) {\n  const fixed = await tasks.proofread(dictated);\n  const short = await tasks.summarize(fixed.correctedText, { outputType: 'two_bullets' });\n  return short.summary;\n}",
-  "agentNote": "Reach for these before prompting a chat model for the same job: they are faster, run offline and give steadier output. Handle the model-not-downloaded error."
+  "agentNote": "Check result.engine to know whether the ML Kit task model or the Gemini Nano prompt fallback produced the text. Handle the model-not-downloaded error."
 }

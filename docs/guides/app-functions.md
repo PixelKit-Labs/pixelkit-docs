@@ -1,14 +1,14 @@
-# Android 17 AppFunctions & System Gemini Assistant
+# Android AppFunctions
 
-> **Exposing structured app capabilities to the system Gemini assistant via `useAppFunctions`.**
+> **Probe the Android AppFunctions service and run an in-process function registry with `useAppFunctions`.**
 
 ---
 
 ## Overview
 
-Starting with Android 17 (API 37), Google introduced the **AppFunctions** architecture (`android.app.appsearch.AppFunctionManager`). AppFunctions replaces legacy App Actions and static Shortcuts with a dynamic, schema-driven framework that lets AI agents (such as the system-level Gemini Assistant) discover, invoke, and inspect app functionalities at runtime.
+Starting with Android 16 (API 36), Google introduced the **AppFunctions** architecture. AppFunctions replaces legacy App Actions and static Shortcuts with a schema-driven framework that lets AI agents (such as the system-level Gemini Assistant) discover and invoke functions an app exposes through a native `AppFunctionService`.
 
-The [`useAppFunctions`](/api/neural-ai/useappfunctions/) hook provides full lifecycle management for registering and executing on-device functions.
+The [`useAppFunctions`](/api/neural-ai/useappfunctions/) hook does two separate things: it probes the `app_function` system service (`isSupported`, `serviceFound`, `serviceName`), and it keeps an in-process registry of functions that your own code can list and run with `executeFunction`. Functions added with `registerFunction` live in that registry only; Gemini and other assistants cannot see them.
 
 ```tsx
 import React from 'react';
@@ -16,12 +16,12 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useAppFunctions } from '@pixelkit-labs/sdk';
 
 export function AssistantFunctionsList() {
-  const { isSupported, isAvailable, functions, executeFunction } = useAppFunctions();
+  const { isSupported, serviceFound, functions, executeFunction } = useAppFunctions();
 
   return (
     <View>
       <Text>AppFunctions Supported: {isSupported ? 'Yes' : 'No'}</Text>
-      <Text>System Service Available: {isAvailable ? 'Yes' : 'No'}</Text>
+      <Text>app_function service found: {serviceFound ? 'Yes' : 'No'}</Text>
 
       {functions.map((fn) => (
         <View key={fn.id}>
@@ -50,8 +50,10 @@ export function AssistantFunctionsList() {
 
 ---
 
-## Security & Permission Model
+## Security & Permission Model (platform mechanism)
 
-1. **System Assistant Verification**: Only authorized system assistant packages holding the `EXECUTE_APP_FUNCTIONS` signature permission can invoke registered AppFunctions.
-2. **Parameter Validation**: Input and output arguments are strictly validated against the declared JSON Schema before execution begins.
-3. **Execution Timeouts**: Invocations enforce a default 5-second deadline to ensure assistant responsiveness.
+This section describes the Android AppFunctions mechanism, which a native `AppFunctionService` in your app takes part in. `useAppFunctions` does not register your functions with it.
+
+1. **System assistant verification**: Android lets only authorized system assistant packages holding the `EXECUTE_APP_FUNCTIONS` signature permission invoke an app's registered AppFunctions.
+2. **Parameter validation**: the platform validates arguments against the schema the app declared.
+3. **Execution timeouts**: the platform applies a deadline to invocations.

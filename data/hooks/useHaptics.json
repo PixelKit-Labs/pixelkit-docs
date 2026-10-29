@@ -2,10 +2,10 @@
   "id": "useHaptics",
   "name": "useHaptics",
   "category": "sensors",
-  "chipBadge": "LRA · Android 16 envelopes",
+  "chipBadge": "Vibrator · Android 16 envelopes",
   "summary": "Vibration, from simple taps to custom-shaped waveforms.",
-  "plain": "Makes the phone buzz. Standard patterns cover ordinary taps and confirmations. On this device you can also design your own vibration shape, rising and falling in intensity, which is how you make a distinctive feel rather than a generic buzz.",
-  "description": "Standard patterns come from expo-haptics. Beyond that, the native module reports the actual vibrator hardware: whether amplitude can be varied, its resonant frequency, and which composition primitives it supports. Android 16 envelope effects are built with BasicEnvelopeBuilder from intensity and sharpness control points and must finish at zero intensity. This Pixel supports them, which is how the thinking ramp and alert pulses are produced.",
+  "plain": "Makes the phone buzz. Standard patterns cover ordinary taps and confirmations. On devices where Android reports envelope support you can also design your own vibration shape, rising and falling in intensity, which is how you make a distinctive feel rather than a generic buzz.",
+  "description": "Standard patterns come from expo-haptics. Beyond that, the native module reports the vibrator's capabilities: whether amplitude can be varied, its resonant frequency (null when the platform does not report it), and which composition primitives it supports. Android 16 envelope effects are built with BasicEnvelopeBuilder from intensity and sharpness control points and must finish at zero intensity; they play only where Vibrator.areEnvelopeEffectsSupported() is true (check envelopeSupported). source reflects the capability read, not the expo-haptics calls.",
   "signature": "useHaptics(): HapticsState",
   "params": [],
   "returns": [
@@ -22,7 +22,7 @@
     {
       "name": "resonantFrequencyHz",
       "type": "number | null",
-      "desc": "The frequency at which the actuator is most efficient. Around 134 Hz here."
+      "desc": "The actuator's resonant frequency in Hz as the vibrator reports it, or null when not reported. Effects near it feel strongest."
     },
     {
       "name": "supportedPrimitives",
@@ -32,27 +32,27 @@
     {
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
-      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+      "desc": "'hardware' once the vibrator capability read succeeded, 'unavailable' before it, on web, or without the native module."
     }
   ],
   "actions": [
     {
       "name": "selection()",
-      "type": "() => Promise<void>",
+      "type": "() => Promise<boolean>",
       "desc": "Faint tick for moving between options: sliders, wheel pickers, tab changes.",
-      "output": "Resolves once dispatched. No-op on web; failures are logged rather than thrown."
+      "output": "Resolves true when the platform call completed, false on web or when it threw; failures are logged rather than thrown."
     },
     {
       "name": "light() / medium() / heavy()",
-      "type": "() => Promise<void>",
+      "type": "() => Promise<boolean>",
       "desc": "Impact taps of increasing weight, for presses, reveals and destructive confirmations.",
-      "output": "Resolves once dispatched. No-op on web."
+      "output": "Resolves true when the platform call completed, false on web or when it threw."
     },
     {
       "name": "success() / warning() / error()",
-      "type": "() => Promise<void>",
+      "type": "() => Promise<boolean>",
       "desc": "Notification patterns that carry meaning: a double pulse, a buzz, a triple pulse. Use them consistently.",
-      "output": "Resolves once dispatched. No-op on web."
+      "output": "Resolves true when the platform call completed, false on web or when it threw."
     },
     {
       "name": "playEnvelope(points, sharpness?)",
@@ -93,9 +93,9 @@
     },
     {
       "name": "triggerHaptic(type?)",
-      "type": "(type?: HapticType) => Promise<void>",
-      "desc": "Plays a standard platform pattern. No-op on web.",
-      "output": "`Promise<void>` — resolves when dispatched; failures are logged, not thrown"
+      "type": "(type?: HapticType) => Promise<boolean>",
+      "desc": "Plays a standard platform pattern through expo-haptics. Returns false on web.",
+      "output": "`Promise<boolean>` — true when the platform call completed without throwing (the platform does not confirm the actuator moved); false on web or when the call threw (failures are logged, not thrown)"
     }
   ],
   "example": "import { useHaptics, HapticEnvelopes } from '@pixelkit-labs/sdk';\n\nfunction Confirm() {\n  const { success, playEnvelope, envelopeSupported } = useHaptics();\n  const onDone = () => envelopeSupported ? playEnvelope(HapticEnvelopes.thinkingRamp) : success();\n  return <Button title=\"Done\" onPress={onDone} />;\n}",

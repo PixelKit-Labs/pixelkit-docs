@@ -43,7 +43,7 @@
     {
       "name": "isAvailable",
       "type": "boolean",
-      "desc": "Whether the sensors are present and streaming."
+      "desc": "True when at least one motion sensor (accelerometer, gyroscope or magnetometer) reported itself present through isAvailableAsync() and was subscribed."
     },
     {
       "name": "hasMotionSample",

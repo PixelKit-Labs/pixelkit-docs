@@ -3,91 +3,60 @@
   "name": "useThermometer",
   "category": "sensors",
   "chipBadge": "FIR · MLX90632 · thermal",
-  "summary": "Non-contact infrared temperature measurement on Google Pixel Pro hardware.",
-  "plain": "Reads surface and ambient temperatures from the dedicated far-infrared (FIR) sensor on Pixel 8 Pro, 9 Pro, 10 Pro, and 11 Pro devices. Allows adjusting material emissivity and measurement mode.",
-  "description": "Interfaces with the Melexis MLX90632 non-contact FIR temperature sensor integrated into Google Pixel Pro camera visors. Surfaces calibrated surface temperatures in both Celsius and Fahrenheit along with ambient die temperature. Supports configurable emissivity correction factors (0.10 to 1.00) and measurement modes (object, body, ambient). Reports unavailable on non-Pro models.",
-  "signature": "useThermometer(initialEmissivity?: number): ThermometerTelemetry",
-  "params": [
-    {
-      "name": "initialEmissivity",
-      "type": "number",
-      "desc": "Surface emissivity factor from 0.1 to 1.0, defaulting to 0.95 (organic/skin/water)."
-    }
-  ],
+  "summary": "Discovery of the non-contact infrared temperature sensor on Google Pixel Pro hardware; temperatures stay null until a verified decoder exists.",
+  "plain": "Finds out whether this phone lists the far-infrared temperature sensor that Pixel Pro models carry. It does not read a temperature from it yet, so the temperatures are always null and the reason is in error.",
+  "description": "The native module asks Android SensorManager for a sensor whose type string contains object_temperature or mlx90632, or whose name contains Thermometer or MLX90632, and reports its name in sensorName. PixelKit has no verified decoder for that sensor's samples (unit and channel layout), so surfaceTemperatureC, surfaceTemperatureF and ambientTemperatureC are null and error states which sensor was found and why nothing is read. There is no emissivity or measurement-mode setting: nothing downstream of the sensor would apply it. Nothing is estimated or simulated.",
+  "signature": "useThermometer(): ThermometerTelemetry",
+  "params": [],
   "returns": [
     {
       "name": "isSupported",
       "type": "boolean",
-      "desc": "Whether the device hardware features the FIR non-contact temperature sensor."
+      "desc": "Whether SensorManager lists a far-infrared temperature sensor on this device."
     },
     {
       "name": "surfaceTemperatureC",
       "type": "number | null",
-      "desc": "Calibrated surface temperature in degrees Celsius (°C), or null if absent/unmeasured."
+      "desc": "Surface temperature in degrees Celsius (°C); null because no decoder exists."
     },
     {
       "name": "surfaceTemperatureF",
       "type": "number | null",
-      "desc": "Calibrated surface temperature in degrees Fahrenheit (°F), or null."
+      "desc": "Surface temperature in degrees Fahrenheit (°F); null because no decoder exists."
     },
     {
       "name": "ambientTemperatureC",
       "type": "number | null",
-      "desc": "Sensor die / internal ambient temperature in degrees Celsius (°C), or null."
+      "desc": "Sensor die / ambient temperature in degrees Celsius (°C); null because no decoder exists."
     },
     {
-      "name": "emissivity",
-      "type": "number",
-      "desc": "Current material surface emissivity coefficient (0.1 to 1.0)."
-    },
-    {
-      "name": "mode",
-      "type": "'object' | 'body' | 'ambient'",
-      "desc": "Target measurement mode: 'object', 'body', or 'ambient'."
+      "name": "sensorName",
+      "type": "string | null",
+      "desc": "Name SensorManager gives the sensor, or null when none was found."
     },
     {
       "name": "error",
       "type": "string | null",
-      "desc": "Error message if sensor probing failed."
+      "desc": "Why temperatures are null: the sensor was found but is not decoded, no sensor is listed, or the probe failed."
     },
     {
       "name": "source",
       "type": "TelemetrySource",
-      "desc": "Data provenance: 'hardware' or 'unavailable'."
-    },
-    {
-      "name": "setEmissivity",
-      "type": "(value: number) => void",
-      "desc": "Updates the material emissivity factor."
-    },
-    {
-      "name": "setMode",
-      "type": "(mode: 'object' | 'body' | 'ambient') => void",
-      "desc": "Sets the measurement mode to 'object', 'body', or 'ambient'."
+      "desc": "'hardware' when a temperature was read, otherwise 'unavailable'."
     },
     {
       "name": "refresh",
       "type": "() => void",
-      "desc": "Probes the hardware sensor for a fresh reading."
+      "desc": "Probes the sensor list again."
     }
   ],
   "actions": [
     {
-      "name": "setEmissivity(value)",
-      "desc": "Updates the material surface emissivity coefficient.",
-      "type": "(value: number) => void"
-    },
-    {
-      "name": "setMode(mode)",
-      "desc": "Switches the calculation mode between 'object', 'body', and 'ambient'.",
-      "type": "(mode: 'object' | 'body' | 'ambient') => void"
-    },
-    {
       "name": "refresh()",
-      "desc": "Requests an updated temperature reading from hardware.",
+      "desc": "Probes the sensor list again.",
       "type": "() => void"
     }
   ],
-  "example": "import { useThermometer } from '@pixelkit-labs/sdk';\n\nfunction TemperatureBadge() {\n  const { isSupported, surfaceTemperatureC, surfaceTemperatureF } = useThermometer();\n  if (!isSupported) return <Text>Thermometer unavailable</Text>;\n  return <Text>Temp: {surfaceTemperatureC?.toFixed(1) ?? '—'} °C ({surfaceTemperatureF?.toFixed(1) ?? '—'} °F)</Text>;\n}",
-  "agentNote": "Available exclusively on Pixel Pro devices (8 Pro, 9 Pro, 10 Pro, 11 Pro). Non-Pro devices return isSupported: false with null readings."
+  "example": "import { useThermometer } from '@pixelkit-labs/sdk';\n\nfunction TemperatureBadge() {\n  const { isSupported, sensorName, surfaceTemperatureC, error } = useThermometer();\n  if (!isSupported) return <Text>No infrared sensor listed</Text>;\n  return <Text>{surfaceTemperatureC != null ? `${surfaceTemperatureC.toFixed(1)} °C` : `— (${sensorName}: ${error})`}</Text>;\n}",
+  "agentNote": "Never show a temperature from this hook unless surfaceTemperatureC is a number; today it is null on every device, with the reason in error. Do not offer emissivity or mode controls: the hook has none."
 }

@@ -2,28 +2,33 @@
   "id": "useADPFHintSession",
   "name": "useADPFHintSession",
   "category": "silicon",
-  "chipBadge": "ADPF · EAS · frame hints",
-  "summary": "Active frame workload negotiation with Android Dynamic Performance Framework and Tensor EAS.",
-  "plain": "Creates an active ADPF hint session with the Energy-Aware Scheduler to dynamically adjust CPU clock frequencies based on actual frame render workloads, eliminating stutter without wasting battery.",
-  "description": "Interfaces directly with android.os.PerformanceHintManager (Android 12+ API 31+). Manages an active thread hint session allowing apps to report exact frame computation times in nanoseconds. This informs the kernel scheduler in real-time whether the workload is meeting its deadline (e.g. 16.67ms for 60Hz or 8.33ms for 120Hz), scaling frequencies up only when needed.",
-  "signature": "useADPFHintSession(initialTargetDurationMs?: number): ADPFHintSessionTelemetry",
+  "chipBadge": "ADPF · PerformanceHintManager",
+  "summary": "PerformanceHintManager hint session: report how long work took against a target duration for the session's threads.",
+  "plain": "Creates an ADPF performance hint session. You report how long a unit of work took against a target duration and the platform may use that when scheduling the session's threads. Whether and how it changes CPU frequency is up to the platform and is not observed by this hook.",
+  "description": "Uses android.os.PerformanceHintManager (Android 12+, API 31+). On mount the native module closes any previous session, then calls createHintSession for the app's main thread (its tid equals the process id), or for the thread ids passed as threadIds, with the initial target duration. isSupported is true only when createHintSession returned a session; otherwise it is false and error says so. reportWorkDuration and updateTargetWorkDuration forward to Session.reportActualWorkDuration and Session.updateTargetWorkDuration and return true when the platform accepted the call. The session covers the main thread by default, so report durations of work done on that thread (or pass the tids of the threads that do the work); durations measured on the JS thread describe a thread that is not in the session. The native module keeps one session per app.",
+  "signature": "useADPFHintSession(initialTargetDurationMs?: number, threadIds?: number[]): ADPFHintSessionTelemetry",
   "params": [
     {
       "name": "initialTargetDurationMs",
       "type": "number",
-      "desc": "Initial target frame duration budget in milliseconds, defaulting to 16.67ms (60 FPS)."
+      "desc": "Initial target work duration in milliseconds, defaulting to 16.67ms (a 60 FPS budget)."
+    },
+    {
+      "name": "threadIds",
+      "type": "number[]",
+      "desc": "Thread ids (Linux tids) the session covers. Defaults to the app's main thread."
     }
   ],
   "returns": [
     {
       "name": "isSupported",
       "type": "boolean",
-      "desc": "Whether ADPF PerformanceHintManager sessions are supported on this device."
+      "desc": "Whether createHintSession returned a session (Android 12+)."
     },
     {
       "name": "targetFrameDurationMs",
       "type": "number",
-      "desc": "Current target frame render budget in milliseconds."
+      "desc": "Current target work duration in milliseconds, as last set by this hook."
     },
     {
       "name": "error",
@@ -33,41 +38,41 @@
     {
       "name": "source",
       "type": "TelemetrySource",
-      "desc": "Data provenance: 'hardware' or 'unavailable'."
+      "desc": "Data provenance: 'hardware' when a session exists, 'unavailable' otherwise."
     },
     {
       "name": "reportWorkDuration",
       "type": "(actualDurationNanos: number) => boolean",
-      "desc": "Reports actual computation duration taken by the render thread in nanoseconds."
+      "desc": "Reports the time the session's threads took for one unit of work, in nanoseconds. True when the platform accepted the call."
     },
     {
       "name": "updateTargetWorkDuration",
       "type": "(targetNanos: number) => boolean",
-      "desc": "Updates target frame deadline in nanoseconds (e.g. dynamically switching refresh rates)."
+      "desc": "Updates the target work duration in nanoseconds (for example when the refresh rate changes). True when the platform accepted the call."
     },
     {
       "name": "closeSession",
       "type": "() => boolean",
-      "desc": "Closes the active ADPF hint session."
+      "desc": "Closes the active ADPF hint session. True when the platform closed it; isSupported is unchanged."
     }
   ],
   "actions": [
     {
       "name": "reportWorkDuration(actualDurationNanos)",
-      "desc": "Reports frame workload duration to the Energy-Aware Scheduler.",
-      "type": "(actualDurationNanos: number) => void"
+      "desc": "Reports one unit of work duration for the session's threads. Returns false when there is no session or the platform rejected the call.",
+      "type": "(actualDurationNanos: number) => boolean"
     },
     {
       "name": "updateTargetWorkDuration(targetNanos)",
-      "desc": "Updates the target frame deadline in nanoseconds.",
-      "type": "(targetNanos: number) => void"
+      "desc": "Updates the target work duration in nanoseconds. Returns false when there is no session or the platform rejected the call.",
+      "type": "(targetNanos: number) => boolean"
     },
     {
       "name": "closeSession()",
-      "desc": "Terminates the active ADPF hint session.",
-      "type": "() => void"
+      "desc": "Closes the active ADPF hint session. Returns false when there is none.",
+      "type": "() => boolean"
     }
   ],
-  "example": "import { useADPFHintSession } from '@pixelkit-labs/sdk';\n\nfunction HeavyCompute() {\n  const { isSupported, reportWorkDuration } = useADPFHintSession(16.67);\n  const runFrame = () => {\n    const t0 = performance.now();\n    // ... expensive work ...\n    const durationNanos = Math.round((performance.now() - t0) * 1_000_000);\n    reportWorkDuration(durationNanos);\n  };\n  return <Button title=\"Execute Workload\" onPress={runFrame} />;\n}",
-  "agentNote": "Available on Android 12+ (API 31+). Directly drives Tensor DVFS (dynamic voltage and frequency scaling)."
+  "example": "import { useADPFHintSession } from '@pixelkit-labs/sdk';\n\nfunction HeavyCompute() {\n  const { isSupported, reportWorkDuration } = useADPFHintSession(16.67);\n  const onFrameDone = (durationMs: number) => {\n    // durationMs: time the session's thread (the main thread by default) spent on the frame\n    reportWorkDuration(Math.round(durationMs * 1_000_000));\n  };\n  return <Text>ADPF session: {isSupported ? 'active' : 'none'}</Text>;\n}",
+  "agentNote": "Available on Android 12+ (API 31+). The hook reports durations to the platform; it does not observe or guarantee any change in CPU frequency."
 }

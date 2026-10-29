@@ -5,7 +5,7 @@
   "chipBadge": "LTPO OLED · ARR",
   "summary": "Refresh rate, HDR capability, brightness, high brightness mode, and the screen wake lock.",
   "plain": "Reads what the screen is doing and lets you influence it. The refresh rate changes constantly on this panel to save power, so it is re-read live rather than assumed.",
-  "description": "Display mode, supported refresh rates, HDR types, and resolution come from the Android Display object through the native module, re-read every two seconds because adaptive refresh rate changes the active mode continuously. Brightness uses expo-brightness and the wake lock uses expo-keep-awake. setPreferredRefreshRate requests a rate, setHighBrightnessMode toggles peak sunlight luminance, and setPreferredDisplayMode selects panel modes directly.",
+  "description": "Display mode, supported refresh rates, HDR types, and resolution come from the Android Display object through the native module, re-read every two seconds because adaptive refresh rate changes the active mode continuously. Brightness uses expo-brightness and the wake lock uses expo-keep-awake. setPreferredRefreshRate requests a rate, setHighBrightnessMode requests maximum window brightness (BRIGHTNESS_OVERRIDE_FULL) plus an HDR headroom of 3.0 on API 34+, and setPreferredDisplayMode requests a panel mode by ID. These are window-attribute requests; the panel's own High Brightness Mode is controlled by firmware and is not read.",
   "signature": "useDisplay(): DisplayState",
   "params": [],
   "returns": [
@@ -52,7 +52,7 @@
     {
       "name": "isHbmActive",
       "type": "boolean",
-      "desc": "Whether High Brightness Mode (HBM) override is currently engaged."
+      "desc": "Whether the last setHighBrightnessMode(true) request was accepted and not since reversed. A record of the request, not a read of the panel's firmware-controlled High Brightness Mode."
     },
     {
       "name": "brightness",
@@ -92,15 +92,15 @@
     {
       "name": "setHighBrightnessMode(enabled)",
       "type": "(enabled: boolean) => Promise<boolean>",
-      "desc": "Engages High Brightness Mode (HBM) peak sunlight boost and maximum HDR headroom override.",
+      "desc": "Requests maximum window brightness (WindowManager BRIGHTNESS_OVERRIDE_FULL) and, on API 34+, a desired HDR headroom of 3.0; disabling restores the default brightness override and headroom 0.0. Does not control or read the panel's firmware High Brightness Mode.",
       "inputs": [
         {
           "name": "enabled",
           "type": "boolean",
-          "desc": "Whether HBM should be forced on."
+          "desc": "Whether the maximum-brightness request should be applied (true) or released (false)."
         }
       ],
-      "output": "Resolves true when applied."
+      "output": "Resolves true when the window attributes were set. It does not confirm what the panel actually did."
     },
     {
       "name": "setPreferredDisplayMode(modeId)",

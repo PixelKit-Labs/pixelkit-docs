@@ -5,7 +5,7 @@
   "chipBadge": "Ultra-Wideband (Pro)",
   "summary": "Ultra-wideband radio state and real ranging sessions against a peer device.",
   "plain": "Reports whether this phone has the short-range precision radio used for precision spatial tracking and car keys, and ranges against a second UWB device whose address and channel you supply.",
-  "description": "Chip presence, enabled state, chip id and ranging service readiness are queried from Android UwbManager and PackageManager through the native module, carrying source hardware. startRanging(config) opens a real android.ranging.RangingSession (Android 16, API 36+, RAW UWB session) with the peer described by the config: its address, the session id, and optionally the channel, preamble index and key info, all agreed with the peer out of band (BLE, NFC, QR). The call resolves true only when the platform reports the session open; otherwise it resolves false and sessionError carries a status such as needs_peer_configuration, uwb_unsupported, ranging_api_unavailable, uwb_disabled, permission_denied (android.permission.RANGING must be declared and granted by the app), session_active, invalid_parameters or open_failed. measurements holds the latest android.ranging.RangingData sample per peer (distance in meters, azimuth and elevation in degrees, each with the platform's confidence level) and stays empty until the peer answers.",
+  "description": "Chip presence (android.hardware.uwb feature), the enabled state (UwbManager.isUwbEnabled() by reflection, null when apps cannot read it) and ranging service readiness (whether the Android 16 RangingManager service exists) are queried through the native module, carrying source hardware. startRanging(config) opens a real android.ranging.RangingSession (Android 16, API 36+, RAW UWB session) with the peer described by the config: its address, the session id, and optionally the channel, preamble index and key info, all agreed with the peer out of band (BLE, NFC, QR). The call resolves true only when the platform reports the session open; otherwise it resolves false and sessionError carries a status such as needs_peer_configuration, uwb_unsupported, ranging_api_unavailable, uwb_disabled, permission_denied (android.permission.RANGING must be declared and granted by the app), session_active, invalid_parameters or open_failed. measurements holds the latest android.ranging.RangingData sample per peer (distance in meters, azimuth and elevation in degrees, each with the platform's confidence level) and stays empty until the peer answers.",
   "signature": "useUWB(): UWBState",
   "params": [],
   "returns": [
@@ -16,18 +16,13 @@
     },
     {
       "name": "isEnabled",
-      "type": "boolean",
-      "desc": "Whether the radio is switched on in system settings."
-    },
-    {
-      "name": "chipId",
-      "type": "string | null",
-      "desc": "Chip identifier from the native radio probe."
+      "type": "boolean | null",
+      "desc": "Whether the radio is switched on in system settings; null when Android does not let apps read it."
     },
     {
       "name": "rangingApiSupported",
       "type": "boolean",
-      "desc": "Whether the device declares the android.hardware.ranging feature."
+      "desc": "Whether the Android 16 android.ranging.RangingManager service exists."
     },
     {
       "name": "isRanging",

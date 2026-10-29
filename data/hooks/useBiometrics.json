@@ -22,7 +22,7 @@
     {
       "name": "supportedTypes",
       "type": "string[]",
-      "desc": "Which modalities are available, such as fingerprint or face."
+      "desc": "Modalities the platform reports: 'Fingerprint', 'Face Unlock' or 'Iris'. Any other type value is omitted rather than labelled."
     },
     {
       "name": "hasChecked",

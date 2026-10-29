@@ -2,37 +2,27 @@
   "id": "useMicrophoneArray",
   "name": "useMicrophoneArray",
   "category": "sensors",
-  "chipBadge": "audio · beamforming · mics",
-  "summary": "Multi-mic acoustic array topology, polar directivity, and beamforming controls.",
-  "plain": "Inspects the physical microphone array on the device chassis (top, bottom, rear camera visor), returns polar pattern directivity, and allows steering the hardware acoustic beam towards the user or scene.",
-  "description": "Directly queries the Android AudioManager for connected hardware microphones and their geometric coordinates, group mappings, and directivity patterns (omnidirectional, cardioid, hypercardioid). On supported Pixel devices, provides controls to steer acoustic beamforming (towards user, away from user, external) and adjust acoustic zoom field dimension.",
+  "chipBadge": "audio · mics",
+  "summary": "Microphone inventory: position, orientation, directionality and location of each microphone the platform lists.",
+  "plain": "Lists the microphones the phone reports (top, bottom, rear), with where each sits and its polar pattern. It only reads the list; it does not steer or focus the microphones.",
+  "description": "Queries Android AudioManager.getMicrophones() through the native module and returns, for each microphone, its id, description, type, directionality (omnidirectional, bidirectional, cardioid, hypercardioid, supercardioid), location, group and the position and orientation the platform reports, null when it reports none. The hook does not steer or focus the array: MediaRecorder and AudioRecord accept a preferred microphone direction per recorder instance, and this hook owns no recorder, so it exposes no direction or zoom control.",
   "signature": "useMicrophoneArray(): MicrophoneArrayTelemetry",
   "params": [],
   "returns": [
     {
       "name": "microphones",
       "type": "MicrophoneInfo[]",
-      "desc": "Array of physical microphones detected on the device chassis with 3D positions and polar patterns."
-    },
-    {
-      "name": "direction",
-      "type": "'user' | 'away' | 'external' | 'omni'",
-      "desc": "Current beam direction configured for the microphone array."
-    },
-    {
-      "name": "fieldZoom",
-      "type": "number",
-      "desc": "Acoustic field zoom dimension ratio from 0.0 (wide) to 1.0 (narrow focus)."
+      "desc": "Microphones the platform lists, with position and orientation (null when the platform reports none) and directionality."
     },
     {
       "name": "isSupported",
       "type": "boolean",
-      "desc": "Whether the hardware and platform support acoustic array inspection and beamforming."
+      "desc": "Whether the platform can list microphones (Android 9+)."
     },
     {
       "name": "error",
       "type": "string | null",
-      "desc": "Error message if microphone array query or direction setting failed."
+      "desc": "Error message if the microphone query failed."
     },
     {
       "name": "source",
@@ -40,38 +30,18 @@
       "desc": "Data provenance: 'hardware' or 'unavailable'."
     },
     {
-      "name": "setDirection",
-      "type": "(direction: 'user' | 'away' | 'external' | 'omni') => Promise<boolean>",
-      "desc": "Steers acoustic beamforming towards the user, away, external, or omnidirectional."
-    },
-    {
-      "name": "setFieldZoom",
-      "type": "(zoom: number) => Promise<boolean>",
-      "desc": "Adjusts acoustic zoom field dimension (0.0 to 1.0)."
-    },
-    {
       "name": "refresh",
       "type": "() => void",
-      "desc": "Re-queries the hardware microphone array."
+      "desc": "Re-queries the platform microphone list."
     }
   ],
   "actions": [
     {
-      "name": "setDirection(direction)",
-      "desc": "Directs acoustic beamforming towards 'user', 'away', 'external', or 'omni'.",
-      "type": "(direction: 'user' | 'away' | 'external' | 'omni') => Promise<boolean>"
-    },
-    {
-      "name": "setFieldZoom(zoom)",
-      "desc": "Sets the acoustic zoom field dimension (0.0 to 1.0).",
-      "type": "(zoom: number) => Promise<boolean>"
-    },
-    {
       "name": "refresh()",
-      "desc": "Re-queries hardware microphone state.",
+      "desc": "Re-queries the platform microphone list.",
       "type": "() => void"
     }
   ],
-  "example": "import { useMicrophoneArray } from '@pixelkit-labs/sdk';\n\nfunction MicDirectivity() {\n  const { microphones, direction, setDirection } = useMicrophoneArray();\n  return (\n    <View>\n      <Text>Mics: {microphones.length} · Beam: {direction}</Text>\n      <Button title=\"Focus User\" onPress={() => setDirection('user')} />\n    </View>\n  );\n}",
-  "agentNote": "Requires Android 9+ (API 28+) for microphone querying and Android 11+ (API 30+) for direction steering."
+  "example": "import { useMicrophoneArray } from '@pixelkit-labs/sdk';\n\nfunction MicList() {\n  const { microphones, isSupported } = useMicrophoneArray();\n  if (!isSupported) return <Text>Microphone list unavailable</Text>;\n  return (\n    <View>\n      {microphones.map((m) => (\n        <Text key={m.id}>{m.description} · {m.directionality} · {m.location}</Text>\n      ))}\n    </View>\n  );\n}",
+  "agentNote": "Requires Android 9+ (API 28+). The hook only lists microphones; it cannot steer or focus them, so do not present a beam or zoom control."
 }

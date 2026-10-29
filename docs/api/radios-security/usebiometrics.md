@@ -23,7 +23,7 @@ function useBiometrics(): BiometricState & {
 | :--- | :--- | :--- |
 | `hasHardware` | `boolean` | Whether a biometric sensor exists. Stays `false` when the capability read failed, rather than claiming hardware that was not confirmed. |
 | `isEnrolled` | `boolean` | Whether the user has enrolled a fingerprint or face. Without this a prompt cannot succeed. |
-| `supportedTypes` | `string[]` | Modalities the platform reports, e.g. `['Fingerprint', 'Face Unlock']`. |
+| `supportedTypes` | `string[]` | Modalities the platform reports, from `AuthenticationType`: `'Fingerprint'`, `'Face Unlock'` or `'Iris'`. Any other type value is omitted rather than labelled. |
 | `hasChecked` | `boolean` | Whether the capability read has completed. Before it, treat the other flags as unknown rather than false. |
 | `lastResult` | `'success' \| 'failed' \| 'cancelled' \| null` | Outcome of the last prompt. `null` before the first attempt. Distinguishes a deliberate cancel from a rejected credential. |
 | `error` | `string \| null` | Set only when a call itself failed — not when the user cancelled or was not recognised. |

@@ -11,18 +11,18 @@
   "returns": [
     {
       "name": "modelName",
-      "type": "string",
-      "desc": "Commercial model name (e.g. \"Pixel 11 Pro\")."
+      "type": "string | null",
+      "desc": "Commercial model name (e.g. \"Pixel 11 Pro\"); null when the platform does not report it."
     },
     {
       "name": "brand",
-      "type": "string",
-      "desc": "Hardware manufacturer brand (e.g. \"Google\")."
+      "type": "string | null",
+      "desc": "Hardware manufacturer brand (e.g. \"Google\"); null when the platform does not report it."
     },
     {
       "name": "osVersion",
-      "type": "string",
-      "desc": "Android release string."
+      "type": "string | null",
+      "desc": "Android release string; null when the platform does not report it."
     },
     {
       "name": "batteryPercent",
@@ -41,8 +41,8 @@
     },
     {
       "name": "lowPowerMode",
-      "type": "boolean",
-      "desc": "Whether Battery Saver is active. Treat as a direct instruction to do less work."
+      "type": "boolean | null",
+      "desc": "Whether Battery Saver is active; null until the first read or when the read failed. Treat true as a direct instruction to do less work."
     },
     {
       "name": "networkType",

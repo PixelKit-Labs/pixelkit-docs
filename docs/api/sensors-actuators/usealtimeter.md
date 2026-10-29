@@ -20,7 +20,7 @@ useAltimeter(updateIntervalMs?: number): AltimeterTelemetry
 | `verticalVelocityMs` | `number \| null` | Rate of climb or descent in meters per second (m/s), smoothed over recent samples. Null until moving. |
 | `pressureHpa` | `number \| null` | Raw atmospheric pressure in hectopascals (hPa / mbar). |
 | `seaLevelPressureHpa` | `number` | Calibrated reference sea-level pressure in hPa. Defaults to standard 1013.25. |
-| `pressureTrend` | `'rising' \| 'steady' \| 'falling' \| 'rapid_fall' \| null` | Short-term pressure change trend indicating weather changes (rapid_fall indicates storm front). |
+| `pressureTrend` | `'rising' \| 'steady' \| 'falling' \| 'rapid_fall' \| null` | Pressure change extrapolated to hPa/hour over the retained samples (at most the last 60 s). `null` until at least 5 samples spanning 10 s exist; never `'steady'` by default. |
 | `isAvailable` | `boolean` | Whether the hardware barometer is present and streaming. |
 | `error` | `string \| null` | Error message if sensor access or subscription failed. |
 | `source` | `TelemetrySource` | Data provenance: 'derived' from hardware barometer, or 'unavailable'. |

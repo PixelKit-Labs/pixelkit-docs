@@ -7,14 +7,14 @@ This document covers conversational reasoning, on-device generative tasks, speec
 <!-- hooks:start -->
 | Hook | What it reads |
 | :--- | :--- |
-| [`useAppFunctions`](./useappfunctions.md) | Exposes on-device actions and hardware capabilities to system AI and Gemini Assistant. |
-| [`useCloudHardwareAgent`](./usecloudhardwareagent.md) | Autonomous cloud hardware reasoning loop with multi-turn tool calling and extended thinking. |
+| [`useAppFunctions`](./useappfunctions.md) | In-process registry and runner for device actions, plus a probe of the Android AppFunctions service. |
+| [`useCloudHardwareAgent`](./usecloudhardwareagent.md) | Multi-turn Gemini tool-calling loop over the capability adapter you pass to each ask(). |
 | [`useEmbeddings`](./useembeddings.md) | On-device text embeddings from a user-supplied TFLite model (MediaPipe TextEmbedder) and cosine similarity scoring. |
 | [`useGemini`](./usegemini.md) | Cloud Gemini chat with real multi-turn history. |
-| [`useGeminiLive`](./usegeminilive.md) | Real-time bidirectional streaming audio, camera video frames, text, and hardware tool execution with Gemini 3.8 Multimodal Live API. |
+| [`useGeminiLive`](./usegeminilive.md) | Bidirectional streaming of text, microphone audio chunks and camera frames with the Gemini Live API over a WebSocket, with tool calls routed through a capability adapter you supply. |
 | [`useGeminiNano`](./usegemininano.md) | Gemini Nano running on the phone, with no network and no API key. |
 | [`useGenAITasks`](./usegenaitasks.md) | Four focused text tasks that run locally: summarise, proofread, rewrite, describe. |
-| [`useNaturalLanguageAI`](./usenaturallanguageai.md) | Translation, language detection, smart replies and entity extraction, all offline. |
+| [`useNaturalLanguageAI`](./usenaturallanguageai.md) | Translation, language detection, smart replies and entity extraction, running on the device. |
 | [`useSpeech`](./usespeech.md) | Speaking text aloud with the voices the phone has installed. |
 | [`useSpeechAI`](./usespeechai.md) | Turning speech into text, on the device or in the cloud. |
 | [`useVisionAI`](./usevisionai.md) | Nine on-device vision capabilities, plus cloud scene understanding. |

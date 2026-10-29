@@ -68,7 +68,7 @@ function useGeminiNano(): {
 | `isWarmingUp` / `warmupMs` | `boolean` / `number \| null` | Whether a warm-up is running, and how long the last one took. |
 | `isGenerating` | `boolean` | Whether any generation, task or chat turn is in flight. |
 | `error` | `string \| null` | Last failure message. Native errors surface as `E_NANO_<ErrorCode>`. |
-| `source` | `TelemetrySource` | `'hardware'` when the PixelNano module is present, `'unavailable'` on web or in Expo Go. |
+| `source` | `TelemetrySource` | `'hardware'` once AICore has answered (model info was read, or `status` is `'available'`), `'unavailable'` before that, after a failed read, on web or in Expo Go. |
 | `temperature` `topK` `candidateCount` `maxOutputTokens` | `number` | Current generation parameters, defaults `0.7`, `40`, `1`, `1024`. Applied to every chat turn. |
 | `thinkingMode` | `boolean` | Whether thinking is requested. Only honoured when `info.thinkingModeAvailable` is true. |
 | `systemInstruction` | `string` | Standing instruction, sent as a system part when supported and otherwise prefixed to the prompt. |

@@ -34,7 +34,6 @@ function useCamera(): CameraTelemetry & {
  toggleTorch: () => void;
  setMode: (mode: 'picture' | 'video') => void;
  setLook: (look: CameraLook) => void;
- toggleUltraLowLightVideo: () => void;
  pausePreview: () => Promise<void>;
  resumePreview: () => Promise<void>;
 };
@@ -61,7 +60,6 @@ function useCamera(): CameraTelemetry & {
 | `availableLenses` | `string[]` | Lens identifiers the device reports. Empty until the preview is running. |
 | `availablePictureSizes` | `string[]` | Picture sizes the device supports. Empty until the preview is running. |
 | `selectedLook` | `CameraLook` | Label only. Looks are a Pixel Camera app feature and are not applied to captures. |
-| `isUltraLowLightVideoActive` | `boolean` | UI flag only, for the same reason. |
 | `error` | `string \| null` | Why the last capture, recording or capability read failed. |
 | `source` | `TelemetrySource` | `'hardware'` once permission is granted, `'unavailable'` otherwise. |
 
@@ -79,7 +77,6 @@ function useCamera(): CameraTelemetry & {
 | `toggleTorch()` | none | `void` | Turns the continuous light on or off through the preview. For torch without a preview, use `useTorch`. |
 | `setMode(mode)` | `mode: 'picture' \| 'video'` | `void` | Switches the view between stills and video. |
 | `setLook(look)` | `look: CameraLook` — one of `Original`, `Natural`, `Shadows`, `Vanilla`, `Editorial`, `Velvet`, `Classic`, `Digi`, `Black Tie`, `Minimal` | `void` | Records a label in state. It does not change the image; Looks are not reachable from third-party apps. |
-| `toggleUltraLowLightVideo()` | none | `void` | Flips the UI flag only, for the same reason. |
 | `pausePreview()` / `resumePreview()` | none | `Promise<void>` | Freezes or restarts the preview without tearing the camera down. |
 
 ## Example

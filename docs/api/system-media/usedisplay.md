@@ -2,7 +2,7 @@
 
 **Source:** [packages/sdk/src/hardware/useDisplay.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/hardware/useDisplay.ts)
 
-Display telemetry and actuator controls: the live refresh-rate mode, adaptive refresh rate (ARR) support, HDR capabilities, High Brightness Mode (HBM) sunlight boost, display mode switching, and resolution from Android `Display`, plus brightness (`expo-brightness`) and the screen wake lock (`expo-keep-awake`). Refresh rate is re-read every 2 s because ARR changes it while you watch. It reads brightness once on mount and display information every 2,000 ms.
+Display telemetry and actuator controls: the live refresh-rate mode, adaptive refresh rate (ARR) support, HDR capabilities, a maximum-window-brightness request, display mode switching, and resolution from Android `Display`, plus brightness (`expo-brightness`) and the screen wake lock (`expo-keep-awake`). Refresh rate is re-read every 2 s because ARR changes it while you watch. It reads brightness once on mount and display information every 2,000 ms.
 
 ## Signature
 ```typescript
@@ -42,7 +42,7 @@ function useDisplay(): {
 | `isHdr` | `boolean` | Whether the display is in an HDR mode. |
 | `maxLuminance` | `number \| null` | Peak luminance the platform reports, in nits. `null` when not reported — do not substitute a spec-sheet figure. |
 | `hdrSdrRatio` | `number \| null` | Current HDR to SDR luminance boost ratio (Android 14+ / API 34+), or null if not reported. |
-| `isHbmActive` | `boolean` | Whether High Brightness Mode (HBM) override is currently engaged. |
+| `isHbmActive` | `boolean` | Whether the last `setHighBrightnessMode(true)` request was accepted and not since reversed. A record of the request, not a read of the panel's firmware-controlled High Brightness Mode. |
 | `error` | `string \| null` | Latest failure message, or null. |
 | `source` | `TelemetrySource` | `'hardware'` with the native module present, `'unavailable'` otherwise. |
 
@@ -52,6 +52,6 @@ function useDisplay(): {
 | `toggleKeepAwake()` | none | `Promise<void>` — the new state lands in `isKeepAwake` | Acquires or releases a tagged screen wake lock, so the display does not dim during a long read or a capture. |
 | `setScreenBrightness(value)` | `value: number` — 0 to 1, clamped | `Promise<void>` | Sets app-window brightness. No-op on web. Failures are logged and leave `brightness` unchanged. |
 | `setPreferredRefreshRate(rateHz)` | `rateHz: number` — rate to request | `Promise<boolean>` — `true` when the request was applied | Asks the system for a preferred refresh rate for this window. |
-| `setHighBrightnessMode(enabled)` | `enabled: boolean` | `Promise<boolean>` | Engages High Brightness Mode (HBM) peak sunlight boost and maximum HDR headroom override. |
+| `setHighBrightnessMode(enabled)` | `enabled: boolean` | `Promise<boolean>` — `true` when the window attributes were set | Requests maximum window brightness (`BRIGHTNESS_OVERRIDE_FULL`) and, on API 34+, an HDR headroom of 3.0; disabling restores the default override and headroom 0.0. It does not control or read the panel's own High Brightness Mode. |
 | `setPreferredDisplayMode(modeId)` | `modeId: number` | `Promise<boolean>` | Requests a specific display mode configuration by its numeric ID. |
 | `setDesiredHdrHeadroom(headroom)` | `headroom: number` | `Promise<boolean>` | Requests desired HDR headroom ratio on Android 14+ (1.0 to 3.0+). |

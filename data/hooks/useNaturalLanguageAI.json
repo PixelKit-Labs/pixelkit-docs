@@ -2,10 +2,10 @@
   "id": "useNaturalLanguageAI",
   "name": "useNaturalLanguageAI",
   "category": "ai",
-  "chipBadge": "ML Kit NLP · 58 languages",
-  "summary": "Translation, language detection, smart replies and entity extraction, all offline.",
-  "plain": "Language tools that work without a connection: translate between 58 languages, work out what language some text is in, suggest replies to a conversation, and pull out things like dates, addresses and tracking numbers.",
-  "description": "Wraps the ML Kit language stack through pixel-nano: language-id, translate, smart-reply and entity-extraction. Translation models download per language pair on first use and then run entirely offline, which is why the first call for a new pair is slower. Smart reply takes a short conversation history and proposes replies. Entity extraction returns typed spans with their positions in the original string.",
+  "chipBadge": "ML Kit NLP · on-device",
+  "summary": "Translation, language detection, smart replies and entity extraction, running on the device.",
+  "plain": "Language tools that run on the phone: translate between the languages ML Kit Translate supports (each language model downloads once), work out what language some text is in, suggest replies to a conversation, and pull out things like dates, addresses and tracking numbers from English text.",
+  "description": "Wraps the ML Kit language stack through pixel-nano: language-id, translate, smart-reply and entity-extraction. Translation models download per language pair on first use and then run offline, which is why the first call for a new pair is slower. Translation accepts only the language tags ML Kit Translate supports; any other tag rejects with E_NANO_UNSUPPORTED_LANGUAGE (surfaced in error, result null) and no other language is substituted. Smart reply takes a short conversation history and proposes replies. Entity extraction works on English text only and returns typed spans with their positions in the original string.",
   "signature": "useNaturalLanguageAI(): NaturalLanguageState",
   "params": [],
   "returns": [
@@ -42,7 +42,7 @@
     {
       "name": "source",
       "type": "'hardware' | 'derived' | 'unavailable'",
-      "desc": "Where the numbers came from. There is no 'simulated' value: a reading is real, derived from real readings, or unavailable."
+      "desc": "'hardware' once at least one on-device operation has returned a result; 'unavailable' before that or when the native module is absent. There is no 'simulated' value."
     }
   ],
   "actions": [
@@ -62,7 +62,7 @@
     {
       "name": "translate(text, from?, to?)",
       "type": "(text: string, sourceLang?: string, targetLang?: string) => Promise<TranslationResult | null>",
-      "desc": "Translates offline. The first call for a language pair downloads that model, so it is slower than the ones after it.",
+      "desc": "Translates on-device. The first call for a language pair downloads that model, so it is slower than the ones after it. An unsupported language tag fails instead of falling back to another language.",
       "inputs": [
         {
           "name": "text",
@@ -72,12 +72,12 @@
         {
           "name": "sourceLang",
           "type": "string | undefined",
-          "desc": "BCP-47 language code of the input. Defaults to 'en'."
+          "desc": "Language tag of the input, one that ML Kit Translate supports (for example 'en', 'de', 'zh'). Defaults to 'en'. Unsupported tags reject."
         },
         {
           "name": "targetLang",
           "type": "string | undefined",
-          "desc": "BCP-47 language code to translate into. Defaults to 'es'."
+          "desc": "Language tag to translate into, one that ML Kit Translate supports. Defaults to 'es'. Unsupported tags reject."
         }
       ],
       "output": "Resolves with { translatedText, sourceLanguage, targetLanguage, latencyMs, source }, or null on failure."
@@ -98,7 +98,7 @@
     {
       "name": "extractEntities(text)",
       "type": "(text: string) => Promise<EntityExtractionResult | null>",
-      "desc": "Finds dates, addresses, money, phone numbers, flight numbers and tracking codes.",
+      "desc": "Finds dates, addresses, money, phone numbers, flight numbers and tracking codes in English text. Other languages are not supported.",
       "inputs": [
         {
           "name": "text",

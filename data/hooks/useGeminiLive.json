@@ -3,15 +3,15 @@
   "name": "useGeminiLive",
   "category": "ai",
   "chipBadge": "Gemini Live · WebSocket Duplex · Multimodal Camera",
-  "summary": "Real-time bidirectional streaming audio, camera video frames, text, and hardware tool execution with Gemini 3.8 Multimodal Live API.",
-  "plain": "Streams live bidirectional voice, camera video frames, and text with Gemini in the cloud over WebSockets, executing real-time hardware diagnostics and actions with low-latency audio duplexing.",
-  "description": "Establishes a persistent full-duplex WebSocket connection to the Gemini Multimodal Live API. Streams base64-encoded PCM audio chunks and camera image/video frames from device sensors, receives low-latency synthesized speech responses, exposes live extended thinking thought streams, and intercepts model tool calls to execute device hardware actuators and sensors with zero round-trip delay.",
+  "summary": "Bidirectional streaming of text, microphone audio chunks and camera frames with the Gemini Live API over a WebSocket, with tool calls routed through a capability adapter you supply.",
+  "plain": "Streams text, audio chunks and camera frames to Gemini in the cloud over a WebSocket and shows the transcript the model sends back. Model tool calls run only against the capabilities adapter you pass to connect.",
+  "description": "Opens a WebSocket to the Gemini Live API (BidiGenerateContent). You supply the session's trace context and capability adapter to connect(); the API key comes from run.apiKey or the stored key. sendAudioChunk, sendImageChunk and sendVideoFrame forward base64 PCM audio and JPEG frames as realtime input, and sendText and sendMultimodalTurn send client turns. The hook does not capture audio or decode and play the model's audio: isSpeaking means audio parts from the model are arriving, and the audio bytes themselves are not played or exposed. isListening and isStreamingMedia are set when a chunk is sent and clear 2 s after the last one. Model tool calls are validated and executed through runTool against the adapter's tools; each call is a network round trip plus the tool's own execution time. The default model is the DEFAULT_LIVE_MODEL constant (currently 'models/gemini-2.0-flash-exp'); config.model overrides it.",
   "signature": "useGeminiLive(config?: GeminiLiveConfig): GeminiLiveTelemetry",
   "params": [
     {
       "name": "config",
       "type": "GeminiLiveConfig",
-      "desc": "Configuration options for model name, voice profile ('Aoede', 'Puck', etc.), system instruction, thinking budget, and hardware tool binding."
+      "desc": "Optional. model (default DEFAULT_LIVE_MODEL), voiceName (one of 'Puck', 'Charon', 'Kore', 'Fenrir', 'Aoede'; default 'Aoede'), systemInstruction, and thinkingBudget (tokens; thinkingConfig is only sent when it is a non-zero number). Capabilities are not part of config: pass them to connect()."
     }
   ],
   "returns": [
@@ -28,17 +28,17 @@
     {
       "name": "isSpeaking",
       "type": "boolean",
-      "desc": "Whether synthesized speech audio is currently playing."
+      "desc": "Whether audio parts from the model are arriving. The hook does not play audio, so this does not mean sound is coming out of the device."
     },
     {
       "name": "isListening",
       "type": "boolean",
-      "desc": "Whether the client is streaming microphone audio chunks to the server."
+      "desc": "True after an audio chunk was sent and clears 2 seconds after the last one (or on disconnect)."
     },
     {
       "name": "isStreamingMedia",
       "type": "boolean",
-      "desc": "Whether the client is actively streaming media (camera video frames or images) to the server."
+      "desc": "True after an image or video frame was sent and clears 2 seconds after the last one (or on disconnect)."
     },
     {
       "name": "transcript",
@@ -63,12 +63,12 @@
     {
       "name": "source",
       "type": "TelemetrySource",
-      "desc": "Data provenance: 'hardware' when connected with valid key, or 'unavailable'."
+      "desc": "'hardware' while the WebSocket session is connected, 'unavailable' otherwise. It records that the cloud session is open, not that device hardware is involved."
     },
     {
       "name": "connect",
-      "type": "(customApiKey?: string) => Promise<boolean>",
-      "desc": "Establishes the bidirectional WebSocket session to the Gemini Live endpoint."
+      "type": "(run: GeminiLiveRunOptions) => Promise<GeminiLiveConnectResult>",
+      "desc": "Opens the Live session. run.context (a TraceContext) and run.capabilityAdapter (a CapabilityAdapter) are required; run.apiKey, run.sink and run.redaction are optional. Resolves with status 'connected', 'unavailable' (for example no API key: reason 'gemini_api_key_unavailable'), 'error' or 'cancelled', plus a reason when it did not connect."
     },
     {
       "name": "disconnect",
@@ -101,9 +101,9 @@
       "desc": "Sends a multimodal user turn containing both text and image attachments."
     },
     {
-      "name": "interrupt",
-      "type": "() => void",
-      "desc": "Signals the model to interrupt speech immediately."
+      "name": "context",
+      "type": "TraceContext | null",
+      "desc": "Trace context of the current session, or null before connect() has been called."
     },
     {
       "name": "clearTranscript",
@@ -113,9 +113,17 @@
   ],
   "actions": [
     {
-      "name": "connect(customApiKey)",
-      "desc": "Opens the duplex WebSocket connection to Gemini Live.",
-      "type": "(customApiKey?: string) => Promise<boolean>"
+      "name": "connect(run)",
+      "desc": "Opens the Live WebSocket session with the trace context and capability adapter for this session.",
+      "type": "(run: GeminiLiveRunOptions) => Promise<GeminiLiveConnectResult>",
+      "inputs": [
+        {
+          "name": "run",
+          "type": "GeminiLiveRunOptions",
+          "desc": "{ context: TraceContext; capabilityAdapter: CapabilityAdapter; apiKey?: string; sink?: ObservabilitySink; redaction?: RedactionPolicy }. The adapter defines which tools the model may call; tools it does not list are not offered."
+        }
+      ],
+      "output": "Resolves with { status: 'connected' | 'unavailable' | 'error' | 'cancelled', context, reason? }. Check status before sending."
     },
     {
       "name": "disconnect()",
@@ -148,16 +156,11 @@
       "type": "(text: string, images?: Array<{ data: string; mimeType?: string }>) => void"
     },
     {
-      "name": "interrupt()",
-      "desc": "Interrupts model speech playback.",
-      "type": "() => void"
-    },
-    {
       "name": "clearTranscript()",
       "desc": "Clears conversation history and active tool calls.",
       "type": "() => void"
     }
   ],
-  "example": "import { useGeminiLive } from '@pixelkit-labs/sdk';\n\nfunction VisionVoiceTriage() {\n  const { isConnected, connect, disconnect, sendText, sendVideoFrame } = useGeminiLive();\n  return (\n    <View>\n      <Button title={isConnected ? \"Disconnect\" : \"Connect Live\"} onPress={isConnected ? disconnect : () => connect()} />\n      <Button title=\"Send Camera Snapshot\" onPress={() => sendVideoFrame(base64Jpeg)} disabled={!isConnected} />\n    </View>\n  );\n}",
-  "agentNote": "Supports bidirectional audio duplex streaming, live camera frame ingestion, and real-time hardware tool calling over WebSockets."
+  "example": "import { useGeminiLive, createHardwareCapabilityAdapter, createTraceContext } from '@pixelkit-labs/sdk';\n\nfunction VisionVoiceTriage() {\n  const { isConnected, connect, disconnect, sendVideoFrame } = useGeminiLive();\n  const start = async () => {\n    const result = await connect({\n      context: createTraceContext(),\n      capabilityAdapter: createHardwareCapabilityAdapter({}),\n    });\n    if (result.status !== 'connected') console.warn(result.reason);\n  };\n  return (\n    <View>\n      <Button title={isConnected ? 'Disconnect' : 'Connect Live'} onPress={isConnected ? disconnect : start} />\n      <Button title=\"Send Camera Snapshot\" onPress={() => sendVideoFrame(base64Jpeg)} disabled={!isConnected} />\n    </View>\n  );\n}",
+  "agentNote": "connect() needs a trace context and a capability adapter; an adapter with no tools is valid. Check the returned status. The hook does not play the model's audio and has no interrupt action; end a session with disconnect()."
 }

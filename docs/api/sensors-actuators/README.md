@@ -11,9 +11,9 @@ This document covers physical sensors and mechanical actuation on the Pixel 11 P
 | [`useCamera`](./usecamera.md) | Lens, zoom, flash and torch, plus taking photos and recording video. |
 | [`useCameraExtensions`](./usecameraextensions.md) | Google computational photography vendor extensions (Night Sight, Ultra HDR, Portrait Bokeh). |
 | [`useHaptics`](./usehaptics.md) | Vibration, from simple taps to custom-shaped waveforms. |
-| [`useHealthConnect`](./usehealthconnect.md) | Platform health records, steps, and sensor vitals telemetry. |
-| [`useMicrophoneArray`](./usemicrophonearray.md) | Multi-mic acoustic array topology, polar directivity, and beamforming controls. |
+| [`useHealthConnect`](./usehealthconnect.md) | Health Connect availability and the device's step counter and heart rate sensors. Does not read health records. |
+| [`useMicrophoneArray`](./usemicrophonearray.md) | Microphone inventory: position, orientation, directionality and location of each microphone the platform lists. |
 | [`useSensors`](./usesensors.md) | Motion, orientation, air pressure and ambient light, streaming live. |
-| [`useThermometer`](./usethermometer.md) | Non-contact infrared temperature measurement on Google Pixel Pro hardware. |
+| [`useThermometer`](./usethermometer.md) | Discovery of the non-contact infrared temperature sensor on Google Pixel Pro hardware; temperatures stay null until a verified decoder exists. |
 | [`useTorch`](./usetorch.md) | The rear flashlight, including variable brightness and an SOS strobe. |
 <!-- hooks:end -->

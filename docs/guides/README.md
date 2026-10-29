@@ -10,13 +10,13 @@
 | **[Voice: Speech In, Speech Out, Live Agents](./voice.md)** | On-device streaming speech recognition (ML Kit GenAI Speech Recognition, Advanced mode on Pixel 10/11), realtime bidirectional voice agents with the Gemini Live API and ephemeral tokens, text-to-speech, and HiLight / haptic status feedback. |
 | **[Testing](./testing/README.md)** | Unit tests, the contract checks CI runs on every push, and on-device hardware verification with ARTEMIS. |
 | **[Hardware DevTools HUD](./devtools.md)** | Lightweight draggable in-app developer HUD for real-time inspection of Choreographer display FPS, ADPF thermal headroom, and Tensor CPU clusters. |
-| **[Bluetooth 6.0 Channel Sounding](./channel-sounding.md)** | Centimeter-accurate Phase-Based Ranging (PBR) and RTT tone exchange on Pixel 11 Pro dual-antenna BLE 6.0 radio. |
+| **[Bluetooth Channel Sounding Ranging](./channel-sounding.md)** | Measuring the distance to a Bluetooth peer through an android.ranging session, with the start statuses and what the platform does and does not report. |
 | **[Spatial Audio & Head Tracking](./spatial-audio.md)** | Immersive 3D binaural sound rendering and 6-DOF dynamic head tracking with Pixel Buds via Android 17 Spatializer. |
 | **[System Profiling with Perfetto](./perfetto-profiling.md)** | Low-overhead kernel ftrace markers, DVFS cluster frequencies, and system scheduling tracing on Tensor G6. |
 | **[CameraX Extensions](./camera-extensions.md)** | Direct hardware access to Pixel Night Sight, Ultra HDR gainmaps, Portrait Bokeh, and Face Retouch computational photography. |
-| **[Android 17 AppFunctions](./app-functions.md)** | Exposing structured app capabilities and tool calling to the system Gemini Assistant via IAppFunctionManager. |
-| **[Play Integrity & Titan M2](./play-integrity.md)** | Hardware-backed security verdicts and StrongBox Keystore 400 EC keypair attestation on Titan M2 security chip. |
-| **[Health Connect & Sensor Bridges](./health-connect.md)** | Unified Android Health Connect storage combined with direct hardware step counter and PPG heart rate sensor streams. |
+| **[Android AppFunctions](./app-functions.md)** | Probing the Android AppFunctions service and running an in-process function registry with useAppFunctions. |
+| **[Keystore Key Attestation](./play-integrity.md)** | Hardware security feature flags and Android Keystore key attestation with usePlayIntegrity; no Play Integrity verdict is returned. |
+| **[Health Connect & Sensor Bridges](./health-connect.md)** | Health Connect availability (inferred) combined with step counter and heart rate sensor presence. |
 
 ---
 

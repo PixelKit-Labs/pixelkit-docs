@@ -2,11 +2,11 @@
 
 **Source:** [packages/sdk/src/hardware/useCapabilities.ts](https://github.com/PixelKit-Labs/pixelkit-sdk/blob/master/packages/sdk/src/hardware/useCapabilities.ts)
 
-The first hook to call: it answers "does this device have that?" so an interface can hide what the phone cannot do instead of showing a control that will fail. Capabilities resolve from the model table, then upgrade to device-verified `PackageManager` feature flags when the PixelNative module is present. Memoised for the app lifetime. It reads `expo-device` and, when available, the native module; the result is computed once and reused.
+The first hook to call: it answers "does this device have that?" so an interface can hide what the phone cannot do instead of showing a control that will fail. Capabilities resolve from the model table (an inference from the device name), then the PackageManager-probed flags are upgraded to device-verified values when the PixelNative module is present. Only the probed fields come from the device; `hasHiLight`, `hasTitanM3`, `geminiNanoTier`, `isPixel`, `pixelGeneration`, `isProModel`, `isFoldable` and the `supports*` flags stay derived from the model name or API level even after verification, and `provenance` reports that per field. Memoised for the app lifetime. It reads `expo-device` and, when available, the native module; the result is computed once and reused.
 
 ## Signature
 ```typescript
-function useCapabilities(): DeviceCapabilities;
+function useCapabilities(): CapabilitiesState;
 ```
 
 ## Outputs
@@ -35,6 +35,9 @@ function useCapabilities(): DeviceCapabilities;
 | `hasStrongBox` | `boolean \| null` | Device-verified StrongBox Keymaster, which is what makes `useSecurity` hardware-backed. |
 | `hasNpuFeature` | `boolean \| null` | Device-verified `android.hardware.neural_processing_unit` flag. |
 | `aicoreVersion` | `string \| null` | AICore version name when installed. |
+| `source` | `TelemetrySource` | `'hardware'` once PackageManager verification ran, `'derived'` while everything comes from the model table. Table-only fields stay derived even then; read `provenance`. |
+| `provenance` | `Record<keyof DeviceCapabilities, 'hardware' \| 'derived' \| 'unavailable'>` | Per-field origin: `'hardware'` (platform read or feature probe), `'derived'` (model table or API level) or `'unavailable'` (probe failed or not run). |
+| `error` | `string \| null` | Why device verification failed, if it did. |
 
 ## Functions
 `useCapabilities()` returns no callables; it is a resolved fact set.

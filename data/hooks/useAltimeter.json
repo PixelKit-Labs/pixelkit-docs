@@ -43,7 +43,7 @@
     {
       "name": "pressureTrend",
       "type": "'rising' | 'steady' | 'falling' | 'rapid_fall' | null",
-      "desc": "Short-term pressure change trend indicating weather changes (rapid_fall indicates storm front)."
+      "desc": "Pressure change extrapolated to hPa/hour over the retained samples (at most the last 60 s) and classified as rapid_fall (below -1.5), falling (below -0.5), rising (above +0.5) or steady. null until at least 5 samples spanning 10 s exist; it is never 'steady' by default."
     },
     {
       "name": "isAvailable",
@@ -84,5 +84,5 @@
     }
   ],
   "example": "import { useAltimeter } from '@pixelkit-labs/sdk';\n\nfunction AltimeterHUD() {\n  const { altitudeM, verticalVelocityMs, pressureTrend } = useAltimeter(100);\n  return <Text>Alt: {altitudeM?.toFixed(1) ?? '—'} m · VSI: {verticalVelocityMs ?? '—'} m/s · Trend: {pressureTrend ?? '—'}</Text>;\n}",
-  "agentNote": "Barometric altimetry reflects atmospheric pressure and drifts with weather fronts; use calibrateSeaLevel with local METAR/QNH for absolute altitude."
+  "agentNote": "Barometric altimetry reflects atmospheric pressure and drifts with weather fronts; use calibrateSeaLevel with local METAR/QNH for absolute altitude. pressureTrend is null for the first 10 s of sampling and is an extrapolation from a window of at most 60 s, not a forecast."
 }

@@ -58,9 +58,9 @@
       "lane": "app",
       "col": 3,
       "type": "frontend",
-      "label": "useAppFunctions",
-      "sublabel": "your handlers",
-      "width": 132
+      "label": "Your AppFunctionService",
+      "sublabel": "native code in your app",
+      "width": 164
     }
   ],
   "edges": [
@@ -92,8 +92,8 @@
       "title": "Why registration is not just a manifest entry",
       "items": [
         "AppFunctions replaces App Actions and static Shortcuts: the assistant reads the schema at runtime rather than at install time",
-        "A function the assistant cannot find is a function you declared but never registered, which is what the functions array reports",
-        "Requires API 37, so useAppFunctions reports unsupported on anything older rather than failing at the call"
+        "An assistant can only find functions that your app exposes through a native AppFunctionService; useAppFunctions does not register anything with this registry, and its functions array is the hook's own in-process list",
+        "The hook probes the app_function service and reports isSupported from the API level (36 and above); it does not make your app reachable"
       ]
     },
     {

@@ -2,10 +2,10 @@
   "id": "useNetwork",
   "name": "useNetwork",
   "category": "system",
-  "chipBadge": "expo-network",
+  "chipBadge": "expo-network · ConnectivityManager",
   "summary": "Connection type, address and whether traffic actually goes anywhere.",
-  "plain": "Whether the phone is online, how it is connected, and whether that connection costs money. Check isConnected before any network call, and isMetered before a large download.",
-  "description": "Reads from expo-network: interface type, IP address, reachability and airplane mode. Being connected to Wi-Fi is not the same as having internet, which is why isConnected reflects a usable route rather than merely an attached interface. isMetered marks connections where the user pays per byte, typically cellular or a hotspot.",
+  "plain": "Whether the phone is online, how it is connected, and whether Android marks the active network as metered. Check isConnected before any network call, and isMetered (when it is not null) before a large download.",
+  "description": "Reads from expo-network: interface type, IP address, reachability and airplane mode. Being connected to Wi-Fi is not the same as having internet, which is why isConnected reflects a usable route rather than merely an attached interface. isMetered comes from the native module: true when the active network lacks NET_CAPABILITY_NOT_METERED (ConnectivityManager), so a metered Wi-Fi hotspot is metered and an unmetered cellular plan is not. It is null when there is no active network or the read is not permitted. isAirplaneMode is null when its read failed.",
   "signature": "useNetwork(): NetworkTelemetry & { refreshNetwork }",
   "params": [],
   "returns": [
@@ -26,13 +26,13 @@
     },
     {
       "name": "isMetered",
-      "type": "boolean",
-      "desc": "Whether the user pays for this traffic. Gate large transfers on it."
+      "type": "boolean | null",
+      "desc": "Whether the active network is metered (lacks NET_CAPABILITY_NOT_METERED). Null before the first read or when Android does not report it. Gate large transfers on it."
     },
     {
       "name": "isAirplaneMode",
-      "type": "boolean",
-      "desc": "Whether airplane mode is on."
+      "type": "boolean | null",
+      "desc": "Whether airplane mode is on. Null before the first read or when the read failed."
     },
     {
       "name": "hasRead",

@@ -18,8 +18,8 @@ cannot be listed in the wrong section or listed twice.
 | Hook | What it reads |
 | :--- | :--- |
 | [`useADPF`](./silicon-compute/useadpf.md) | How much thermal room is left before the phone slows itself down. |
-| [`useADPFHintSession`](./silicon-compute/useadpfhintsession.md) | Active frame workload negotiation with Android Dynamic Performance Framework and Tensor EAS. |
-| [`useBatteryShare`](./silicon-compute/usebatteryshare.md) | Google Pixel Battery Share (Reverse Wireless Qi Charging) telemetry and actuator. |
+| [`useADPFHintSession`](./silicon-compute/useadpfhintsession.md) | PerformanceHintManager hint session: report how long work took against a target duration for the session's threads. |
+| [`useBatteryShare`](./silicon-compute/usebatteryshare.md) | Google Pixel Battery Share (reverse wireless Qi charging) state and toggle. |
 | [`useChargingIntelligence`](./silicon-compute/usechargingintelligence.md) | Deep battery health, cycle count, manufacturing dates, and charging wattage tiers. |
 | [`useCPU`](./silicon-compute/usecpu.md) | What the CPU is and how hard it is working right now. |
 | [`useGPU`](./silicon-compute/usegpu.md) | Which GPU this is, and whether your frames are arriving on time. |
@@ -32,14 +32,14 @@ cannot be listed in the wrong section or listed twice.
 
 | Hook | What it reads |
 | :--- | :--- |
-| [`useAppFunctions`](./neural-ai/useappfunctions.md) | Exposes on-device actions and hardware capabilities to system AI and Gemini Assistant. |
-| [`useCloudHardwareAgent`](./neural-ai/usecloudhardwareagent.md) | Autonomous cloud hardware reasoning loop with multi-turn tool calling and extended thinking. |
+| [`useAppFunctions`](./neural-ai/useappfunctions.md) | In-process registry and runner for device actions, plus a probe of the Android AppFunctions service. |
+| [`useCloudHardwareAgent`](./neural-ai/usecloudhardwareagent.md) | Multi-turn Gemini tool-calling loop over the capability adapter you pass to each ask(). |
 | [`useEmbeddings`](./neural-ai/useembeddings.md) | On-device text embeddings from a user-supplied TFLite model (MediaPipe TextEmbedder) and cosine similarity scoring. |
 | [`useGemini`](./neural-ai/usegemini.md) | Cloud Gemini chat with real multi-turn history. |
-| [`useGeminiLive`](./neural-ai/usegeminilive.md) | Real-time bidirectional streaming audio, camera video frames, text, and hardware tool execution with Gemini 3.8 Multimodal Live API. |
+| [`useGeminiLive`](./neural-ai/usegeminilive.md) | Bidirectional streaming of text, microphone audio chunks and camera frames with the Gemini Live API over a WebSocket, with tool calls routed through a capability adapter you supply. |
 | [`useGeminiNano`](./neural-ai/usegemininano.md) | Gemini Nano running on the phone, with no network and no API key. |
 | [`useGenAITasks`](./neural-ai/usegenaitasks.md) | Four focused text tasks that run locally: summarise, proofread, rewrite, describe. |
-| [`useNaturalLanguageAI`](./neural-ai/usenaturallanguageai.md) | Translation, language detection, smart replies and entity extraction, all offline. |
+| [`useNaturalLanguageAI`](./neural-ai/usenaturallanguageai.md) | Translation, language detection, smart replies and entity extraction, running on the device. |
 | [`useSpeech`](./neural-ai/usespeech.md) | Speaking text aloud with the voices the phone has installed. |
 | [`useSpeechAI`](./neural-ai/usespeechai.md) | Turning speech into text, on the device or in the cloud. |
 | [`useVisionAI`](./neural-ai/usevisionai.md) | Nine on-device vision capabilities, plus cloud scene understanding. |
@@ -52,10 +52,10 @@ cannot be listed in the wrong section or listed twice.
 | [`useCamera`](./sensors-actuators/usecamera.md) | Lens, zoom, flash and torch, plus taking photos and recording video. |
 | [`useCameraExtensions`](./sensors-actuators/usecameraextensions.md) | Google computational photography vendor extensions (Night Sight, Ultra HDR, Portrait Bokeh). |
 | [`useHaptics`](./sensors-actuators/usehaptics.md) | Vibration, from simple taps to custom-shaped waveforms. |
-| [`useHealthConnect`](./sensors-actuators/usehealthconnect.md) | Platform health records, steps, and sensor vitals telemetry. |
-| [`useMicrophoneArray`](./sensors-actuators/usemicrophonearray.md) | Multi-mic acoustic array topology, polar directivity, and beamforming controls. |
+| [`useHealthConnect`](./sensors-actuators/usehealthconnect.md) | Health Connect availability and the device's step counter and heart rate sensors. Does not read health records. |
+| [`useMicrophoneArray`](./sensors-actuators/usemicrophonearray.md) | Microphone inventory: position, orientation, directionality and location of each microphone the platform lists. |
 | [`useSensors`](./sensors-actuators/usesensors.md) | Motion, orientation, air pressure and ambient light, streaming live. |
-| [`useThermometer`](./sensors-actuators/usethermometer.md) | Non-contact infrared temperature measurement on Google Pixel Pro hardware. |
+| [`useThermometer`](./sensors-actuators/usethermometer.md) | Discovery of the non-contact infrared temperature sensor on Google Pixel Pro hardware; temperatures stay null until a verified decoder exists. |
 | [`useTorch`](./sensors-actuators/usetorch.md) | The rear flashlight, including variable brightness and an SOS strobe. |
 
 ### [Radios and security](./radios-security/)
@@ -64,16 +64,16 @@ cannot be listed in the wrong section or listed twice.
 | :--- | :--- |
 | [`useBiometrics`](./radios-security/usebiometrics.md) | Fingerprint and face authentication. |
 | [`useBLE`](./radios-security/useble.md) | Bluetooth adapter state, Channel Sounding, bonded devices, and active BLE peripheral discovery. |
-| [`useChannelSounding`](./radios-security/usechannelsounding.md) | Bluetooth Core 6.0 high-accuracy centimeter-precision Phase-Based Ranging (PBR). |
-| [`useKeyAgreement`](./radios-security/usekeyagreement.md) | Hardware-isolated Elliptic Curve Diffie-Hellman session key derivation via Titan M2. |
-| [`useLocation`](./radios-security/uselocation.md) | Position, altitude, heading and speed from the satellite receiver. |
+| [`useChannelSounding`](./radios-security/usechannelsounding.md) | Bluetooth LE Channel Sounding availability and real ranging sessions against a Bluetooth peer. |
+| [`useKeyAgreement`](./radios-security/usekeyagreement.md) | ECDH session key derivation with a private key generated in the Android Keystore; the achieved security level is read from KeyInfo. |
+| [`useLocation`](./radios-security/uselocation.md) | Position, altitude, heading and speed from expo-location. |
 | [`useNFC`](./radios-security/usenfc.md) | Reading and writing real NFC tags through reader mode. |
-| [`usePlayIntegrity`](./radios-security/useplayintegrity.md) | Hardware Key Attestation and Google Play Integrity verdicts via Titan M2. |
-| [`usePrivateSpace`](./radios-security/useprivatespace.md) | Android 15+ Private Space profile isolation detection and vault policy. |
+| [`usePlayIntegrity`](./radios-security/useplayintegrity.md) | Hardware security feature flags and Android Keystore key attestation. No Play Integrity verdict is produced. |
+| [`usePrivateSpace`](./radios-security/useprivatespace.md) | Whether the app process runs inside Android 15+'s Private Space profile. Existence of the profile is not readable from outside it. |
 | [`useRadios`](./radios-security/useradios.md) | Every radio subsystem in one read. |
-| [`useSatelliteNTN`](./radios-security/usesatellitentn.md) | 3GPP Release-17 Non-Terrestrial Network (satellite SOS) status and alignment telemetry. |
+| [`useSatelliteNTN`](./radios-security/usesatellitentn.md) | Whether the device declares satellite messaging support. Connection state, carrier, signal and SOS readiness are not readable through Android's public API and are null. |
 | [`useSecurity`](./radios-security/usesecurity.md) | Encrypted storage for secrets, backed by hardware. |
-| [`useWifi7MLO`](./radios-security/usewifi7mlo.md) | Wi-Fi 7 (802.11be) Multi-Link Operation and 320 MHz channel telemetry. |
+| [`useWifi7MLO`](./radios-security/usewifi7mlo.md) | Wi-Fi 7 (802.11be) Multi-Link Operation links: band, channel, RSSI, link speeds and state. |
 | [`useWifiRTT`](./radios-security/usewifirtt.md) | Fine Timing Measurement (FTM / 802.11mc) distance to Wi-Fi access points. |
 
 ### [System and media](./system-media/)

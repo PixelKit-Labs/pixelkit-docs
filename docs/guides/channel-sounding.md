@@ -1,44 +1,47 @@
-# Bluetooth 6.0 Channel Sounding & High-Accuracy Ranging
+# Bluetooth Channel Sounding Ranging
 
-> **Millimeter and centimeter-accurate Phase-Based Ranging (PBR) and Round-Trip Time (RTT) on Google Pixel 11 Pro with `useChannelSounding`.**
+> **Measure the distance to a Bluetooth peer through the Android 16 `android.ranging` session API with `useChannelSounding`.**
 
 ---
 
 ## Overview
 
-Traditional Bluetooth proximity detection relies on Received Signal Strength Indication (RSSI). However, RSSI is notoriously susceptible to environmental attenuation, radio reflections, multipath fading, and human body obstruction—often producing distance errors of several meters.
+Bluetooth Channel Sounding (CS) is the Bluetooth Core 6.0 feature for measuring the distance between two Bluetooth devices. Android exposes it through `android.ranging.RangingManager` as the BLE Channel Sounding technology, from Android 16 (API 36).
 
-Starting with Bluetooth Core Specification 6.0 and Android 17 (API 37), Google introduced native platform support for **Bluetooth Channel Sounding (CS)**. Google Pixel 11 Pro (`grizzly`) pairs Tensor G6 with an advanced dual-antenna BLE 6.0 radio controller, enabling hardware-accelerated **Phase-Based Ranging (PBR)** and **Round-Trip Time (RTT)** ranging.
+PixelKit exposes it through the [`useChannelSounding`](/api/radios-security/usechannelsounding/) hook, which does two separate things:
 
-PixelKit exposes this physical radio capability via the [`useChannelSounding`](/api/radios-security/usechannelsounding/) hook.
+1. **Reports what the device says about itself.** `isSupported` is the `android.hardware.bluetooth_le.channel_sounding` feature flag, `serviceFound` is a lookup of the ranging HAL service, and `rangingAvailability` and `supportedSecurityLevels` are what `RangingManager` reports for the technology.
+2. **Opens a real ranging session with a peer you name.** `startRanging({ peerAddress })` builds a RAW `BleCsRangingParams` session for that Bluetooth address and resolves `true` only when the platform reports the session open. Every measurement afterwards is an `android.ranging.RangingData` sample.
+
+The platform delivers a distance in metres, a confidence of `low`, `medium` or `high`, an optional RSSI and a timestamp. It does not say whether phase-based ranging or round-trip time produced a sample, and it does not publish an accuracy figure, so PixelKit reports neither a method nor a precision.
 
 ```tsx
-import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, Button } from 'react-native';
 import { useChannelSounding } from '@pixelkit-labs/sdk';
 
-export function ProximityLocator({ beaconMac }: { beaconMac: string }) {
-  const { isSupported, channelCount, supportsPbr, isRanging, targets, startRanging, stopRanging } = useChannelSounding();
+export function ProximityLocator({ beaconAddress }: { beaconAddress: string }) {
+  const { isSupported, rangingAvailability, isRanging, measurements, sessionError, startRanging, stopRanging } =
+    useChannelSounding();
 
-  const target = targets[beaconMac];
+  const latest = measurements.find((m) => m.deviceAddress === beaconAddress.toUpperCase());
 
   return (
     <View>
-      <Text>BLE 6.0 CS Supported: {isSupported ? 'Yes' : 'No'}</Text>
-      <Text>Sounding Channels: {channelCount}</Text>
-      <Text>PBR Accurate: {supportsPbr ? 'Active' : 'Fallback RTT'}</Text>
+      <Text>Channel Sounding declared: {isSupported ? 'yes' : 'no'}</Text>
+      <Text>RangingManager: {rangingAvailability ?? '—'}</Text>
 
-      {target && (
-        <View>
-          <Text>Distance: {target.distanceMeters.toFixed(2)} m (±{(target.confidence * 100).toFixed(0)}%)</Text>
-          <Text>Azimuth: {target.azimuthDegrees?.toFixed(1) ?? '—'}°</Text>
-          <Text>Security Level: {target.securityLevel}</Text>
-        </View>
-      )}
+      <Button
+        title={isRanging ? 'Stop ranging' : 'Start ranging'}
+        onPress={() => (isRanging ? stopRanging() : startRanging({ peerAddress: beaconAddress }))}
+      />
 
-      <TouchableOpacity onPress={() => isRanging ? stopRanging(beaconMac) : startRanging(beaconMac)}>
-        <Text>{isRanging ? 'Stop CS Ranging' : 'Start CS Ranging'}</Text>
-      </TouchableOpacity>
+      {sessionError && <Text>{sessionError}</Text>}
+      <Text>
+        {latest?.distanceMeters != null
+          ? `${latest.distanceMeters.toFixed(2)} m, confidence ${latest.confidence ?? 'unknown'}`
+          : '—'}
+      </Text>
     </View>
   );
 }
@@ -46,60 +49,80 @@ export function ProximityLocator({ beaconMac }: { beaconMac: string }) {
 
 ---
 
-## Channel Sounding Architecture
-
-Bluetooth Channel Sounding operates by coordinating tone exchanges between two BLE devices across multiple radio frequency channels (typically up to 72 channels across the 2.4 GHz ISM band).
+## One ranging session
 
 <!-- diagram: channel-sounding -->
 
-### 1. Phase-Based Ranging (PBR)
-In PBR mode, the initiator and reflector transmit unmodulated carrier tones across scheduled frequencies. By measuring the phase rotation across different carrier frequencies, the Tensor G6 baseband resolves distance using the phase-slope relationship:
-```text
-Δθ = (4π * Δf * d) / c
-```
-This allows distance resolution down to **±1 to 3 centimeters** under line-of-sight conditions.
+The peer has to be a Bluetooth device that itself supports Channel Sounding, and its address is yours to supply, for example from a scan result or a bonded device. Without one there is nothing to measure.
 
-### 2. Round-Trip Time (RTT) Sounding
-When multipath interference obscures the carrier phase, or across longer non-line-of-sight distances, the radio automatically supplements PBR with high-precision time-of-flight measurements (sub-nanosecond timestamping of CS-SYNC packets).
+### Start statuses
 
-### 3. Anti-Spoofing & Relay Attack Protection
-Traditional BLE keyless entry is vulnerable to relay amplification attacks. Bluetooth 6.0 Channel Sounding incorporates cryptographic nonce sequencing in every CS subevent, ensuring that signals cannot be intercepted, predicted, or re-transmitted without altering the phase-path integrity.
+`startRanging` resolves `false` and puts the status and reason in `sessionError` when it does not open a session:
+
+| Status | Meaning |
+| :--- | :--- |
+| `needs_peer_address` | No `peerAddress` was supplied. |
+| `invalid_parameters` | The address is not six colon-separated hex bytes, an option has an unknown value, or the requested `securityLevel` is not in `supportedSecurityLevels`. |
+| `channel_sounding_unsupported` | The device does not declare Channel Sounding, has no Bluetooth adapter, or `RangingManager` reports the technology as not supported. |
+| `channel_sounding_disabled` | `RangingManager` reports the technology as disabled by the user, a regulatory restriction or user restrictions. |
+| `ranging_api_unavailable` | Below Android 16, or `RangingManager` is not available. |
+| `bluetooth_disabled` | The Bluetooth adapter is off. |
+| `permission_denied` | `android.permission.RANGING` is not granted, or the platform threw a `SecurityException` while opening. |
+| `session_active` | A session is already running; call `stopRanging()` first. |
+| `open_failed` | The platform reported `onOpenFailed`, closed the session before it opened, or did not answer within 10 seconds. |
+
+The app declares `android.permission.RANGING` in its manifest and requests it at runtime. The native module does not add it.
+
+### Stopping
+
+`stopRanging()` returns `{ wasActive, closed, sessionId, error, timestampMs }`: `wasActive` is `false` when nothing was running, and `error` carries a failure from the platform's stop or close.
 
 ---
 
 ## API & State Reference
 
-The `useChannelSounding()` hook exposes the following state contract:
-
 ```ts
-interface ChannelSoundingTarget {
-  macAddress: string;
-  distanceMeters: number;
-  confidence: number; // 0.0 to 1.0
-  azimuthDegrees?: number; // Estimated angle when multi-antenna array is active
-  elevationDegrees?: number;
-  lastUpdatedMs: number;
-  rangingMode: 'pbr' | 'rtt' | 'hybrid';
-  securityLevel: 'standard' | 'high_security';
+interface ChannelSoundingRangingConfig {
+  peerAddress: string;                      // required, "AA:BB:CC:DD:EE:FF"
+  role?: 'initiator' | 'responder';         // default 'initiator'
+  securityLevel?: 1 | 4;                    // omitted: platform default
+  sightType?: 'unknown' | 'line_of_sight' | 'non_line_of_sight';
+  locationType?: 'unknown' | 'indoor' | 'outdoor';
+  updateRate?: 'normal' | 'infrequent' | 'frequent';
+}
+
+interface ChannelSoundingMeasurementEvent {
+  sessionId: number;
+  deviceAddress: string;
+  distanceMeters: number | null;            // null when the platform omitted it
+  confidence: 'low' | 'medium' | 'high' | null;
+  rssi: number | null;
+  timestampMs: number;
 }
 
 interface ChannelSoundingState {
   isSupported: boolean;
-  channelCount: number;
-  supportsPbr: boolean;
-  supportsRtt: boolean;
+  isEnabled: boolean;
+  serviceFound: boolean;
+  rangingAvailability: ChannelSoundingAvailability | null;
+  supportedSecurityLevels: number[] | null;
   isRanging: boolean;
-  targets: Record<string, ChannelSoundingTarget>;
-  source: 'hardware' | 'unavailable';
-  startRanging: (targetMacAddress: string, options?: CSRangingOptions) => Promise<boolean>;
-  stopRanging: (targetMacAddress?: string) => Promise<boolean>;
+  measurements: ChannelSoundingMeasurementEvent[];  // latest sample per peer
+  sessionInfo: ChannelSoundingRangingResult | null;
+  sessionError: string | null;
+  error: string | null;
+  source: 'hardware' | 'derived' | 'unavailable';
+  startRanging: (config: ChannelSoundingRangingConfig) => Promise<boolean>;
+  stopRanging: () => ChannelSoundingStopResult | null;
+  refresh: () => ChannelSoundingInfo | null;
 }
 ```
+
+`sightType` and `locationType` are hints passed to `BleCsRangingParams`; they do not change what the hook reports.
 
 ---
 
 ## Practical Applications
 
-1. **Smart Locks & Keyless Entry**: Unlock doors strictly when the authenticated phone is within 1 meter and moving *toward* the threshold, eliminating false unlocks from across the room.
-2. **Device Finding & Asset Tracking**: Guide users to lost trackers or accessories with cm-level distance countdowns and directional guidance.
-3. **Touchless Point-of-Sale**: Secure high-value transactions with cryptographic physical proximity validation.
+1. **Device finding:** show the distance to a Channel Sounding accessory while the session is open, and show `—` until a sample arrives.
+2. **Proximity gating:** compare `distanceMeters` with a threshold only when it is not `null`, and treat a `low` confidence as a reason to wait for another sample.

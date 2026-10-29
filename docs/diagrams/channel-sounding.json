@@ -2,7 +2,7 @@
   "schema_version": 1,
   "diagram_type": "sequence",
   "meta": {
-    "title": "One ranging exchange",
+    "title": "One ranging session",
     "viewBox": [
       860,
       560
@@ -20,31 +20,31 @@
     {
       "id": "radio",
       "type": "backend",
-      "label": "Tensor G6 radio",
-      "sublabel": "baseband and HAL"
+      "label": "RangingManager",
+      "sublabel": "android.ranging session"
     },
     {
       "id": "peer",
       "type": "external",
-      "label": "BLE 6.0 accessory",
-      "sublabel": "reflector"
+      "label": "Channel Sounding peer",
+      "sublabel": "Bluetooth device at peerAddress"
     }
   ],
   "segments": [
     {
       "from": 150,
       "to": 288,
-      "label": "Negotiate"
+      "label": "Open"
     },
     {
       "from": 304,
       "to": 400,
-      "label": "Step across the band"
+      "label": "Range"
     },
     {
       "from": 416,
       "to": 500,
-      "label": "Resolve"
+      "label": "Report"
     }
   ],
   "messages": [
@@ -52,42 +52,42 @@
       "from": "hook",
       "to": "radio",
       "y": 180,
-      "label": "startRanging(mac)",
+      "label": "startRanging({ peerAddress })",
       "variant": "emphasis"
     },
     {
       "from": "radio",
       "to": "peer",
       "y": 222,
-      "label": "capability exchange",
+      "label": "platform sets up the session",
       "variant": "emphasis"
     },
     {
       "from": "peer",
       "to": "radio",
       "y": 264,
-      "label": "configuration handshake",
-      "variant": "return"
-    },
-    {
-      "from": "radio",
-      "to": "peer",
-      "y": 326,
-      "label": "tones, Ch 0 to Ch 71",
-      "variant": "emphasis"
-    },
-    {
-      "from": "peer",
-      "to": "radio",
-      "y": 368,
-      "label": "phase-shifted response",
+      "label": "peer answers, or the open fails",
       "variant": "return"
     },
     {
       "from": "radio",
       "to": "hook",
+      "y": 326,
+      "label": "onOpened, or a status and reason",
+      "variant": "return"
+    },
+    {
+      "from": "radio",
+      "to": "peer",
+      "y": 368,
+      "label": "ranging rounds, run by the platform",
+      "variant": "emphasis"
+    },
+    {
+      "from": "radio",
+      "to": "hook",
       "y": 452,
-      "label": "distance, confidence, mode",
+      "label": "RangingData: distance, confidence, rssi",
       "variant": "return"
     }
   ],
@@ -110,18 +110,18 @@
       "dot": "cyan",
       "title": "Where the distance comes from",
       "items": [
-        "Phase-based ranging reads the phase rotation across scheduled carrier frequencies, resolving to ±1 to 3 cm in line of sight",
-        "When multipath obscures the carrier phase the radio supplements it with round-trip timing, which is why rangingMode reports pbr, rtt or hybrid",
-        "A multipath impulse-response filter runs before a target is reported, so confidence is a measured value rather than a constant"
+        "Every sample is an android.ranging.RangingData delivered by the platform for the peer you named",
+        "The sample carries a distance, a confidence of low, medium or high, an optional RSSI and a timestamp; any of them can be missing, and a missing one is null",
+        "The platform does not say whether phase-based ranging or round-trip time produced a sample, so the hook reports no method"
       ]
     },
     {
       "dot": "emerald",
-      "title": "Why this resists a relay attack",
+      "title": "When nothing is measured",
       "items": [
-        "Every subevent carries cryptographic nonce sequencing, so a recorded exchange cannot be replayed",
-        "A relayed signal cannot preserve phase-path integrity, which is what distinguishes this from classic BLE keyless entry",
-        "securityLevel reports whether the exchange ran in high_security mode rather than assuming it did"
+        "No peer address, Bluetooth off, a missing android.permission.RANGING or an unsupported device each resolve startRanging with a named status in sessionError",
+        "A peer that never answers leaves measurements empty, which means no peer answered rather than a distance of zero",
+        "supportedSecurityLevels lists what the device reports; a level it does not list is refused before a session is opened"
       ]
     }
   ]
