@@ -91,6 +91,11 @@
       "desc": "Streams a base64 camera image or video frame into the real-time multimodal live session."
     },
     {
+      "name": "sendContext",
+      "type": "(text: string) => void",
+      "desc": "Adds background text to the session without asking for a reply and without adding a transcript entry. The model reads it with the next sendText."
+    },
+    {
       "name": "sendVideoFrame",
       "type": "(base64Jpeg: string) => void",
       "desc": "Streams a continuous camera video frame (JPEG base64) into the real-time live session."
@@ -136,6 +141,18 @@
       "type": "(text: string) => void"
     },
     {
+      "name": "sendContext(text)",
+      "desc": "Sends background text as a client turn with turnComplete false. The model does not reply to it, the transcript does not show it, and it is part of the context for the next sendText. Use it to pass a ranking or note that should inform, not become, the user's message. Blank text sends nothing.",
+      "type": "(text: string) => void",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "desc": "The background text. It is trimmed before sending."
+        }
+      ]
+    },
+    {
       "name": "sendAudioChunk(pcmBase64)",
       "desc": "Sends a PCM audio packet to the live session.",
       "type": "(pcmBase64: string) => void"
@@ -162,5 +179,5 @@
     }
   ],
   "example": "import { useGeminiLive, createHardwareCapabilityAdapter, createTraceContext } from '@pixelkit-labs/sdk';\n\nfunction VisionVoiceTriage() {\n  const { isConnected, connect, disconnect, sendVideoFrame } = useGeminiLive();\n  const start = async () => {\n    const result = await connect({\n      context: createTraceContext(),\n      capabilityAdapter: createHardwareCapabilityAdapter({}),\n    });\n    if (result.status !== 'connected') console.warn(result.reason);\n  };\n  return (\n    <View>\n      <Button title={isConnected ? 'Disconnect' : 'Connect Live'} onPress={isConnected ? disconnect : start} />\n      <Button title=\"Send Camera Snapshot\" onPress={() => sendVideoFrame(base64Jpeg)} disabled={!isConnected} />\n    </View>\n  );\n}",
-  "agentNote": "connect() needs a trace context and a capability adapter; an adapter with no tools is valid. Check the returned status. The hook does not play the model's audio and has no interrupt action; end a session with disconnect()."
+  "agentNote": "connect() needs a trace context and a capability adapter with at least one tool; an empty adapter resolves with status 'unavailable' and reason 'capability_adapter_empty', and so does an adapter whose tools are all unavailable at connect time. Check the returned status. sendContext(text) adds background text that is not shown in the transcript and does not trigger a reply. The hook does not play the model's audio and has no interrupt action; end a session with disconnect()."
 }
